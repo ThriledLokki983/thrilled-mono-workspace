@@ -1,0 +1,44 @@
+{
+  "root": true,
+  "plugins": ["@nx"],
+  "extends": [
+    "eslint:recommended"
+  ],
+  "ignorePatterns": ["!**/*", "dist", "node_modules"],
+  "env": {
+    "node": true,
+    "es2022": true
+  },
+  "rules": {
+    "@nx/enforce-module-boundaries": [
+      "error",
+      {
+        "enforceBuildableLibDependency": true,
+        "allow": [],
+        "depConstraints": [
+          {
+            "sourceTag": "scope:shared",
+            "onlyDependOnLibsWithTags": ["scope:shared"]
+          },
+          {
+            "sourceTag": "type:styles",
+            "onlyDependOnLibsWithTags": ["type:lib", "type:util", "scope:shared"]
+          }
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["*.js", "*.jsx"],
+      "rules": {}
+    },
+    {
+      "files": ["*.json"],
+      "parser": "jsonc-eslint-parser",
+      "rules": {
+        "@nx/dependency-checks": "off"
+      }
+    }
+  ]
+}
