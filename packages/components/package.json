@@ -19,9 +19,8 @@
     "!**/*.tsbuildinfo"
   ],
   "dependencies": {
-    "custom-eslint": "*",
-    "@mono/styles": "file:../../styles",
-    "@thrilled/shared": "file:../types"
+    "@mono/styles": "file:../styles",
+    "@thrilled/shared": "file:../shared/types"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
@@ -38,6 +37,13 @@
     "react-aria-components": {
       "optional": false
     }
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7.16.0",
+    "@typescript-eslint/parser": "^7.16.0",
+    "eslint-plugin-react": "^7.34.2",
+    "eslint-plugin-react-hooks": "^4.6.2"
   },
   "nx": {
     "name": "components",
