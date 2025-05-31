@@ -15,7 +15,11 @@
       "default": "./dist/index.js"
     }
   },
-  "dependencies": {
-    "tslib": "^2.3.0"
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-aria-components": "^1.5.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.5"
   }
 }

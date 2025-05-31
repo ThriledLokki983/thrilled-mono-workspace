@@ -4,10 +4,10 @@
   "files": [],
   "references": [
     {
-      "path": "./packages/shared"
+      "path": "./packages/styles"
     },
     {
-      "path": "./packages/styles"
+      "path": "./packages/shared/types"
     }
   ]
 }

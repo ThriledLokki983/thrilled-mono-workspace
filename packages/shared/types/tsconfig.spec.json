@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./out-tsc/vitest",
     "types": [
@@ -16,15 +16,15 @@
     "vite.config.mts",
     "vitest.config.ts",
     "vitest.config.mts",
-    "src/**/*.test.ts",
-    "src/**/*.spec.ts",
-    "src/**/*.test.tsx",
-    "src/**/*.spec.tsx",
-    "src/**/*.test.js",
-    "src/**/*.spec.js",
-    "src/**/*.test.jsx",
-    "src/**/*.spec.jsx",
-    "src/**/*.d.ts"
+    "types/src/**/*.test.ts",
+    "types/src/**/*.spec.ts",
+    "types/src/**/*.test.tsx",
+    "types/src/**/*.spec.tsx",
+    "types/src/**/*.test.js",
+    "types/src/**/*.spec.js",
+    "types/src/**/*.test.jsx",
+    "types/src/**/*.spec.jsx",
+    "types/src/**/*.d.ts"
   ],
   "references": [
     {

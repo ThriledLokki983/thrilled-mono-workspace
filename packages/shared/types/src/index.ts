@@ -1,10 +1,10 @@
 export * from './lib/shared.js';
 
 // Export all frontend types
-export * from "./fe";
+export * from "./fe/index.js";
 
 // Export all backend types
-export * from "./be";
+export * from "./be/index.js";
 
 // Export all app types
-export * from "./app";
+export * from "./app/index.js";
