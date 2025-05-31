@@ -1,0 +1,114 @@
+// Import base button styles from the styles package
+@use '@mono/styles/scss/components/buttons';
+
+// Button component extending the base styles
+.btn {
+  // Use the base button class from styles package
+  @extend .btn;
+  
+  // Additional component-specific styling
+  position: relative;
+  overflow: hidden;
+  
+  // Ensure content is positioned correctly when loading
+  .content {
+    display: inline-flex;
+    align-items: center;
+    transition: var(--transition-normal);
+  }
+  
+  // Icon styling
+  .iconLeft,
+  .iconRight {
+    display: inline-flex;
+    align-items: center;
+    
+    svg {
+      width: 1em;
+      height: 1em;
+    }
+  }
+  
+  .iconLeft {
+    margin-right: var(--spacing-xs);
+  }
+  
+  .iconRight {
+    margin-left: var(--spacing-xs);
+  }
+}
+
+// Size variants
+.btn--small {
+  @extend .btn--sm;
+}
+
+.btn--medium {
+  // Medium is the default size from the base .btn class
+  // Use the default base button styling
+  @extend .btn;
+}
+
+.btn--large {
+  @extend .btn--lg;
+}
+
+// Variant styles
+.btn--primary {
+  @extend .btn--primary;
+}
+
+.btn--secondary {
+  @extend .btn--secondary;
+}
+
+.btn--outline {
+  @extend .btn--outline;
+}
+
+.btn--ghost {
+  @extend .btn--ghost;
+}
+
+.btn--danger {
+  background-color: var(--color-danger);
+  color: var(--color-text-inverse);
+  
+  &:hover:not(:disabled):not(.btn--loading) {
+    background-color: var(--color-danger-dark);
+  }
+}
+
+// Loading state
+.btn--loading {
+  cursor: not-allowed;
+  
+  .content {
+    opacity: 0.7;
+  }
+}
+
+// Full width
+.btn--full-width {
+  width: 100%;
+}
+
+// Spinner animation
+.spinner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 1em;
+  height: 1em;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
