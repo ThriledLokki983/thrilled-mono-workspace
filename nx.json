@@ -53,5 +53,10 @@
     "test": {
       "dependsOn": ["^build"]
     }
+  },
+  "release": {
+    "version": {
+      "preVersionCommand": "yarn nx run-many -t build"
+    }
   }
 }

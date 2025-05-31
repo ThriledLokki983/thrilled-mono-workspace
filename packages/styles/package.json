@@ -42,5 +42,8 @@
   },
   "peerDependencies": {
     "sass": "^1.81.0"
+  },
+  "devDependencies": {
+    "@mono/custom-eslint": "file:../shared/custom-eslint"
   }
 }

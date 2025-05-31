@@ -17,7 +17,7 @@ export default defineConfig(() => ({
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'shared',
       fileName: 'index',
-      formats: ['es'],
+      formats: ['es'] as const,
     },
     rollupOptions: {
       external: ['tslib'],

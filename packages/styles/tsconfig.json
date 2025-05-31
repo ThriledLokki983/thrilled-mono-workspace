@@ -4,6 +4,9 @@
   "include": [],
   "references": [
     {
+      "path": "../shared/custom-eslint"
+    },
+    {
       "path": "./tsconfig.lib.json"
     },
     {

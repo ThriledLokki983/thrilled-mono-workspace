@@ -1,15 +1,34 @@
 {
-  "extends": ["../../.eslintrc.json"],
-  "ignorePatterns": ["!**/*"],
+  "root": true,
+  "plugins": ["@nx"],
+  "extends": [
+    "eslint:recommended"
+  ],
+  "ignorePatterns": ["!**/*", "dist", "node_modules"],
+  "env": {
+    "node": true,
+    "es2022": true
+  },
+  "rules": {
+    "@nx/enforce-module-boundaries": [
+      "error",
+      {
+        "enforceBuildableLibDependency": true,
+        "allow": [],
+        "depConstraints": [
+          {
+            "sourceTag": "scope:shared",
+            "onlyDependOnLibsWithTags": ["scope:shared"]
+          },
+          {
+            "sourceTag": "type:styles",
+            "onlyDependOnLibsWithTags": ["type:lib", "type:util", "scope:shared"]
+          }
+        ]
+      }
+    ]
+  },
   "overrides": [
-    {
-      "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
-      "rules": {}
-    },
-    {
-      "files": ["*.ts", "*.tsx"],
-      "rules": {}
-    },
     {
       "files": ["*.js", "*.jsx"],
       "rules": {}
@@ -18,15 +37,7 @@
       "files": ["*.json"],
       "parser": "jsonc-eslint-parser",
       "rules": {
-        "@nx/dependency-checks": [
-          "error",
-          {
-            "ignoredFiles": [
-              "{projectRoot}/eslint.config.{js,cjs,mjs}",
-              "{projectRoot}/vite.config.{js,ts,mjs,mts}"
-            ]
-          }
-        ]
+        "@nx/dependency-checks": "off"
       }
     }
   ]

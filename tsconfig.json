@@ -8,6 +8,9 @@
     },
     {
       "path": "./packages/shared/types"
+    },
+    {
+      "path": "./packages/shared/custom-eslint"
     }
   ]
 }

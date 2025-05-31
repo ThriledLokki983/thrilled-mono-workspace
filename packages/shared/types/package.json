@@ -15,11 +15,19 @@
       "default": "./dist/index.js"
     }
   },
+  "nx": {
+    "name": "@thrilled/shared",
+    "tags": [
+      "scope:shared",
+      "type:lib"
+    ]
+  },
   "peerDependencies": {
     "react": "^19.0.0",
     "react-aria-components": "^1.5.1"
   },
   "devDependencies": {
-    "@types/react": "^19.0.5"
+    "@types/react": "^19.0.5",
+    "@mono/custom-eslint": "file:../custom-eslint"
   }
 }

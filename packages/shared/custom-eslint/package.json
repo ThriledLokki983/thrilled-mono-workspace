@@ -1,0 +1,52 @@
+{
+  "name": "@mono/custom-eslint",
+  "version": "0.0.1",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "development": "./src/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./react": {
+      "development": "./src/configs/react.js",
+      "require": "./dist/configs/react.js",
+      "default": "./dist/configs/react.js"
+    },
+    "./prettier": {
+      "development": "./src/configs/prettier.config.js",
+      "require": "./dist/configs/prettier.config.js",
+      "default": "./dist/configs/prettier.config.js"
+    }
+  },
+  "files": [
+    "dist",
+    "react.js",
+    "prettier.js",
+    "!**/*.tsbuildinfo"
+  ],
+  "nx": {
+    "name": "custom-eslint",
+    "tags": [
+      "type:eslint-config",
+      "scope:shared"
+    ]
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "peerDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.16.0",
+    "@typescript-eslint/parser": "^7.16.0",
+    "eslint": ">=8.0.0",
+    "eslint-config-prettier": "^10.0.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "prettier": ">=2.0.0",
+    "typescript": ">=4.0.0"
+  }
+}

@@ -4,13 +4,7 @@
   "include": [],
   "references": [
     {
-      "path": "../custom-eslint"
-    },
-    {
       "path": "./tsconfig.lib.json"
-    },
-    {
-      "path": "./tsconfig.spec.json"
     }
   ]
 }
