@@ -11,6 +11,9 @@
     },
     {
       "path": "./packages/shared/custom-eslint"
+    },
+    {
+      "path": "./packages/shared/components"
     }
   ]
 }
