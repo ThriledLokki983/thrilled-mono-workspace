@@ -82,8 +82,16 @@ jobs:
           echo "📋 Available Nx projects:"
           yarn nx show projects
           
+          # Build dependencies first - this is crucial for Vite to resolve @mono/components
+          echo "📦 Building dependencies (components, styles)..."
+          yarn nx run-many -t build -p components,styles --parallel=false
+          
+          # Verify components package was built
+          echo "🔍 Verifying components build output..."
+          ls -la packages/components/dist/
+          
           # Try to build with verbose output
-          echo "🚀 Building with dependencies..."
+          echo "🚀 Building faithcircle-fe..."
           NODE_ENV=production yarn nx build faithcircle-fe --configuration=production --verbose
           
           # Copy 404.html for SPA routing support
