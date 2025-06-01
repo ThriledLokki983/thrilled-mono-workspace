@@ -20,6 +20,12 @@
     },
     {
       "path": "./apps/fe/faithcircle-fe-e2e"
+    },
+    {
+      "path": "./apps/be/faithcircle-be-e2e"
+    },
+    {
+      "path": "./apps/be/faithcircle-be"
     }
   ]
 }
