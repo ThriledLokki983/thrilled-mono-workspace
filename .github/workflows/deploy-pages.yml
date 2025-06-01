@@ -1,0 +1,99 @@
+name: Deploy FaithCircle Frontend to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/fe/faithcircle-fe/**'
+      - 'packages/**'
+      - 'nx.json'
+      - 'package.json'
+      - 'yarn.lock'
+  # Allow manual dispatch for testing
+  workflow_dispatch:
+
+# Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+permissions:
+  pages: write      # to deploy to Pages
+  id-token: write   # to verify the deployment originates from an appropriate source
+  contents: read    # to checkout the repository
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Setup NX
+        uses: nrwl/nx-set-shas@v4
+
+      - name: Check if faithcircle-fe is affected
+        id: check_affected
+        run: |
+          if yarn nx show projects --affected --type=app | grep -q "faithcircle-fe"; then
+            echo "affected=true" >> $GITHUB_OUTPUT
+            echo "✅ faithcircle-fe is affected, proceeding with build"
+          else
+            echo "affected=false" >> $GITHUB_OUTPUT
+            echo "⏭️ faithcircle-fe is not affected, skipping build"
+          fi
+
+      - name: Build faithcircle-fe
+        if: steps.check_affected.outputs.affected == 'true'
+        run: |
+          echo "🏗️ Building faithcircle-fe for production..."
+          NODE_ENV=production yarn nx build faithcircle-fe --configuration=production
+          
+          # Copy 404.html for SPA routing support
+          cp ./apps/fe/faithcircle-fe/public/404.html ./dist/apps/fe/faithcircle-fe/404.html
+          
+          # Verify build output
+          ls -la dist/apps/fe/faithcircle-fe/
+          echo "✅ Build completed successfully"
+
+      - name: Setup Pages
+        if: steps.check_affected.outputs.affected == 'true'
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        if: steps.check_affected.outputs.affected == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist/apps/fe/faithcircle-fe'
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    if: needs.build.result == 'success'
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          # Optional: Add a custom error message if deployment fails
+          timeout: 600000  # 10 minutes timeout

@@ -8,9 +8,12 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
+// Configure base path for GitHub Pages
+const basename = process.env.NODE_ENV === 'production' ? '/thrilled-mono-workspace' : '';
+
 root.render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <App />
     </BrowserRouter>
   </StrictMode>
