@@ -7,12 +7,14 @@ Shared ESLint configurations for React projects and Prettier formatting in the T
 This package provides two main configurations:
 
 ### React Configuration (`@mono/custom-eslint/react`)
+
 - Complete ESLint setup for React + TypeScript projects
 - Includes React, React Hooks, and React Refresh rules
 - TypeScript-specific linting rules
 - Optimized for modern React development (React 17+)
 
 ### Prettier Configuration (`@mono/custom-eslint/prettier`)
+
 - Comprehensive Prettier formatting rules
 - File-type specific overrides for TypeScript, JSON, Markdown, etc.
 - Consistent code formatting across the workspace
@@ -20,6 +22,7 @@ This package provides two main configurations:
 ## Philosophy
 
 This package follows a **local-first ESLint approach**:
+
 - Each package/app manages its own base ESLint configuration
 - Shared configurations focus on React-specific and Prettier rules
 - Nx module boundary enforcement is handled at the workspace level
@@ -91,6 +94,7 @@ Make sure your project has these dependencies installed:
 - `prettier` >= 2.0.0
 
 For React projects, also install:
+
 - `@typescript-eslint/eslint-plugin`
 - `@typescript-eslint/parser`
 - `eslint-plugin-react`
@@ -101,6 +105,7 @@ For React projects, also install:
 ## Features
 
 ### React Configuration Includes:
+
 - **TypeScript Support**: Full TypeScript linting with sensible defaults
 - **React 17+ Optimized**: No need for `React` imports in JSX files
 - **Hooks Linting**: Comprehensive React Hooks rules
@@ -108,6 +113,7 @@ For React projects, also install:
 - **Type Safety**: TypeScript-aware React component linting
 
 ### Prettier Configuration Includes:
+
 - **Consistent Formatting**: Unified code style across all file types
 - **File-Specific Rules**: Tailored formatting for TS, JS, JSON, Markdown, etc.
 - **Readable Output**: Optimized for code readability and team collaboration
@@ -119,6 +125,7 @@ Check the `packages/` directory for examples of how different project types use 
 ## Contributing
 
 When adding new rules:
+
 1. Test across multiple project types in the workspace
 2. Consider the impact on developer experience
 3. Document any breaking changes

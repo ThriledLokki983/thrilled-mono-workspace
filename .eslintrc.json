@@ -1,6 +1,6 @@
 {
   "root": true,
-  "ignorePatterns": ["**/*"],
+  "ignorePatterns": ["**/*", "**/test-output"],
   "plugins": ["@nx"],
   "overrides": [
     {
@@ -18,11 +18,19 @@
               },
               {
                 "sourceTag": "type:app",
-                "onlyDependOnLibsWithTags": ["type:lib", "type:util", "scope:shared"]
+                "onlyDependOnLibsWithTags": [
+                  "type:lib",
+                  "type:util",
+                  "scope:shared"
+                ]
               },
               {
                 "sourceTag": "type:lib",
-                "onlyDependOnLibsWithTags": ["type:lib", "type:util", "scope:shared"]
+                "onlyDependOnLibsWithTags": [
+                  "type:lib",
+                  "type:util",
+                  "scope:shared"
+                ]
               },
               {
                 "sourceTag": "type:util",

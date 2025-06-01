@@ -54,10 +54,10 @@ describe('Button', () => {
     const user = userEvent.setup();
     const handlePress = vi.fn();
     render(<Button onPress={handlePress}>Click me</Button>);
-    
+
     const button = screen.getByRole('button');
     await user.click(button);
-    
+
     expect(handlePress).toHaveBeenCalledTimes(1);
   });
 
@@ -71,22 +71,30 @@ describe('Button', () => {
   it('does not call onPress when disabled', async () => {
     const user = userEvent.setup();
     const handlePress = vi.fn();
-    render(<Button isDisabled onPress={handlePress}>Disabled</Button>);
-    
+    render(
+      <Button isDisabled onPress={handlePress}>
+        Disabled
+      </Button>
+    );
+
     const button = screen.getByRole('button');
     await user.click(button);
-    
+
     expect(handlePress).not.toHaveBeenCalled();
   });
 
   it('does not call onPress when loading', async () => {
     const user = userEvent.setup();
     const handlePress = vi.fn();
-    render(<Button loading onPress={handlePress}>Loading</Button>);
-    
+    render(
+      <Button loading onPress={handlePress}>
+        Loading
+      </Button>
+    );
+
     const button = screen.getByRole('button');
     await user.click(button);
-    
+
     expect(handlePress).not.toHaveBeenCalled();
   });
 
@@ -98,7 +106,7 @@ describe('Button', () => {
         Loading
       </Button>
     );
-    
+
     // Icons should not be visible when loading
     expect(screen.queryByTestId('left-icon')).toBeNull();
     expect(screen.queryByTestId('right-icon')).toBeNull();

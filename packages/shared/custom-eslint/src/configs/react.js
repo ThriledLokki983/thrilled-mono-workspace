@@ -33,7 +33,7 @@ const reactConfig = {
     // TypeScript specific rules
     '@typescript-eslint/no-unused-vars': [
       'error',
-      { 
+      {
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_',
         ignoreRestSiblings: true,
@@ -43,7 +43,7 @@ const reactConfig = {
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/prefer-const': 'error',
     '@typescript-eslint/no-inferrable-types': 'error',
-    
+
     // React specific rules
     'react/react-in-jsx-scope': 'off', // Not needed in React 17+
     'react/prop-types': 'off', // Using TypeScript for type checking
@@ -59,11 +59,11 @@ const reactConfig = {
     'react/self-closing-comp': 'error',
     'react/no-unescaped-entities': 'warn',
     'react/display-name': 'warn',
-    
+
     // React Hooks rules
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
-    
+
     // React Refresh rules (for development)
     'react-refresh/only-export-components': [
       'warn',

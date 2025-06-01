@@ -1,9 +1,7 @@
 {
   "root": true,
   "plugins": ["@nx"],
-  "extends": [
-    "eslint:recommended"
-  ],
+  "extends": ["eslint:recommended"],
   "ignorePatterns": ["!**/*", "dist", "node_modules"],
   "env": {
     "node": true,
@@ -22,7 +20,11 @@
           },
           {
             "sourceTag": "type:styles",
-            "onlyDependOnLibsWithTags": ["type:lib", "type:util", "scope:shared"]
+            "onlyDependOnLibsWithTags": [
+              "type:lib",
+              "type:util",
+              "scope:shared"
+            ]
           }
         ]
       }

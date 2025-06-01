@@ -13,7 +13,13 @@
       "path": "./packages/shared/custom-eslint"
     },
     {
-      "path": "./packages/shared/components"
+      "path": "./packages/components"
+    },
+    {
+      "path": "./apps/fe/faithcircle-fe"
+    },
+    {
+      "path": "./apps/fe/faithcircle-fe-e2e"
     }
   ]
 }

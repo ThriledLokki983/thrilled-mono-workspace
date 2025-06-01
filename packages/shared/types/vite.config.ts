@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import type { LibraryFormats } from 'vite';
 import { resolve } from 'path';
 import dts from 'vite-plugin-dts';
 
@@ -17,7 +18,7 @@ export default defineConfig(() => ({
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'shared',
       fileName: 'index',
-      formats: ['es'] as const,
+      formats: ['es'] as LibraryFormats[],
     },
     rollupOptions: {
       external: ['tslib'],

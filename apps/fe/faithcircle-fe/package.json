@@ -1,0 +1,12 @@
+{
+  "name": "@thrilled/faithcircle-fe",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@mono/styles": "file:../../../packages/styles",
+    "@mono/components": "file:../../../packages/components"
+  },
+  "nx": {
+    "name": "faithcircle-fe"
+  }
+}
