@@ -51,7 +51,11 @@ jobs:
       - name: Check if faithcircle-fe is affected
         id: check_affected
         run: |
-          if yarn nx show projects --affected --type=app | grep -q "faithcircle-fe"; then
+          # Always build on main branch pushes for GitHub Pages deployment
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "affected=true" >> $GITHUB_OUTPUT
+            echo "✅ Main branch push detected, always building for GitHub Pages"
+          elif yarn nx show projects --affected --type=app | grep -q "faithcircle-fe"; then
             echo "affected=true" >> $GITHUB_OUTPUT
             echo "✅ faithcircle-fe is affected, proceeding with build"
           else
