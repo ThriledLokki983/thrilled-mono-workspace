@@ -19,13 +19,17 @@
   "devDependencies": {
     "@babel/core": "^7.14.5",
     "@babel/preset-react": "^7.14.5",
+    "@nx/devkit": "21.1.2",
     "@nx/eslint": "21.1.2",
     "@nx/eslint-plugin": "21.1.2",
     "@nx/js": "21.1.2",
+    "@nx/playwright": "21.1.2",
     "@nx/react": "21.1.2",
     "@nx/vite": "21.1.2",
     "@nx/web": "21.1.2",
+    "@playwright/test": "^1.36.0",
     "@swc-node/register": "~1.9.1",
+    "@swc/cli": "~0.6.0",
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",
     "@testing-library/dom": "^10.4.0",
@@ -44,6 +48,7 @@
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-import": "2.31.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-playwright": "^1.6.2",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
@@ -53,6 +58,7 @@
     "jsonc-eslint-parser": "^2.1.0",
     "nx": "21.1.2",
     "prettier": "^2.6.2",
+    "sass": "^1.55.0",
     "tslib": "^2.3.0",
     "typescript": "~5.7.2",
     "verdaccio": "^6.0.5",
@@ -63,7 +69,8 @@
   "workspaces": [
     "packages/*",
     "packages/shared/custom-eslint",
-    "packages/shared/components"
+    "packages/shared/components",
+    "apps/*"
   ],
   "nx": {
     "includedScripts": [],

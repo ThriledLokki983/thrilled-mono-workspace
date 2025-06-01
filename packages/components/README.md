@@ -5,6 +5,7 @@ A shared React components library for the Thrilled mono-workspace. This library 
 ## 🎯 Overview
 
 This library is built with:
+
 - **React 19** - Modern React with latest features
 - **React Aria Components** - Accessible, unstyled UI primitives
 - **TypeScript** - Full type safety
@@ -201,6 +202,7 @@ export const Button: React.FC<ButtonProps> = ({
 #### Available React Aria Components
 
 Common components to build with:
+
 - `Button`, `ToggleButton`
 - `TextField`, `SearchField`, `NumberField`
 - `Select`, `ComboBox`, `ListBox`
@@ -240,12 +242,12 @@ export type { CardProps } from './components/Card';
 
 .button {
   @include button-base;
-  
+
   &.primary {
     background-color: var(--color-primary);
     color: var(--color-white);
   }
-  
+
   &.large {
     padding: var(--spacing-md) var(--spacing-lg);
   }
@@ -266,13 +268,15 @@ import { Button } from './Button';
 describe('Button', () => {
   it('renders with children', () => {
     render(<Button>Click me</Button>);
-    expect(screen.getByRole('button', { name: 'Click me' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Click me' })
+    ).toBeInTheDocument();
   });
 
   it('calls onClick when clicked', () => {
     const handleClick = vi.fn();
     render(<Button onClick={handleClick}>Click me</Button>);
-    
+
     fireEvent.click(screen.getByRole('button'));
     expect(handleClick).toHaveBeenCalledTimes(1);
   });

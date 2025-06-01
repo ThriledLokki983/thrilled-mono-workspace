@@ -5,34 +5,34 @@
 .btn {
   // Use the base button class from styles package
   @extend .btn;
-  
+
   // Additional component-specific styling
   position: relative;
   overflow: hidden;
-  
+
   // Ensure content is positioned correctly when loading
   .content {
     display: inline-flex;
     align-items: center;
     transition: var(--transition-normal);
   }
-  
+
   // Icon styling
   .iconLeft,
   .iconRight {
     display: inline-flex;
     align-items: center;
-    
+
     svg {
       width: 1em;
       height: 1em;
     }
   }
-  
+
   .iconLeft {
     margin-right: var(--spacing-xs);
   }
-  
+
   .iconRight {
     margin-left: var(--spacing-xs);
   }
@@ -73,7 +73,7 @@
 .btn--danger {
   background-color: var(--color-danger);
   color: var(--color-text-inverse);
-  
+
   &:hover:not(:disabled):not(.btn--loading) {
     background-color: var(--color-danger-dark);
   }
@@ -82,7 +82,7 @@
 // Loading state
 .btn--loading {
   cursor: not-allowed;
-  
+
   .content {
     opacity: 0.7;
   }
