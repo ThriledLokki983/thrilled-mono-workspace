@@ -7,7 +7,7 @@ import { glob } from 'glob';
 
 export default defineConfig(() => ({
   root: __dirname,
-  cacheDir: '../../node_modules/.vite/packages/styles',
+  cacheDir: '../../../node_modules/.vite/packages/fe/styles',
   plugins: [
     dts({
       entryRoot: 'src',

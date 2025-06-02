@@ -4,16 +4,10 @@
   "files": [],
   "references": [
     {
-      "path": "./packages/styles"
-    },
-    {
       "path": "./packages/shared/types"
     },
     {
       "path": "./packages/shared/custom-eslint"
-    },
-    {
-      "path": "./packages/components"
     },
     {
       "path": "./apps/fe/faithcircle-fe"
@@ -26,6 +20,15 @@
     },
     {
       "path": "./apps/be/faithcircle/faithcircle-be-e2e"
+    },
+    {
+      "path": "./apps/be/base"
+    },
+    {
+      "path": "./packages/fe/styles"
+    },
+    {
+      "path": "./packages/fe/components"
     }
   ]
 }

@@ -1,20 +1,17 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./out-tsc/vitest",
-    "lib": ["DOM", "DOM.Iterable", "ES6", "ES2020"],
     "types": [
       "vitest/globals",
       "vitest/importMeta",
       "vite/client",
       "node",
-      "vitest",
-      "@testing-library/jest-dom"
+      "vitest"
     ],
-    "jsx": "react-jsx",
-    "moduleResolution": "bundler",
-    "module": "esnext",
-    "target": "es2020"
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
     "vite.config.ts",

@@ -3,12 +3,6 @@
   "include": [],
   "references": [
     {
-      "path": "../../../packages/components"
-    },
-    {
-      "path": "../../../packages/styles"
-    },
-    {
       "path": "./tsconfig.app.json"
     },
     {

@@ -1,10 +1,10 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../../tsconfig.base.json",
   "files": [],
   "include": [],
   "references": [
     {
-      "path": "../shared/custom-eslint"
+      "path": "../../shared/custom-eslint"
     },
     {
       "path": "./tsconfig.lib.json"

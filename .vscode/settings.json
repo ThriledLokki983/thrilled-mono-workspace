@@ -1,3 +1,23 @@
 {
-  "nxConsole.generateAiAgentRules": true
+  "nxConsole.generateAiAgentRules": true,
+  "typescript.tsserver.maxTsServerMemory": 4096,
+  "typescript.tsserver.log": "off",
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.tsserver.useSyntaxServer": "never",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/coverage/**": true
+  },
+  "search.exclude": {
+    "**/dist": true,
+    "**/node_modules": true
+  },
+  "files.exclude": {
+    "**/dist": true,
+    "**/.turbo": true,
+    "**/.nx": true
+  }
 }

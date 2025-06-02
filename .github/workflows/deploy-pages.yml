@@ -88,7 +88,7 @@ jobs:
 
           # Verify components package was built
           echo "🔍 Verifying components build output..."
-          ls -la packages/components/dist/
+          ls -la packages/fe/components/dist/
 
           # Try to build with verbose output
           echo "🚀 Building faithcircle-fe..."
