@@ -263,6 +263,7 @@ nx build styles
 ```
 
 This will:
+
 1. Copy all SCSS files to `dist/`
 2. Generate TypeScript declarations
 3. Create package.json with correct exports

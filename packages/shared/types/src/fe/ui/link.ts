@@ -1,14 +1,14 @@
-import { ReactNode } from "react";
-import type { LinkProps as AriaLinkProps } from "react-aria-components";
-import { BaseComponentProps } from "./base";
+import { ReactNode } from 'react';
+import type { LinkProps as AriaLinkProps } from 'react-aria-components';
+import { BaseComponentProps } from './base';
 
 // Link-specific types
-export type LinkVariant = "primary" | "secondary" | "muted" | "danger";
-export type LinkSize = "small" | "medium" | "large";
+export type LinkVariant = 'primary' | 'secondary' | 'muted' | 'danger';
+export type LinkSize = 'small' | 'medium' | 'large';
 
 export interface LinkProps
   extends BaseComponentProps,
-    Omit<AriaLinkProps, "className" | "style" | "children"> {
+    Omit<AriaLinkProps, 'className' | 'style' | 'children'> {
   variant?: LinkVariant;
   size?: LinkSize;
   leftIcon?: ReactNode;

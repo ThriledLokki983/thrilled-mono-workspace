@@ -22,10 +22,10 @@
       "path": "./apps/fe/faithcircle-fe-e2e"
     },
     {
-      "path": "./apps/be/faithcircle-be-e2e"
+      "path": "./apps/be/faithcircle/faithcircle-be"
     },
     {
-      "path": "./apps/be/faithcircle-be"
+      "path": "./apps/be/faithcircle/faithcircle-be-e2e"
     }
   ]
 }

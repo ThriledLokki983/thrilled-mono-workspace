@@ -82,7 +82,7 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": ["apps/be/faithcircle-be-e2e/**/*"]
+      "exclude": ["apps/be/faithcircle/faithcircle-be-e2e/**/*"]
     }
   ],
   "targetDefaults": {

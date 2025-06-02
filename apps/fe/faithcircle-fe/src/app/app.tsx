@@ -1,6 +1,6 @@
-import styles from './app.module.scss';
 import { Button } from '@mono/components';
 import { Route, Routes, Link } from 'react-router-dom';
+import styles from './app.module.scss';
 
 export function App() {
   return (

@@ -34,19 +34,19 @@ npm install @thrilled/shared
 Import all types from the main entry point:
 
 ```typescript
-import { 
+import {
   // UI Component Types
-  ButtonProps, 
-  LinkProps, 
+  ButtonProps,
+  LinkProps,
   HeaderProps,
-  
+
   // Base Types
   BaseComponentProps,
   Environment,
-  
+
   // API Types
   ApiResponse,
-  ApiEndpoints
+  ApiEndpoints,
 } from '@thrilled/shared';
 ```
 
@@ -78,6 +78,7 @@ import type { ServerConfig } from '@thrilled/shared/be';
 #### UI Components (`/fe/ui`)
 
 **Base Component Types**
+
 ```typescript
 import type { BaseComponentProps } from '@thrilled/shared';
 
@@ -94,6 +95,7 @@ interface BaseComponentProps {
 ```
 
 **Button Types**
+
 ```typescript
 import type { ButtonProps } from '@thrilled/shared';
 
@@ -108,6 +110,7 @@ interface ButtonProps extends AriaButtonProps, BaseComponentProps {
 ```
 
 **Link Types**
+
 ```typescript
 import type { LinkProps } from '@thrilled/shared';
 
@@ -122,6 +125,7 @@ interface LinkProps extends AriaLinkProps, BaseComponentProps {
 ```
 
 **Header Types**
+
 ```typescript
 import type { HeaderProps, NavigationItem } from '@thrilled/shared';
 
@@ -145,6 +149,7 @@ interface NavigationItem {
 #### Base Types (`/fe/base`)
 
 **Core Interface Types**
+
 ```typescript
 import type { Environment, ThemeMode } from '@thrilled/shared';
 
@@ -155,6 +160,7 @@ type ThemeMode = 'light' | 'dark' | 'system';
 #### API Types (`/fe/api`)
 
 **API Response Types**
+
 ```typescript
 import type { ApiResponse, ApiEndpoints } from '@thrilled/shared';
 
@@ -191,6 +197,7 @@ Server-side interfaces and data structures (to be expanded based on backend need
 ### 📱 App Types (`/app`)
 
 **Application Configuration**
+
 ```typescript
 import type { AppConfig } from '@thrilled/shared';
 
@@ -238,10 +245,12 @@ src/
 ## Dependencies
 
 ### Peer Dependencies
+
 - **React** `^19.0.0` - For React component types
 - **React Aria Components** `^1.5.1` - For accessible component types
 
 ### Dev Dependencies
+
 - **@types/react** `^19.0.5` - React TypeScript definitions
 
 ## Building
@@ -253,6 +262,7 @@ nx build shared
 ```
 
 This will:
+
 1. Compile TypeScript to ES modules
 2. Generate declaration files (.d.ts)
 3. Create optimized bundle in `dist/`
@@ -288,10 +298,7 @@ const MyButton: React.FC<ButtonProps> = ({
   ...props
 }) => {
   return (
-    <button 
-      className={`btn btn-${variant} btn-${size}`}
-      {...props}
-    >
+    <button className={`btn btn-${variant} btn-${size}`} {...props}>
       {children}
     </button>
   );
@@ -321,7 +328,7 @@ class ApiClient {
     const response = await fetch(endpoint);
     return response.json();
   }
-  
+
   async post<T>(endpoint: string, data: any): Promise<ApiResponse<T>> {
     const response = await fetch(endpoint, {
       method: 'POST',

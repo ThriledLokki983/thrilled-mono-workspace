@@ -1,5 +1,5 @@
-import type { BaseComponentProps } from "./base";
-import React from "react";
+import type { BaseComponentProps } from './base';
+import React from 'react';
 
 /**
  * Navigation item configuration
@@ -22,7 +22,7 @@ export interface NavItem {
 /**
  * Header component variants
  */
-export type HeaderVariant = "default" | "transparent" | "dark";
+export type HeaderVariant = 'default' | 'transparent' | 'dark';
 
 /**
  * Header component props extending React Aria component props
@@ -45,5 +45,5 @@ export interface HeaderProps extends BaseComponentProps {
   /** Fixed position at top of page */
   fixed?: boolean;
   /** Additional aria-label for the header */
-  "aria-label"?: string;
+  'aria-label'?: string;
 }

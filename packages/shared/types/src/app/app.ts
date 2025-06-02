@@ -1,6 +1,6 @@
 // App-specific types for applications
 
-import type { Environment, ThemeMode } from "../fe/base/base.js";
+import type { Environment, ThemeMode } from '../fe/base/base.js';
 
 // Basic app state types
 export interface AppState {
@@ -22,7 +22,7 @@ export interface AppConfig {
 }
 
 // Loading states
-export type LoadingState = "idle" | "loading" | "succeeded" | "failed";
+export type LoadingState = 'idle' | 'loading' | 'succeeded' | 'failed';
 
 export interface AsyncState<T> {
   data: T | null;

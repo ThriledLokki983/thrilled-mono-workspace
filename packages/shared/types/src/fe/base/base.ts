@@ -15,7 +15,7 @@ export type DeepPartial<T> = {
 };
 
 // Environment types
-export type Environment = "development" | "staging" | "production";
+export type Environment = 'development' | 'staging' | 'production';
 
 // Theme types (basic)
-export type ThemeMode = "light" | "dark" | "system";
+export type ThemeMode = 'light' | 'dark' | 'system';

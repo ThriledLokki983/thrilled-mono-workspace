@@ -6,7 +6,8 @@ export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/fe',
   // Set base path for GitHub Pages deployment
-  base: process.env.NODE_ENV === 'production' ? '/thrilled-mono-workspace/' : '/',
+  base:
+    process.env.NODE_ENV === 'production' ? '/thrilled-mono-workspace/' : '/',
   server: {
     port: 4200,
     host: 'localhost',
