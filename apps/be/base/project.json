@@ -1,0 +1,144 @@
+{
+  "name": "base-be",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/be/base/src",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "swc src -d dist --source-maps --copy-files",
+        "cwd": "apps/be/base"
+      },
+      "outputs": ["{projectRoot}/dist"],
+      "dependsOn": ["^build"]
+    },
+    "build:tsc": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc && tsc-alias",
+        "cwd": "apps/be/base"
+      },
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cross-env NODE_ENV=development nodemon",
+        "cwd": "apps/be/base"
+      },
+      "dependsOn": []
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cross-env NODE_ENV=development nodemon",
+        "cwd": "apps/be/base"
+      },
+      "dependsOn": []
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run build && cross-env NODE_ENV=production node dist/server.js",
+        "cwd": "apps/be/base"
+      },
+      "dependsOn": ["build"]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "jest --forceExit --detectOpenHandles",
+        "cwd": "apps/be/base"
+      },
+      "dependsOn": ["^build"]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint --ignore-path .gitignore --ext .ts src/",
+        "cwd": "apps/be/base"
+      }
+    },
+    "lint:fix": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run lint -- --fix",
+        "cwd": "apps/be/base"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "apps/be/base"
+      },
+      "dependsOn": ["^typecheck"]
+    },
+    "check-env": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotenv -e .env -- bash -c 'env | grep POSTGRES'",
+        "cwd": "apps/be/base"
+      }
+    },
+    "migrate:create": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node-pg-migrate create",
+        "cwd": "apps/be/base"
+      }
+    },
+    "premigrate:up": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotenv -e .env -- node src/scripts/checkEnv.js",
+        "cwd": "apps/be/base"
+      }
+    },
+    "migrate:up": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotenv -e .env -- node-pg-migrate up",
+        "cwd": "apps/be/base"
+      }
+    },
+    "migrate:down": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotenv -e .env -- node-pg-migrate down",
+        "cwd": "apps/be/base"
+      }
+    },
+    "migrate:status": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotenv -e .env -- node-pg-migrate status",
+        "cwd": "apps/be/base"
+      }
+    },
+    "seed:regions": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotenv -e .env -- node src/scripts/seed-regions.js",
+        "cwd": "apps/be/base"
+      }
+    },
+    "deploy:prod": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run build && pm2 start ecosystem.config.js --only prod",
+        "cwd": "apps/be/base"
+      },
+      "dependsOn": ["build"]
+    },
+    "deploy:dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pm2 start ecosystem.config.js --only dev",
+        "cwd": "apps/be/base"
+      }
+    }
+  },
+  "tags": ["type:app", "scope:be"]
+}

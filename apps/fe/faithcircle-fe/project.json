@@ -55,9 +55,7 @@
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": [
-        "{options.reportsDirectory}"
-      ],
+      "outputs": ["{options.reportsDirectory}"],
       "options": {
         "passWithNoTests": true,
         "reportsDirectory": "./test-output/vitest"

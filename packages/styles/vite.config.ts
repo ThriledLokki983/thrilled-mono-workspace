@@ -18,7 +18,7 @@ export default defineConfig(() => ({
       name: 'copy-scss',
       writeBundle() {
         const scssFiles = glob.sync('src/**/*.scss', { cwd: __dirname });
-        scssFiles.forEach(file => {
+        scssFiles.forEach((file) => {
           const destFile = file.replace('src/', 'dist/');
           const destDir = path.dirname(destFile);
           if (!existsSync(destDir)) {
@@ -26,8 +26,8 @@ export default defineConfig(() => ({
           }
           copyFileSync(file, destFile);
         });
-      }
-    }
+      },
+    },
   ],
   // Uncomment this if you are using workers.
   // worker: {

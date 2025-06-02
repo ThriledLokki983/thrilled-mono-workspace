@@ -1,2 +1,2 @@
-export * from "./api-endpoints";
-export * from "./api-response";
+export * from './api-endpoints';
+export * from './api-response';

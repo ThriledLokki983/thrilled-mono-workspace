@@ -15,14 +15,14 @@ on:
 
 # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
 permissions:
-  pages: write      # to deploy to Pages
-  id-token: write   # to verify the deployment originates from an appropriate source
-  contents: read    # to checkout the repository
+  pages: write # to deploy to Pages
+  id-token: write # to verify the deployment originates from an appropriate source
+  contents: read # to checkout the repository
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
-  group: "pages"
+  group: 'pages'
   cancel-in-progress: false
 
 jobs:
@@ -67,37 +67,37 @@ jobs:
         if: steps.check_affected.outputs.affected == 'true'
         run: |
           echo "🏗️ Building faithcircle-fe for production..."
-          
+
           # Show environment information
           echo "Node version: $(node --version)"
           echo "Yarn version: $(yarn --version)"
           echo "Working directory: $(pwd)"
-          
+
           # Check if project exists
           echo "📁 Checking project structure..."
           ls -la apps/fe/
           ls -la apps/fe/faithcircle-fe/
-          
+
           # Show available projects
           echo "📋 Available Nx projects:"
           yarn nx show projects
-          
+
           # Build dependencies first - this is crucial for Vite to resolve @mono/components
           echo "📦 Building dependencies (components, styles)..."
           yarn nx run-many -t build -p components,styles --parallel=false
-          
+
           # Verify components package was built
           echo "🔍 Verifying components build output..."
           ls -la packages/components/dist/
-          
+
           # Try to build with verbose output
           echo "🚀 Building faithcircle-fe..."
           NODE_ENV=production yarn nx build faithcircle-fe --configuration=production --verbose
-          
+
           # Copy 404.html for SPA routing support
           echo "📄 Copying 404.html..."
           cp ./apps/fe/faithcircle-fe/public/404.html ./dist/apps/fe/faithcircle-fe/404.html
-          
+
           # Verify build output
           echo "📋 Verifying build output..."
           ls -la dist/apps/fe/faithcircle-fe/
@@ -127,4 +127,4 @@ jobs:
         uses: actions/deploy-pages@v4
         with:
           # Optional: Add a custom error message if deployment fails
-          timeout: 600000  # 10 minutes timeout
+          timeout: 600000 # 10 minutes timeout

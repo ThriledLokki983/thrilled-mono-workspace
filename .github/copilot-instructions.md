@@ -15,3 +15,9 @@ You have access to the Nx MCP server and the tools it provides. Use them. Follow
 - Always: Write tests > commit > Code > Iterate > Commit
 - Always: Write code > Screenshot result (if possible) > Iterate
 - Always: Use context 7 for documentation reference
+
+# Git instructions
+
+- Alsways use the --no-pager flag with git commands to avoid pagination issues.
+- Always make use of gh CLI for GitHub interactions.
+- Use the github mcp server to interract with the GitHub API when it comes to PR, issues, and other GitHub-related tasks.
