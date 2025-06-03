@@ -1,4 +1,4 @@
-import { Express } from 'express';
+import { Express, RequestHandler } from 'express';
 import { BasePlugin, SecurityMiddleware } from '@mono/be-core';
 
 interface RateLimitPluginConfig {
@@ -43,11 +43,11 @@ export class RateLimitPlugin extends BasePlugin {
     });
 
     // Apply rate limiters to specific routes
-    app.use('/api/v1/auth/login', authLimiter);
-    app.use('/api/v1/auth/register', authLimiter);
-    app.use('/api/v1/auth', standardApiLimiter);
-    app.use('/health', publicReadLimiter);
-    app.use('/api/v1', standardApiLimiter);
+    app.use('/api/v1/auth/login', authLimiter as unknown as RequestHandler);
+    app.use('/api/v1/auth/register', authLimiter as unknown as RequestHandler);
+    app.use('/api/v1/auth', standardApiLimiter as unknown as RequestHandler);
+    app.use('/health', publicReadLimiter as unknown as RequestHandler);
+    app.use('/api/v1', standardApiLimiter as unknown as RequestHandler);
 
     this.logger.info('Rate limiting middleware registered');
   }

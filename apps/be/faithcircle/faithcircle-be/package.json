@@ -2,36 +2,8 @@
   "name": "@thrilled/faithcircle-be",
   "version": "0.0.1",
   "private": true,
-  "nx": {
-    "name": "faithcircle-be",
-    "targets": {
-      "serve": {
-        "continuous": true,
-        "executor": "@nx/js:node",
-        "defaultConfiguration": "development",
-        "dependsOn": [
-          "build"
-        ],
-        "options": {
-          "buildTarget": "faithcircle-be:build",
-          "runBuildTargetDependencies": false
-        },
-        "configurations": {
-          "development": {
-            "buildTarget": "faithcircle-be:build:development"
-          },
-          "production": {
-            "buildTarget": "faithcircle-be:build:production"
-          }
-        }
-      },
-      "test": {
-        "options": {
-          "passWithNoTests": true
-        }
-      }
-    }
-  },
+  "type": "module",
+  "main": "./dist/main.js",
   "dependencies": {
     "@mono/be-core": "workspace:*"
   }

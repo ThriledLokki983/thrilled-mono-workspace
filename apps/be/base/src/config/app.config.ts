@@ -1,13 +1,18 @@
-import { AppConfig } from '@mono/be-core';
+import { AppConfig, Environment } from '@mono/be-core';
 import { NODE_ENV, PORT, LOG_FORMAT, LOG_DIR, ORIGIN } from './index';
 
 export const createAppConfig = (): AppConfig => {
   const isDev = NODE_ENV === 'development';
 
+  // Ensure NODE_ENV matches the Environment type
+  const environment: Environment = (NODE_ENV === 'production' || NODE_ENV === 'test')
+    ? NODE_ENV as Environment
+    : 'development';
+
   return {
     name: 'Base API',
     port: Number(PORT) || 5555,
-    environment: NODE_ENV || 'development',
+    environment,
 
     logging: {
       level: NODE_ENV === 'production' ? 'info' : 'debug',

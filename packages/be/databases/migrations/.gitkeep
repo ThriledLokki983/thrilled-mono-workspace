@@ -1,0 +1,14 @@
+# Migration Files Directory
+
+This directory contains database migration files that are used by the MigrationRunner.
+
+## File Naming Convention
+- Format: `YYYY-MM-DD-HHMMSS_description.sql`
+- Example: `2024-01-15-120000_create_users_table.sql`
+
+## Migration Structure
+Each migration file should contain:
+- `-- UP` section: Changes to apply
+- `-- DOWN` section: Changes to rollback
+
+See the examples directory for sample migration files.

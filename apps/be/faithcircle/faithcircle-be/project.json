@@ -1,0 +1,51 @@
+{
+  "name": "@thrilled/faithcircle-be",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/be/faithcircle/faithcircle-be/src",
+  "projectType": "application",
+  "tags": ["npm:private", "type:app", "scope:be"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/be/faithcircle/faithcircle-be",
+        "main": "apps/be/faithcircle/faithcircle-be/src/main.ts",
+        "tsConfig": "apps/be/faithcircle/faithcircle-be/tsconfig.app.json",
+        "assets": ["apps/be/faithcircle/faithcircle-be/src/assets"]
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "faithcircle-be:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "faithcircle-be:build:development"
+        },
+        "production": {
+          "buildTarget": "faithcircle-be:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/be/faithcircle/faithcircle-be/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/be/faithcircle/faithcircle-be/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

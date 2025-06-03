@@ -1,5 +1,16 @@
-
 import type { CorsOptions } from 'cors';
+
+// Import shared types from be-types for use internally (not re-exported to avoid conflicts)
+import type {
+  Environment as BeTypesEnvironment,
+  SecurityConfig,
+  JWTConfig,
+  BcryptConfig,
+  SessionConfig
+} from '@thrilled/be-types';
+
+// Re-export some utility types that don't conflict
+export type { Environment } from '@thrilled/be-types';
 
 export interface AppLoggingConfig {
   level?: string;
@@ -48,11 +59,12 @@ export interface AppConfig {
   port?: number;
   host?: string;
   env?: string;
-  environment?: string;
+  environment?: BeTypesEnvironment;
   logging?: AppLoggingConfig;
   cors?: CorsConfig;
   rateLimit?: RateLimitConfig;
   helmet?: HelmetConfig;
+  security?: SecurityConfig; // Use SecurityConfig from be-types
   timeout?: number;
   gracefulShutdown?: {
     enabled?: boolean;
@@ -128,7 +140,7 @@ export enum HttpStatusCodes {
   UNPROCESSABLE_ENTITY = 422,
   INTERNAL_SERVER_ERROR = 500,
   SERVICE_UNAVAILABLE = 503,
-};
+}
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -156,3 +168,6 @@ export interface PaginationOptions {
   limit: number;
   total?: number;
 }
+
+// Re-export security config types from be-types for convenience
+export type { SecurityConfig, JWTConfig, BcryptConfig, SessionConfig };

@@ -35,6 +35,9 @@
     },
     {
       "path": "./packages/be/be-types"
+    },
+    {
+      "path": "./packages/be/databases"
     }
   ]
 }

@@ -1,7 +1,7 @@
-import express from 'express';
+import express, { Express } from 'express';
 import * as path from 'path';
 
-const app = express();
+const app: Express = express();
 
 // Middleware
 app.use(express.json());

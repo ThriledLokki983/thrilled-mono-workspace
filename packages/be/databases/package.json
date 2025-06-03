@@ -1,0 +1,31 @@
+{
+  "name": "@thrilled/databases",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "nx": {
+    "name": "databases"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "pg": "^8.11.3",
+    "ioredis": "^5.3.2",
+    "@mono/be-core": "*",
+    "@thrilled/be-types": "*"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.10.7"
+  }
+}

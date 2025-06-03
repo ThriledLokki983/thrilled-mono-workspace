@@ -3,4 +3,4 @@
  * Entry point for the Express server
  */
 
-import './server';
+import './server.js';

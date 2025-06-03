@@ -1,0 +1,33 @@
+{
+  "name": "databases",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/be/databases/src",
+  "projectType": "library",
+  "tags": ["npm:private", "type:lib", "scope:be"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/be/databases",
+        "main": "packages/be/databases/src/index.ts",
+        "tsConfig": "packages/be/databases/tsconfig.lib.json",
+        "assets": ["packages/be/databases/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/be/databases/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/be/databases/jest.config.ts"
+      }
+    }
+  }
+}

@@ -4,6 +4,9 @@
   "include": [],
   "references": [
     {
+      "path": "../be-types"
+    },
+    {
       "path": "./tsconfig.lib.json"
     },
     {

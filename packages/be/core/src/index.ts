@@ -1,5 +1,5 @@
 export * from "./BaseApp";
-export * from './logging/Logger';
+export { Logger, createLogger } from './logging/Logger';
 export * from "./plugins/Plugin";
 export * from "./plugins/PluginManager";
 export * from "./plugins/responseFormatter";
@@ -8,6 +8,7 @@ export * from "./middleware/ErrorMiddleware";
 export * from "./utils/ApiResponse";
 export * from "./utils/HealthCheck";
 export * from "./utils/GracefulShutdown";
+export { HttpStatusCodes } from "./types";
 export type { 
   AppConfig, 
   AppLoggingConfig, 
@@ -21,8 +22,12 @@ export type {
   HealthCheckStatus,
   HealthCheckResult,
   GracefulShutdownOptions,
-  HttpStatusCodes,
   ApiResponse,
   ApiError,
-  PaginationOptions
+  PaginationOptions,
+  Environment,
+  SecurityConfig,
+  JWTConfig,
+  BcryptConfig,
+  SessionConfig
 } from "./types";
