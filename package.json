@@ -45,7 +45,8 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "16.1.0",
     "@testing-library/user-event": "^14.6.1",
-    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.18",
+    "@types/express": "^5.0.2",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.0.0",
     "@types/react": "^19.0.0",
@@ -89,7 +90,8 @@
     "packages/shared/components",
     "apps/*",
     "apps/be/*",
-    "packages/be/core"
+    "packages/be/core",
+    "packages/be/*"
   ],
   "nx": {
     "includedScripts": [],

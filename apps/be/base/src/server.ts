@@ -15,8 +15,8 @@ const app = new App([
   new CoreDemoRoute()
 ]);
 
-// Handle the async nature of the listen method
-app.listen().catch(error => {
+// Handle the async nature of the start method
+app.start().catch(error => {
   logger.error(`Server failed to start: ${error.message}`);
   process.exit(1);
 });

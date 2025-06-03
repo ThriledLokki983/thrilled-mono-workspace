@@ -32,6 +32,9 @@
     },
     {
       "path": "./packages/be/core"
+    },
+    {
+      "path": "./packages/be/be-types"
     }
   ]
 }
