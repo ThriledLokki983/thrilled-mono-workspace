@@ -116,8 +116,11 @@ export class BaseApp {
 
     // Logging
     if (this.config.logging?.httpLogging !== false) {
+      // Custom format: shows response time in milliseconds instead of response size
+      const customFormat = ':method :url HTTP/:http-version" :status ==> :response-time ms';
+      
       this.app.use(
-        morgan("combined", {
+        morgan(customFormat, {
           stream: { write: (message) => this.logger.info(message.trim()) },
         })
       );

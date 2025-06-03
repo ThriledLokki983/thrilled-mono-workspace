@@ -1,9 +1,9 @@
 // Main exports for the database package
-export { DatabaseManager } from "./managers/DatabaseManager.js";
-export { QueryBuilder } from "./builders/QueryBuilder.js";
-export { MigrationRunner } from "./migrations/MigrationRunner.js";
-export { CacheManager } from "./cache/CacheManager.js";
-export { DatabaseUtils } from "./utils/DatabaseUtils.js";
+export { DatabaseManager } from "./managers/DatabaseManager";
+export { QueryBuilder } from "./builders/QueryBuilder";
+export { MigrationRunner } from "./migrations/MigrationRunner";
+export { CacheManager } from "./cache/CacheManager";
+export { DatabaseUtils } from "./utils/DatabaseUtils";
 
 // Re-export types from be-types for convenience
 export type {
@@ -25,4 +25,4 @@ export type {
 } from "@thrilled/be-types";
 
 // Export Migration interface
-export type { Migration } from "./migrations/MigrationRunner.js";
+export type { Migration } from "./migrations/MigrationRunner";

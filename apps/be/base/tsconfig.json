@@ -43,6 +43,9 @@
     },
     {
       "path": "../../../packages/be/core"
+    },
+    {
+      "path": "../../../packages/be/databases"
     }
   ]
 }
