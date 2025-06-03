@@ -1,9 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { HttpException } from '@exceptions/httpException';
 import { logger } from '@utils/logger';
-import { apiResponse } from '@utils/responseFormatter';
-import { HttpStatusCodes } from '@utils/httpStatusCodes';
-import { ApiError } from '@interfaces/response.interface';
+import { apiResponse, HttpStatusCodes, ApiError } from '@mono/be-core';
 
 // Express error middleware must have exactly 4 parameters
 export const ErrorMiddleware = (error: HttpException, req: Request, res: Response, next: NextFunction) => {
@@ -43,4 +41,4 @@ export const ErrorMiddleware = (error: HttpException, req: Request, res: Respons
     logger.error(`Error in ErrorMiddleware: ${err.message}`);
     res.status(500).json({ success: false, message: 'Internal server error', statusCode: 500 });
   }
-};
+}

@@ -5,8 +5,7 @@ import { RequestWithUser } from '@interfaces/auth.interface';
 import { CreateUserDto, UpdateUserDto } from '@dtos/users.dto';
 import { UserService } from '@services/users.service';
 import { HttpException } from '@exceptions/httpException';
-import { apiResponse } from '@utils/responseFormatter';
-import { HttpStatusCodes } from '@utils/httpStatusCodes';
+import { apiResponse, HttpStatusCodes } from '@mono/be-core';
 
 export class UserController {
   public user = Container.get(UserService);

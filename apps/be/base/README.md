@@ -27,7 +27,9 @@ A robust Node.js backend service for the Huishelder application, providing user 
 - Database migrations
 - Comprehensive error handling
 - Request validation
-- Logging and monitoring
+- Advanced logging with Winston (via @mono/be-core)
+- Daily rotating log files with compression
+- Sensitive data redaction
 - Docker support for development and production
 
 ## 🛠️ Tech Stack
@@ -37,6 +39,7 @@ A robust Node.js backend service for the Huishelder application, providing user 
 - **Database**: PostgreSQL
 - **Caching**: Redis
 - **Authentication**: JWT (JSON Web Tokens)
+- **Logging**: Winston via @mono/be-core (shared logging package)
 - **API Documentation**: OpenAPI (Swagger)
 - **Testing**: Jest
 - **Containerization**: Docker & Docker Compose
@@ -155,6 +158,56 @@ docker-compose exec server npm run migrate:up
 
 # For production
 docker-compose -f docker-compose.prod.yml exec server-prod npm run migrate:up
+```
+
+## 📊 Logging
+
+The application uses the `@mono/be-core` Logger for comprehensive logging with Winston. Logs are automatically rotated daily and compressed.
+
+### Log Configuration
+
+- **Development**: Logs to console + files, debug level
+- **Production**: Files only, info level and above
+- **Log Directory**: `src/logs/` (configured via `LOG_DIR` env var)
+- **Retention**: 30 days (configurable)
+- **Compression**: Automatic for archived logs
+
+### Log Levels
+
+- `error`: Error conditions and exceptions
+- `warn`: Warning conditions
+- `info`: General information (HTTP requests, connections)
+- `debug`: Detailed debugging information
+
+### Usage Examples
+
+```typescript
+import { logger, logUserData, redactSensitiveData } from '@utils/logger';
+
+// Basic logging
+logger.info('Application started');
+logger.error('Database connection failed', { error: err.message });
+
+// Log user data safely (sensitive fields redacted)
+logUserData('info', 'User logged in', userData);
+
+// Manual data redaction
+const safeData = redactSensitiveData(sensitiveObject);
+logger.debug('Processing data', safeData);
+```
+
+### Log Files Structure
+
+```
+src/logs/
+├── debug/
+│   ├── 2025-06-02.log     # Current day
+│   ├── 2025-06-01.log.gz  # Compressed archives
+│   └── ...
+└── error/
+    ├── 2025-06-02.log     # Current day
+    ├── 2025-06-01.log.gz  # Compressed archives
+    └── ...
 ```
 
 ## 🧪 Testing

@@ -40,6 +40,7 @@
     "@swc/cli": "~0.6.0",
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",
+    "@swc/jest": "~0.2.36",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "16.1.0",
@@ -87,7 +88,8 @@
     "packages/shared/custom-eslint",
     "packages/shared/components",
     "apps/*",
-    "apps/be/*"
+    "apps/be/*",
+    "packages/be/core"
   ],
   "nx": {
     "includedScripts": [],

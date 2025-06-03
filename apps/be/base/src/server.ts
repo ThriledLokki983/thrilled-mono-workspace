@@ -2,12 +2,18 @@ import { App } from '@/app';
 import { AuthRoute } from '@routes/auth.route';
 import { UserRoute } from '@routes/users.route';
 import { HealthRoute } from '@routes/health.route';
+import { CoreDemoRoute } from '@routes/core-demo.route';
 import { ValidateEnv } from '@utils/validateEnv';
 import { logger } from '@utils/logger';
 
 ValidateEnv();
 
-const app = new App([new AuthRoute(), new UserRoute(), new HealthRoute()]);
+const app = new App([
+  new AuthRoute(),
+  new UserRoute(),
+  new HealthRoute(),
+  new CoreDemoRoute()
+]);
 
 // Handle the async nature of the listen method
 app.listen().catch(error => {

@@ -23,6 +23,7 @@
     "seed:regions": "dotenv -e .env -- node src/scripts/seed-regions.js"
   },
   "dependencies": {
+    "@mono/be-core": "*",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
@@ -47,9 +48,7 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "typedi": "^0.10.0",
-    "uuid": "^11.1.0",
-    "winston": "^3.17.0",
-    "winston-daily-rotate-file": "^5.0.0"
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@swc/cli": "^0.1.57",

@@ -12,4 +12,4 @@ export class HttpException extends Error {
       Error.captureStackTrace(this, this.constructor);
     }
   }
-}
+};

@@ -5,7 +5,6 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import hpp from 'hpp';
-import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
@@ -13,6 +12,7 @@ import { NODE_ENV, PORT, LOG_FORMAT, ORIGIN } from '@config';
 import { Routes } from '@interfaces/routes.interface';
 import { ErrorMiddleware } from '@middlewares/error.middleware';
 import { logger, stream } from '@utils/logger';
+import { SecurityMiddleware } from '@mono/be-core';
 import { initializeDatabase } from '@/database';
 import path from 'path';
 
@@ -37,10 +37,10 @@ export class App {
     await this.connectDatabase();
 
     this.app.listen(this.port, () => {
-      logger.info(`=================================`);
-      logger.info(`======= ENV: ${this.env} =======`);
+      logger.info(`===========================================`);
+      logger.info(`============= ENV: ${this.env} ============`);
       logger.info(`🚀 App listening on the port ${this.port}`);
-      logger.info(`=================================`);
+      logger.info(`===========================================`);
     });
   }
 
@@ -85,30 +85,23 @@ export class App {
 
     logger.info(`Setting up rate limiting with window of ${windowMs}ms (${isDev ? 'development' : 'production'} mode)`);
 
-    // Base rate limiter configuration
-    const baseLimiterConfig = {
-      standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-      legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-      windowMs, // Use environment-aware window size
-    };
-
     // Authentication endpoints rate limiter (login, registration)
-    const authLimiter = rateLimit({
-      ...baseLimiterConfig,
+    const authLimiter = SecurityMiddleware.rateLimit({
+      windowMs,
       max: isDev ? 1000 : 30, // Very high limit in dev, normal in prod
       message: 'Too many authentication attempts, please try again later',
     });
 
     // API endpoints with standard access patterns
-    const standardApiLimiter = rateLimit({
-      ...baseLimiterConfig,
+    const standardApiLimiter = SecurityMiddleware.rateLimit({
+      windowMs,
       max: isDev ? 5000 : 100, // Very high limit in dev, normal in prod
       message: 'Too many requests from this IP, please try again later',
     });
 
     // Public read-only endpoints can have higher limits
-    const publicReadLimiter = rateLimit({
-      ...baseLimiterConfig,
+    const publicReadLimiter = SecurityMiddleware.rateLimit({
+      windowMs,
       max: isDev ? 10000 : 300, // Very high limit in dev, normal in prod
       message: 'Too many requests from this IP, please try again later',
     });

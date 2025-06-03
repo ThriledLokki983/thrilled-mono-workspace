@@ -5,7 +5,7 @@ import { RequestWithUser } from '@interfaces/auth.interface';
 import { User } from '@interfaces/users.interface';
 import { LoginDto, RequestPasswordResetDto, ResetPasswordDto } from '@dtos/auth.dto';
 import { NODE_ENV } from '@config';
-import { apiResponse } from '@utils/responseFormatter';
+import { apiResponse } from '@mono/be-core';
 
 export class AuthController {
   private readonly authService = Container.get(AuthService);

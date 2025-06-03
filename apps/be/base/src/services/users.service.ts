@@ -5,7 +5,7 @@ import { CreateUserDto, UpdateUserDto, UserResponseDto } from '@dtos/users.dto';
 import { DbHelper } from '@utils/dbHelper';
 import { PoolClient } from 'pg';
 import { SqlHelper } from '@utils/sqlHelper';
-import { HttpStatusCodes } from '@utils/httpStatusCodes';
+import { HttpStatusCodes } from '@mono/be-core';
 import { CacheHelper } from '@utils/cacheHelper';
 
 @Service()

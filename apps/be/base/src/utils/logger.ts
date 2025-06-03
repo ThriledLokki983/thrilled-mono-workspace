@@ -1,7 +1,6 @@
 import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import winston from 'winston';
-import winstonDaily from 'winston-daily-rotate-file';
+import { Logger as CoreLogger } from '@mono/be-core';
 import { LOG_DIR } from '@config';
 
 // logs dir - provide fallback if LOG_DIR is undefined
@@ -11,53 +10,14 @@ if (!existsSync(logDir)) {
   mkdirSync(logDir);
 }
 
-// Define log format
-const logFormat = winston.format.printf(({ timestamp, level, message }) => `${timestamp} ${level}: ${message}`);
-
-/*
- * Log Level
- * error: 0, warn: 1, info: 2, http: 3, verbose: 4, debug: 5, silly: 6
- */
-const logger = winston.createLogger({
-  format: winston.format.combine(
-    winston.format.timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss',
-    }),
-    logFormat,
-  ),
-  transports: [
-    // debug log setting - only log debug messages in development mode
-    new winstonDaily({
-      level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-      datePattern: 'YYYY-MM-DD',
-      dirname: logDir + '/debug', // log file /logs/debug/*.log in save
-      filename: `%DATE%.log`,
-      maxFiles: 30, // 30 Days saved
-      json: false,
-      zippedArchive: true,
-    }),
-    // error log setting
-    new winstonDaily({
-      level: 'error',
-      datePattern: 'YYYY-MM-DD',
-      dirname: logDir + '/error', // log file /logs/error/*.log in save
-      filename: `%DATE%.log`,
-      maxFiles: 30, // 30 Days saved
-      handleExceptions: true,
-      json: false,
-      zippedArchive: true,
-    }),
-  ],
+// Create logger instance with custom configuration
+const logger = new CoreLogger({
+  dir: logDir,
+  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  format: 'simple', // Use simple format to match existing behavior
+  maxFiles: 30,
+  correlationId: false // Disable correlation ID for now to match existing behavior
 });
-
-// Only add console transport in development
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(
-    new winston.transports.Console({
-      format: winston.format.combine(winston.format.splat(), winston.format.colorize()),
-    }),
-  );
-}
 
 /**
  * Safely redacts sensitive fields from objects for logging purposes
@@ -105,6 +65,7 @@ export const logUserData = (level: 'debug' | 'info' | 'warn' | 'error', message:
   logger[level](`${message}: ${JSON.stringify(redactedData)}`);
 };
 
+// Create a stream for Morgan HTTP logging middleware
 const stream = {
   write: (message: string) => {
     logger.info(message.substring(0, message.lastIndexOf('\n')));
