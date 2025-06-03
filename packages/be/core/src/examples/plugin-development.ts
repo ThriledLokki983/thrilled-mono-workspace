@@ -1,6 +1,6 @@
 
 import { BasePlugin } from '../';
-import type { Express, Request, Response } from 'express';
+import type { Express, Request, Response, NextFunction } from 'express';
 
 /**
  * Example: Authentication Plugin
@@ -68,7 +68,7 @@ class AuthenticationPlugin extends BasePlugin {
       this.logger.debug('Token validated for protected route', { path });
       
       // Add user info to request
-      (req as any).user = { id: 1, username: 'john_doe' };
+      (req as Request & { user: { id: number; username: string } }).user = { id: 1, username: 'john_doe' };
       next();
     });
   }
@@ -107,7 +107,7 @@ class AuthenticationPlugin extends BasePlugin {
     
     // User profile endpoint (protected)
     app.get('/api/profile', (req, res) => {
-      const user = (req as any).user;
+      const user = (req as Request & { user: { id: number; username: string } }).user;
       
       this.logger.debug('Profile accessed', { userId: user.id });
       
@@ -127,18 +127,19 @@ class AuthenticationPlugin extends BasePlugin {
 
   protected override registerErrorHandlers(app: Express): void {
     // Auth-specific error handler
-    app.use('/api', (err: any, req: any, res: any, next: any) => {
+    app.use('/api', (err: Error, req: Request, res: Response, next: NextFunction): void => {
       if (err.name === 'JsonWebTokenError') {
         this.logger.warn('JWT validation error', {
           error: err.message,
           path: req.path
         });
         
-        return res.status(401).json({
+        res.status(401).json({
           success: false,
           message: 'Invalid token',
           statusCode: 401
         });
+        return;
       }
       
       next(err);
@@ -325,7 +326,7 @@ export function createExampleApplication() {
     res.json({
       success: true,
       message: 'This is a protected route',
-      user: (req as any).user
+      user: (req as Request & { user: { id: number; username: string } }).user
     });
   });
 

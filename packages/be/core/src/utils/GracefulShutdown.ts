@@ -111,15 +111,19 @@ export class GracefulShutdown {
       if (this.server) {
         this.logger.info('Closing HTTP server...');
         await new Promise<void>((resolve, reject) => {
-          this.server!.close((error) => {
-            if (error) {
-              this.logger.error(error, { context: 'ServerClose' });
-              reject(error);
-            } else {
-              this.logger.info('HTTP server closed');
-              resolve();
-            }
-          });
+          if (this.server) {
+            this.server.close((error) => {
+              if (error) {
+                this.logger.error(error, { context: 'ServerClose' });
+                reject(error);
+              } else {
+                this.logger.info('HTTP server closed');
+                resolve();
+              }
+            });
+          } else {
+            resolve();
+          }
         });
       }
 

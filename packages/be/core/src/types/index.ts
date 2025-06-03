@@ -1,5 +1,4 @@
 
-import type { Request, Response } from 'express';
 import type { CorsOptions } from 'cors';
 
 export interface AppLoggingConfig {
@@ -17,9 +16,9 @@ export interface RateLimitConfig {
   message?: string;
   standardHeaders?: boolean;
   legacyHeaders?: boolean;
-  skip?: (req: Request) => boolean;
-  keyGenerator?: (req: Request) => string;
-  onLimitReached?: (req: Request, res: Response, options: RateLimitConfig) => void;
+  skip?: (req: unknown) => boolean;
+  keyGenerator?: (req: unknown) => string;
+  onLimitReached?: (req: unknown, res: unknown, options: RateLimitConfig) => void;
 }
 
 export interface CorsConfig extends CorsOptions {
@@ -140,7 +139,7 @@ export interface ApiResponse<T> {
     total?: number;
     page?: number;
     limit?: number;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   errors?: ApiError[];
   statusCode: HttpStatusCodes;

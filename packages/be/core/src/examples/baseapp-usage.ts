@@ -1,6 +1,6 @@
 
 import { BaseApp, BasePlugin } from '../';
-import type { Express } from 'express';
+import type { Express, Request } from 'express';
 
 // Example 1: Basic BaseApp usage
 console.log('=== Example 1: Basic BaseApp Usage ===');
@@ -72,7 +72,7 @@ class DatabasePlugin extends BasePlugin {
   protected override registerMiddleware(app: Express): void {
     app.use((req, res, next) => {
       // Add database connection to request
-      (req as any).db = { connected: true };
+      (req as Request & { db: { connected: boolean } }).db = { connected: true };
       next();
     });
   }

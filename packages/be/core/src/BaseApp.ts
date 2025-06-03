@@ -3,7 +3,7 @@ import express, { Express, RequestHandler } from "express";
 import helmet from "helmet";
 import compression from "compression";
 import cors from "cors";
-import rateLimit from "express-rate-limit";
+import rateLimit, { RateLimitRequestHandler } from "express-rate-limit";
 import hpp from "hpp";
 import morgan from "morgan";
 import { Logger } from "./logging/Logger";
@@ -111,7 +111,7 @@ export class BaseApp {
 
     // Rate limiting
     if (this.config.rateLimit) {
-      this.app.use(this.createRateLimit(this.config.rateLimit));
+      this.app.use(this.createRateLimit(this.config.rateLimit) as unknown as RequestHandler);
     }
 
     // Logging
@@ -138,7 +138,7 @@ export class BaseApp {
   /**
    * Create rate limiting middleware
    */
-  private createRateLimit(config: RateLimitConfig): RequestHandler {
+  private createRateLimit(config: RateLimitConfig): RateLimitRequestHandler {
     return rateLimit({
       windowMs: config.windowMs || 15 * 60 * 1000, // 15 minutes
       max: config.max || 100, // limit each IP to 100 requests per windowMs

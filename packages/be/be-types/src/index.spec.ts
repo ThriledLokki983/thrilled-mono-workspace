@@ -1,4 +1,4 @@
-import * as types from './index';
+import * as types from './index.js';
 
 describe('be-types', () => {
   it('should export all type modules', () => {

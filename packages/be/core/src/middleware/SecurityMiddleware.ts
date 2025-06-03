@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
-import rateLimit from "express-rate-limit";
+import rateLimit, { RateLimitRequestHandler } from "express-rate-limit";
 import helmet from "helmet";
 import cors from "cors";
 import { RateLimitConfig, CorsConfig, HelmetConfig } from "../types";
@@ -8,7 +8,7 @@ export class SecurityMiddleware {
   /**
    * Create rate limiting middleware
    */
-  static rateLimit(config: RateLimitConfig): RequestHandler {
+  static rateLimit(config: RateLimitConfig): RateLimitRequestHandler {
     return rateLimit({
       windowMs: config.windowMs || 15 * 60 * 1000, // 15 minutes
       max: config.max || 100, // limit each IP to 100 requests per windowMs
