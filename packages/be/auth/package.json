@@ -28,7 +28,6 @@
   "dependencies": {
     "tslib": "^2.3.0",
     "@thrilled/be-types": "*",
-    "@thrilled/be-databases": "*",
     "@mono/be-core": "*",
     "jsonwebtoken": "^9.0.2",
     "bcrypt": "^5.1.1",

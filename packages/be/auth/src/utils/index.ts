@@ -84,7 +84,9 @@ export class CryptoUtils {
 
       const expectedHash = Buffer.from(hash, 'hex');
       return timingSafeEqual(computedHash, expectedHash);
-    } catch (error) {
+    } catch (error: unknown) {
+      // Hash verification failed - this could be due to invalid input
+      // We don't log the error here for security reasons
       return false;
     }
   }

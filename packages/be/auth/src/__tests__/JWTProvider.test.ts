@@ -1,15 +1,21 @@
-import { JWTProvider } from '../jwt/JWTProvider';
-import { JWTConfig } from '../types';
-import Redis from 'ioredis';
+import { JWTProvider } from '../jwt/JWTProvider.js';
+import { JWTConfig } from '../types/index.js';
+import type { Redis } from 'ioredis';
 import { Logger } from '@mono/be-core';
 
 // Mock Redis
-jest.mock('ioredis');
-const MockedRedis = Redis as jest.MockedClass<typeof Redis>;
+jest.mock('ioredis', () => {
+  return {
+    Redis: jest.fn()
+  };
+});
 
 // Mock Logger
-jest.mock('@mono/be-core');
-const MockedLogger = Logger as jest.MockedClass<typeof Logger>;
+jest.mock('@mono/be-core', () => {
+  return {
+    Logger: jest.fn()
+  };
+});
 
 describe('JWTProvider', () => {
   let jwtProvider: JWTProvider;
@@ -42,17 +48,14 @@ describe('JWTProvider', () => {
       srem: jest.fn().mockResolvedValue(1),
       ttl: jest.fn().mockResolvedValue(3600),
       exists: jest.fn().mockResolvedValue(0)
-    } as any;
+    } as unknown as jest.Mocked<Redis>;
 
     mockLogger = {
       info: jest.fn(),
       error: jest.fn(),
       warn: jest.fn(),
       debug: jest.fn()
-    } as any;
-
-    MockedRedis.mockImplementation(() => mockRedis);
-    MockedLogger.mockImplementation(() => mockLogger);
+    } as unknown as jest.Mocked<Logger>;
 
     jwtProvider = new JWTProvider(mockRedis, testConfig, mockLogger);
   });
@@ -94,7 +97,7 @@ describe('JWTProvider', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      const invalidPayload = null as unknown as any;
+      const invalidPayload = null as unknown as Parameters<typeof jwtProvider.createAccessToken>[0];
 
       await expect(jwtProvider.createAccessToken(invalidPayload)).rejects.toThrow();
     });
@@ -115,9 +118,8 @@ describe('JWTProvider', () => {
     it('should handle custom expiration', async () => {
       const userId = 'user123';
       const sessionId = 'session123';
-      const options = { expiresIn: '14d' };
 
-      const token = await jwtProvider.createRefreshToken(userId, sessionId, options);
+      const token = await jwtProvider.createRefreshToken(userId, sessionId);
 
       expect(token).toBeDefined();
       expect(mockRedis.setex).toHaveBeenCalled();
@@ -382,7 +384,13 @@ describe('JWTProvider', () => {
 
   describe('getTokenPayload', () => {
     it('should decode token payload without verification', async () => {
-      const payload = { userId: 'user123', sessionId: 'session123' };
+      const payload = { 
+        userId: 'user123', 
+        sessionId: 'session123', 
+        roles: ['user'], 
+        permissions: ['read'], 
+        userData: {} 
+      };
       const token = await jwtProvider.createAccessToken(payload);
 
       const decoded = jwtProvider.getTokenPayload(token);

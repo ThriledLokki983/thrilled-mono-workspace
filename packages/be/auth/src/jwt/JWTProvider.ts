@@ -293,9 +293,13 @@ export class JWTProvider {
       for (const token of tokens) {
         try {
           await this.blacklistToken(token);
-        } catch (error) {
+        } catch (error: unknown) {
           // Log but don't fail for individual token errors
-          this.logger.warn('Failed to blacklist individual token', { token: token.substring(0, 20) + '...' });
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          this.logger.warn('Failed to blacklist individual token', { 
+            token: token.substring(0, 20) + '...',
+            error: errorMessage
+          });
         }
       }
       
