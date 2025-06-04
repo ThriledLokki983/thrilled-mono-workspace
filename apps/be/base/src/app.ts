@@ -3,15 +3,19 @@ import { BaseApp, ErrorMiddleware } from '@mono/be-core';
 import { createAppConfig } from './config/app.config';
 import { Routes } from '@interfaces/routes.interface';
 import { DatabasePlugin } from '@/plugins/database.plugin';
+import { AuthPlugin } from '@/plugins/auth.plugin';
 import { RoutesPlugin } from '@/plugins/routes.plugin';
 import { SwaggerPlugin } from '@/plugins/swagger.plugin';
 import { RateLimitPlugin } from '@/plugins/rateLimit.plugin';
 
 export class App extends BaseApp {
-  constructor(routes: Routes[]) {
+  private authPlugin?: AuthPlugin;
+
+  constructor(routes: Routes[], authPlugin?: AuthPlugin) {
     const config = createAppConfig();
     super(config);
 
+    this.authPlugin = authPlugin;
     this.setupPlugins(routes);
     this.setupCustomHealthChecks();
     this.setupErrorHandling();
@@ -20,6 +24,13 @@ export class App extends BaseApp {
   private setupPlugins(routes: Routes[]) {
     // Database plugin
     this.use(new DatabasePlugin(this.getLogger()));
+
+    // Authentication plugin - use shared instance if provided, otherwise create new one
+    if (this.authPlugin) {
+      this.use(this.authPlugin);
+    } else {
+      this.use(new AuthPlugin(this.getLogger()));
+    }
 
     // Rate limiting plugin with environment-aware configuration
     this.use(new RateLimitPlugin(this.getLogger()), {

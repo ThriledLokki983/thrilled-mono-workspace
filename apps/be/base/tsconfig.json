@@ -45,6 +45,9 @@
       "path": "../../../packages/be/core"
     },
     {
+      "path": "../../../packages/be/auth"
+    },
+    {
       "path": "../../../packages/be/databases"
     }
   ]

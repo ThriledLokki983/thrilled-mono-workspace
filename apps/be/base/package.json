@@ -26,6 +26,7 @@
     "@mono/be-core": "*",
     "@thrilled/databases": "*",
     "@thrilled/be-types": "*",
+    "@thrilled/be-auth": "*",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",

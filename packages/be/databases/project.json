@@ -9,7 +9,7 @@
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/packages/be/databases",
+        "outputPath": "packages/be/databases/dist",
         "main": "packages/be/databases/src/index.ts",
         "tsConfig": "packages/be/databases/tsconfig.lib.json",
         "assets": ["packages/be/databases/*.md"]
