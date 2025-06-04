@@ -38,6 +38,9 @@
     },
     {
       "path": "./packages/be/databases"
+    },
+    {
+      "path": "./packages/be/auth"
     }
   ]
 }
