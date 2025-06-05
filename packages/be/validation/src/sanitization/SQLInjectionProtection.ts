@@ -46,9 +46,12 @@ export class SQLInjectionProtection {
    * Sanitize object for SQL injection protection
    */
   private static sanitizeObject(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     obj: Record<string, any>, 
     options: SanitizationOptions['sql']
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Record<string, any> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sanitized: Record<string, any> = {};
 
     for (const [key, value] of Object.entries(obj)) {
@@ -91,7 +94,7 @@ export class SQLInjectionProtection {
       // Stacked queries
       { pattern: /;\s*(select|insert|update|delete|drop|create|alter)/gi, severity: 'high' as const, risk: 'Stacked queries' },
       // Comment-based injection
-      { pattern: /(\/\*|\*\/|--|\#)/g, severity: 'medium' as const, risk: 'Comment injection' },
+      { pattern: /(\/\*|\*\/|--|#)/g, severity: 'medium' as const, risk: 'Comment injection' },
       // Quote escaping attempts
       { pattern: /['"]\s*;\s*['"]/g, severity: 'high' as const, risk: 'Quote escaping' },
       // Common SQL functions
@@ -147,14 +150,17 @@ export class SQLInjectionProtection {
       return '';
     }
 
+    // Create control character for \x1a (ASCII 26)
+    const ctrlZ = String.fromCharCode(26);
+    
     return input
       .replace(/\\/g, '\\\\')
       .replace(/'/g, "''")
       .replace(/"/g, '""')
-      .replace(/\x00/g, '\\0')
+      .replace(/\0/g, '\\0')
       .replace(/\n/g, '\\n')
       .replace(/\r/g, '\\r')
-      .replace(/\x1a/g, '\\Z');
+      .replace(new RegExp(ctrlZ, 'g'), '\\Z');
   }
 
   /**
@@ -185,7 +191,7 @@ export class SQLInjectionProtection {
   /**
    * Prepare value for parameterized query
    */
-  static prepareValue(value: any): any {
+  static prepareValue(value: unknown): unknown {
     if (value === null || value === undefined) {
       return null;
     }
@@ -211,7 +217,7 @@ export class SQLInjectionProtection {
     }
 
     if (typeof value === 'object') {
-      const prepared: Record<string, any> = {};
+      const prepared: Record<string, unknown> = {};
       for (const [key, val] of Object.entries(value)) {
         if (this.validateIdentifier(key)) {
           prepared[key] = this.prepareValue(val);
@@ -280,11 +286,11 @@ export class SQLInjectionProtection {
    * Build safe WHERE clause from object
    */
   static buildWhereClause(
-    conditions: Record<string, any>, 
+    conditions: Record<string, unknown>, 
     dbType: 'mysql' | 'postgresql' | 'sqlite' = 'mysql'
-  ): { clause: string; values: any[] } {
+  ): { clause: string; values: unknown[] } {
     const whereConditions: string[] = [];
-    const values: any[] = [];
+    const values: unknown[] = [];
     let paramIndex = 1;
 
     for (const [key, value] of Object.entries(conditions)) {
@@ -313,7 +319,7 @@ export class SQLInjectionProtection {
   /**
    * Create a safe parameterized query
    */
-  static createSafeQuery(query: string, parameters: any[] = []): { query: string; params: any[] } {
+  static createSafeQuery(query: string, parameters: unknown[] = []): { query: string; params: unknown[] } {
     if (!query || typeof query !== 'string') {
       throw new Error('Query must be a non-empty string');
     }

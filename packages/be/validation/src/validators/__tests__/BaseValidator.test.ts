@@ -1,9 +1,9 @@
-import { BaseValidator } from '../BaseValidator';
-import { ValidationResult } from '../../types/index';
+import { BaseValidator } from '../BaseValidator.js';
+import { ValidationResult } from '../../types/index.js';
 
 // Mock implementation for testing
 class MockValidator extends BaseValidator {
-  protected validatorType = 'custom' as const;
+  readonly type = 'custom' as const;
 
   async validate(data: any): Promise<ValidationResult> {
     if (data === 'valid') {
@@ -12,8 +12,9 @@ class MockValidator extends BaseValidator {
         data: data,
         errors: [],
         metadata: {
-          validator: this.validatorType,
-          timestamp: new Date().toISOString()
+          validator: this.type,
+          schema: this._schema,
+          options: this.options
         }
       };
     } else {
@@ -22,8 +23,9 @@ class MockValidator extends BaseValidator {
         data: null,
         errors: [{ field: 'root', message: 'Invalid data', value: data }],
         metadata: {
-          validator: this.validatorType,
-          timestamp: new Date().toISOString()
+          validator: this.type,
+          schema: this._schema,
+          options: this.options
         }
       };
     }
@@ -36,8 +38,9 @@ class MockValidator extends BaseValidator {
         data: data,
         errors: [],
         metadata: {
-          validator: this.validatorType,
-          timestamp: new Date().toISOString()
+          validator: this.type,
+          schema: this._schema,
+          options: this.options
         }
       };
     } else {
@@ -46,11 +49,16 @@ class MockValidator extends BaseValidator {
         data: null,
         errors: [{ field: 'root', message: 'Invalid data', value: data }],
         metadata: {
-          validator: this.validatorType,
-          timestamp: new Date().toISOString()
+          validator: this.type,
+          schema: this._schema,
+          options: this.options
         }
       };
     }
+  }
+
+  getSchemaDescription(): any {
+    return this._schema || 'Mock schema';
   }
 }
 
@@ -69,7 +77,6 @@ describe('BaseValidator', () => {
       expect(result.data).toBe('valid');
       expect(result.errors).toHaveLength(0);
       expect(result.metadata.validator).toBe('custom');
-      expect(result.metadata.timestamp).toBeDefined();
     });
 
     it('should return invalid result for invalid data', async () => {
