@@ -37,7 +37,7 @@ export interface UpdateUserData {
 }
 
 // User without sensitive data
-export type SafeUser = Omit<User, "password">;
+export type SafeUser = Omit<User, 'password'>;
 
 // Authentication result
 export interface AuthResult {

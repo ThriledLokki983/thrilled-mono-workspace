@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(ls:*)",
+      "Bash(yarn nx format:check)",
+      "Bash(yarn nx format:write)",
+      "Bash(yarn nx lint:*)"
+    ],
+    "deny": []
+  }
+}

@@ -8,11 +8,11 @@ This guide covers how to integrate the validation package with various framework
 
 ```typescript
 import express from 'express';
-import { 
-  ValidationMiddleware, 
-  XSSProtection, 
+import {
+  ValidationMiddleware,
+  XSSProtection,
   SQLInjectionProtection,
-  Sanitizer
+  Sanitizer,
 } from '@thrilled/validation';
 import Joi from 'joi';
 
@@ -20,14 +20,16 @@ const app = express();
 app.use(express.json());
 
 // Global security middleware
-app.use(XSSProtection.middleware({
-  enableCSP: true,
-  cspDirectives: {
-    'default-src': ["'self'"],
-    'script-src': ["'self'", "'unsafe-inline'"],
-    'style-src': ["'self'", "'unsafe-inline'"]
-  }
-}));
+app.use(
+  XSSProtection.middleware({
+    enableCSP: true,
+    cspDirectives: {
+      'default-src': ["'self'"],
+      'script-src': ["'self'", "'unsafe-inline'"],
+      'style-src': ["'self'", "'unsafe-inline'"],
+    },
+  })
+);
 
 app.use(SQLInjectionProtection.middleware());
 
@@ -41,11 +43,15 @@ app.use(SQLInjectionProtection.middleware());
 const userSchema = Joi.object({
   name: Joi.string().min(2).max(50).required(),
   email: Joi.string().email().required(),
-  password: Joi.string().min(8).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/).required(),
-  age: Joi.number().min(18).max(120).optional()
+  password: Joi.string()
+    .min(8)
+    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/)
+    .required(),
+  age: Joi.number().min(18).max(120).optional(),
 });
 
-app.post('/api/users/register', 
+app.post(
+  '/api/users/register',
   ValidationMiddleware.body(userSchema),
   async (req, res, next) => {
     try {
@@ -53,14 +59,16 @@ app.post('/api/users/register',
       const sanitizer = new Sanitizer({
         html: { enabled: true, stripTags: true },
         xss: { enabled: true },
-        sql: { enabled: true }
+        sql: { enabled: true },
       });
 
       const cleanData = sanitizer.sanitizeObject(req.body);
-      
+
       // Process user registration
       const user = await UserService.create(cleanData);
-      res.status(201).json({ message: 'User created successfully', userId: user.id });
+      res
+        .status(201)
+        .json({ message: 'User created successfully', userId: user.id });
     } catch (error) {
       next(error);
     }
@@ -73,14 +81,20 @@ const searchSchema = Joi.object({
   category: Joi.string().valid('users', 'products', 'orders').optional(),
   page: Joi.number().min(1).default(1),
   limit: Joi.number().min(1).max(100).default(20),
-  sort: Joi.string().valid('name', 'date', 'relevance').default('relevance')
+  sort: Joi.string().valid('name', 'date', 'relevance').default('relevance'),
 });
 
-app.get('/api/search',
+app.get(
+  '/api/search',
   ValidationMiddleware.query(searchSchema),
   async (req, res) => {
     const { q, category, page, limit, sort } = req.query;
-    const results = await SearchService.search(q, { category, page, limit, sort });
+    const results = await SearchService.search(q, {
+      category,
+      page,
+      limit,
+      sort,
+    });
     res.json(results);
   }
 );
@@ -90,29 +104,36 @@ app.get('/api/search',
 
 ```typescript
 // Global error handler for validation errors
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  if (err.name === 'ValidationError') {
-    return res.status(400).json({
-      error: 'Validation Error',
-      message: 'Invalid input data',
-      details: err.details || err.errors
+app.use(
+  (
+    err: any,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Invalid input data',
+        details: err.details || err.errors,
+      });
+    }
+
+    if (err.name === 'SanitizationError') {
+      return res.status(400).json({
+        error: 'Security Error',
+        message: 'Potentially malicious content detected',
+      });
+    }
+
+    // Handle other errors
+    console.error(err);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Something went wrong',
     });
   }
-
-  if (err.name === 'SanitizationError') {
-    return res.status(400).json({
-      error: 'Security Error',
-      message: 'Potentially malicious content detected'
-    });
-  }
-
-  // Handle other errors
-  console.error(err);
-  res.status(500).json({
-    error: 'Internal Server Error',
-    message: 'Something went wrong'
-  });
-});
+);
 ```
 
 ## Be-Core Integration
@@ -132,25 +153,25 @@ const validationPlugin = new ValidationPlugin({
     options: {
       abortEarly: false,
       allowUnknown: false,
-      stripUnknown: true
-    }
+      stripUnknown: true,
+    },
   },
   globalSanitization: {
     body: {
       html: { enabled: true, stripTags: true },
       xss: { enabled: true },
-      sql: { enabled: true }
+      sql: { enabled: true },
     },
     query: {
       html: { enabled: true, stripTags: true },
       xss: { enabled: true },
-      sql: { enabled: true }
+      sql: { enabled: true },
     },
     params: {
       html: { enabled: true, stripTags: true },
       xss: { enabled: true },
-      sql: { enabled: false } // Usually not needed for URL params
-    }
+      sql: { enabled: false }, // Usually not needed for URL params
+    },
   },
   customValidators: {
     // Custom business logic validators
@@ -158,7 +179,9 @@ const validationPlugin = new ValidationPlugin({
       const exists = await UserService.emailExists(email);
       return {
         isValid: !exists,
-        errors: exists ? [{ field: 'email', message: 'Email already exists' }] : []
+        errors: exists
+          ? [{ field: 'email', message: 'Email already exists' }]
+          : [],
       };
     },
     strongPassword: async (password: string) => {
@@ -169,18 +192,38 @@ const validationPlugin = new ValidationPlugin({
       const isLongEnough = password.length >= 8;
 
       const errors = [];
-      if (!hasLower) errors.push({ field: 'password', message: 'Password must contain lowercase letters' });
-      if (!hasUpper) errors.push({ field: 'password', message: 'Password must contain uppercase letters' });
-      if (!hasDigit) errors.push({ field: 'password', message: 'Password must contain digits' });
-      if (!hasSpecial) errors.push({ field: 'password', message: 'Password must contain special characters' });
-      if (!isLongEnough) errors.push({ field: 'password', message: 'Password must be at least 8 characters long' });
+      if (!hasLower)
+        errors.push({
+          field: 'password',
+          message: 'Password must contain lowercase letters',
+        });
+      if (!hasUpper)
+        errors.push({
+          field: 'password',
+          message: 'Password must contain uppercase letters',
+        });
+      if (!hasDigit)
+        errors.push({
+          field: 'password',
+          message: 'Password must contain digits',
+        });
+      if (!hasSpecial)
+        errors.push({
+          field: 'password',
+          message: 'Password must contain special characters',
+        });
+      if (!isLongEnough)
+        errors.push({
+          field: 'password',
+          message: 'Password must be at least 8 characters long',
+        });
 
       return {
         isValid: errors.length === 0,
-        errors
+        errors,
       };
-    }
-  }
+    },
+  },
 });
 
 core.use(validationPlugin);
@@ -200,17 +243,19 @@ core.start();
 // Access custom validators from the plugin
 app.post('/api/users', async (req, res) => {
   const { customValidators } = core.getPlugin('validation');
-  
+
   // Use custom validators
   const emailValidation = await customValidators.uniqueEmail(req.body.email);
-  const passwordValidation = await customValidators.strongPassword(req.body.password);
-  
+  const passwordValidation = await customValidators.strongPassword(
+    req.body.password
+  );
+
   if (!emailValidation.isValid || !passwordValidation.isValid) {
     return res.status(400).json({
-      errors: [...emailValidation.errors, ...passwordValidation.errors]
+      errors: [...emailValidation.errors, ...passwordValidation.errors],
     });
   }
-  
+
   // Continue with user creation...
 });
 ```
@@ -243,7 +288,12 @@ export class ValidationModule {}
 ### Custom NestJS Pipe
 
 ```typescript
-import { PipeTransform, Injectable, ArgumentMetadata, BadRequestException } from '@nestjs/common';
+import {
+  PipeTransform,
+  Injectable,
+  ArgumentMetadata,
+  BadRequestException,
+} from '@nestjs/common';
 import { JoiValidator } from '@thrilled/validation';
 import { Schema } from 'joi';
 
@@ -255,14 +305,14 @@ export class ValidationPipe implements PipeTransform {
 
   async transform(value: any, metadata: ArgumentMetadata) {
     const result = await this.validator.validate(value, this.schema);
-    
+
     if (!result.isValid) {
       throw new BadRequestException({
         message: 'Validation failed',
-        errors: result.errors
+        errors: result.errors,
       });
     }
-    
+
     return result.data || value;
   }
 }
@@ -271,7 +321,12 @@ export class ValidationPipe implements PipeTransform {
 ### Custom NestJS Interceptor
 
 ```typescript
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Sanitizer } from '@thrilled/validation';
@@ -281,24 +336,24 @@ export class SanitizationInterceptor implements NestInterceptor {
   private sanitizer = new Sanitizer({
     html: { enabled: true, stripTags: true },
     xss: { enabled: true },
-    sql: { enabled: true }
+    sql: { enabled: true },
   });
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
-    
+
     // Sanitize request body
     if (request.body) {
       request.body = this.sanitizer.sanitizeObject(request.body);
     }
-    
+
     // Sanitize query parameters
     if (request.query) {
       request.query = this.sanitizer.sanitizeObject(request.query);
     }
 
     return next.handle().pipe(
-      map(data => {
+      map((data) => {
         // Optionally sanitize response data
         return data;
       })
@@ -317,12 +372,12 @@ import Joi from 'joi';
 const createUserSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().email().required(),
-  age: Joi.number().min(18).required()
+  age: Joi.number().min(18).required(),
 });
 
 const searchSchema = Joi.object({
   q: Joi.string().required(),
-  page: Joi.number().min(1).default(1)
+  page: Joi.number().min(1).default(1),
 });
 
 @Controller('users')
@@ -356,47 +411,47 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
     validate: {
-      validator: async function(email: string) {
+      validator: async function (email: string) {
         const result = await CustomValidators.email(email);
         return result.isValid;
       },
-      message: 'Invalid email format'
-    }
+      message: 'Invalid email format',
+    },
   },
   phone: {
     type: String,
     validate: {
-      validator: async function(phone: string) {
+      validator: async function (phone: string) {
         const result = await CustomValidators.phone(phone);
         return result.isValid;
       },
-      message: 'Invalid phone number format'
-    }
+      message: 'Invalid phone number format',
+    },
   },
   password: {
     type: String,
     required: true,
     validate: {
-      validator: async function(password: string) {
+      validator: async function (password: string) {
         const result = await CustomValidators.password(password);
         return result.isValid;
       },
-      message: 'Password does not meet security requirements'
-    }
-  }
+      message: 'Password does not meet security requirements',
+    },
+  },
 });
 
 // Pre-save sanitization
-userSchema.pre('save', function(next) {
+userSchema.pre('save', function (next) {
   const sanitizer = new Sanitizer({
     html: { enabled: true, stripTags: true },
-    xss: { enabled: true }
+    xss: { enabled: true },
   });
 
   if (this.name) {
     this.name = sanitizer.sanitize(this.name);
   }
-  
+
   next();
 });
 ```
@@ -420,7 +475,7 @@ export class User {
 
   private sanitizer = new Sanitizer({
     html: { enabled: true, stripTags: true },
-    xss: { enabled: true }
+    xss: { enabled: true },
   });
 
   @BeforeInsert()
@@ -454,11 +509,7 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   setupFilesAfterEnv: ['<rootDir>/src/test/setup.ts'],
-  collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/**/*.d.ts',
-    '!src/test/**/*'
-  ]
+  collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts', '!src/test/**/*'],
 };
 
 // src/test/setup.ts
@@ -483,7 +534,7 @@ describe('API Integration Tests', () => {
         name: 'John Doe',
         email: 'john@example.com',
         age: 25,
-        password: 'SecurePass123!'
+        password: 'SecurePass123!',
       };
 
       const response = await request(app)
@@ -500,7 +551,7 @@ describe('API Integration Tests', () => {
         name: 'John Doe',
         email: 'invalid-email',
         age: 25,
-        password: 'SecurePass123!'
+        password: 'SecurePass123!',
       };
 
       const response = await request(app)
@@ -512,7 +563,7 @@ describe('API Integration Tests', () => {
       expect(response.body.details).toContainEqual(
         expect.objectContaining({
           field: 'email',
-          message: expect.stringContaining('email')
+          message: expect.stringContaining('email'),
         })
       );
     });
@@ -522,7 +573,7 @@ describe('API Integration Tests', () => {
         name: '<script>alert("xss")</script>John Doe',
         email: 'john@example.com',
         age: 25,
-        password: 'SecurePass123!'
+        password: 'SecurePass123!',
       };
 
       const response = await request(app)
@@ -541,7 +592,7 @@ describe('API Integration Tests', () => {
         name: "'; DROP TABLE users; --",
         email: 'john@example.com',
         age: 25,
-        password: 'SecurePass123!'
+        password: 'SecurePass123!',
       };
 
       const response = await request(app)
@@ -594,7 +645,7 @@ class CachedValidator {
     }
 
     const result = await this.validator.validate(data, schema);
-    
+
     if (cacheKey && result.isValid) {
       this.cache.set(cacheKey, result);
     }
@@ -614,30 +665,30 @@ class BatchValidator {
 
   async validateBatch(items: Array<{ data: any; schema: any; id: string }>) {
     const results = await this.validator.validateBatch(
-      items.map(item => ({ data: item.data, schema: item.schema }))
+      items.map((item) => ({ data: item.data, schema: item.schema }))
     );
 
     return items.map((item, index) => ({
       id: item.id,
-      ...results[index]
+      ...results[index],
     }));
   }
 
   async processLargeDataset(dataset: any[], schema: any, batchSize = 100) {
     const results = [];
-    
+
     for (let i = 0; i < dataset.length; i += batchSize) {
       const batch = dataset.slice(i, i + batchSize);
       const batchItems = batch.map((data, index) => ({
         data,
         schema,
-        id: `${i + index}`
+        id: `${i + index}`,
       }));
-      
+
       const batchResults = await this.validateBatch(batchItems);
       results.push(...batchResults);
     }
-    
+
     return results;
   }
 }
@@ -661,15 +712,20 @@ const productionCSP = {
   'frame-src': ["'none'"],
   'object-src': ["'none'"],
   'base-uri': ["'self'"],
-  'form-action': ["'self'"]
+  'form-action': ["'self'"],
 };
 
-app.use(XSSProtection.middleware({
-  enableCSP: true,
-  cspDirectives: process.env.NODE_ENV === 'production' ? productionCSP : {
-    'default-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
-  }
-}));
+app.use(
+  XSSProtection.middleware({
+    enableCSP: true,
+    cspDirectives:
+      process.env.NODE_ENV === 'production'
+        ? productionCSP
+        : {
+            'default-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          },
+  })
+);
 ```
 
 ### Rate Limiting with Validation
@@ -681,10 +737,11 @@ import { ValidationMiddleware } from '@thrilled/validation';
 const createAccountLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // limit each IP to 5 requests per windowMs
-  message: 'Too many accounts created from this IP, please try again later.'
+  message: 'Too many accounts created from this IP, please try again later.',
 });
 
-app.post('/api/users/register',
+app.post(
+  '/api/users/register',
   createAccountLimiter,
   ValidationMiddleware.body(userRegistrationSchema),
   async (req, res) => {

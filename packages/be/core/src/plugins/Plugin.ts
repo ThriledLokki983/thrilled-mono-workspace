@@ -1,5 +1,5 @@
-import { Express } from "express";
-import { Logger } from "../logging/Logger";
+import { Express } from 'express';
+import { Logger } from '../logging/Logger';
 
 export interface Plugin {
   /** Unique name of the plugin */

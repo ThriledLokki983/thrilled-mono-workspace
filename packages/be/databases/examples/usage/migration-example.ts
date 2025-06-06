@@ -30,7 +30,7 @@ async function migrationExample() {
     console.log('📊 Checking migration status...');
     const status = await migrationRunner.getStatus();
     console.log(`Applied migrations: ${status.applied.length}`);
-    status.applied.forEach(migration => {
+    status.applied.forEach((migration) => {
       console.log(`- ${migration.name} (${migration.appliedAt})`);
     });
 
@@ -40,7 +40,7 @@ async function migrationExample() {
     if (status.pending.length > 0) {
       await migrationRunner.runMigrations();
       console.log(`Applied ${status.pending.length} migrations:`);
-      status.pending.forEach(migration => {
+      status.pending.forEach((migration) => {
         console.log(`- ${migration}`);
       });
     } else {
@@ -49,9 +49,11 @@ async function migrationExample() {
 
     // 5. Example: Show rollback functionality (commented out for safety)
     console.log('\n⬇️  Rollback example (showing functionality)...');
-    console.log('Note: Rollback would use migrationRunner.rollbackTo(targetVersion)');
+    console.log(
+      'Note: Rollback would use migrationRunner.rollbackTo(targetVersion)'
+    );
     console.log('This example skips actual rollback for safety');
-    
+
     // Example of how rollback would work:
     // const firstMigration = status.applied[0]; // Get first applied migration
     // if (firstMigration) {
@@ -65,7 +67,6 @@ async function migrationExample() {
     console.log(`Total applied migrations: ${finalStatus.applied.length}`);
     console.log(`Total pending migrations: ${finalStatus.pending.length}`);
     console.log(`Total migrations: ${finalStatus.total}`);
-
   } catch (error) {
     console.error('Migration error:', error);
   } finally {

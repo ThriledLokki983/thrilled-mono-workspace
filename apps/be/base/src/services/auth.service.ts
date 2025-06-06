@@ -1,22 +1,51 @@
-import { Service } from 'typedi';
-import { redisClient } from '@database';
+import { Container, Service } from 'typedi';
 import { HttpException } from '@exceptions/httpException';
 import { User } from '@interfaces/users.interface';
-import { JwtBlacklist } from './helper/jwtBlacklist';
 import { LoginDto, RequestPasswordResetDto, ResetPasswordDto } from '@dtos/auth.dto';
-import { createToken, createCookie, hashPassword, comparePasswordWithHash, createPasswordResetToken, hashedToken } from './helper/auth.helper';
 import { logger, redactSensitiveData } from '@utils/logger';
 import { DbHelper } from '@utils/dbHelper';
 import { PoolClient } from 'pg';
 import { SqlHelper } from '@utils/sqlHelper';
 import { UserHelper } from '@utils/userHelper';
 import { HttpStatusCodes } from '@/utils/httpStatusCodes';
+import { Logger } from '@mono/be-core';
 
-// Use the centralized Redis client
-const jwtBlacklist = new JwtBlacklist(redisClient);
-
+/**
+ * AuthService handles user authentication, including signup, login, logout,
+ * password reset, and token management.
+ * It ensures secure handling of user credentials and session management.
+ * This service uses transactions to maintain data integrity during operations.
+ * It also includes methods for password reset and token management.
+ */
 @Service()
 export class AuthService {
+  private logger: Logger;
+
+  // Auth package components - get instances from TypeDI container
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private jwtProvider: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private passwordManager: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private sessionManager: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private rbacManager: any;
+
+  constructor() {
+    // Initialize logger
+    this.logger = Logger.create({
+      level: 'info',
+      format: 'json',
+      dir: 'logs',
+    });
+
+    // Get auth package instances from TypeDI container
+    this.jwtProvider = Container.get('jwtProvider');
+    this.passwordManager = Container.get('passwordManager');
+    this.sessionManager = Container.get('sessionManager');
+    this.rbacManager = Container.get('rbacManager');
+  }
+
   public async signup(userData: User): Promise<Omit<User, 'password'>> {
     const { email, password, name, first_name, last_name, phone, address } = userData;
 
@@ -28,8 +57,8 @@ export class AuthService {
         throw new HttpException(HttpStatusCodes.CONFLICT, `This email ${email} already exists`);
       }
 
-      // Hash the password
-      const hashedPassword = await hashPassword(password);
+      // Hash the password using auth package
+      const hashedPassword = await this.passwordManager.hashPassword(password);
 
       // Insert the new user into the database
       const {
@@ -60,8 +89,8 @@ export class AuthService {
         throw new HttpException(HttpStatusCodes.NOT_FOUND, `User with email ${email} not found or is inactive`);
       }
 
-      // Check if the password is correct
-      const isPasswordMatching: boolean = await comparePasswordWithHash(password, user.password);
+      // Check if the password is correct using auth package
+      const isPasswordMatching: boolean = await this.passwordManager.verifyPassword(password, user.password);
       if (!isPasswordMatching) {
         // Incorrect credentials should be 401 Unauthorized
         throw new HttpException(HttpStatusCodes.UNAUTHORIZED, 'Invalid credentials');
@@ -70,22 +99,29 @@ export class AuthService {
       // Use debug level for development logs and redact any sensitive data
       logger.debug(`Creating token for user: ${JSON.stringify(redactSensitiveData({ id: user.id, email: user.email }))}`);
 
-      // Create a token and cookie
-      const tokenData = createToken(user);
+      // Create session using auth package
+      const session = await this.sessionManager.createSession(user.id, {
+        userAgent: 'Backend Service', // Could be extracted from request headers if available
+        ip: '127.0.0.1', // Could be extracted from request if available
+        platform: 'Backend',
+      });
 
-      // For debugging - safely log token payload (only in development)
-      if (process.env.NODE_ENV === 'development') {
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-var-requires
-          const decoded = require('jsonwebtoken').decode(tokenData.token);
-          // Redact any sensitive data from the decoded token
-          logger.debug(`Token payload: ${JSON.stringify(redactSensitiveData(decoded))}`);
-        } catch (err) {
-          logger.error(`Error decoding token: ${err.message}`);
-        }
-      }
+      // Create a token using auth package
+      const accessToken = await this.jwtProvider.createAccessToken({
+        userId: user.id,
+        sessionId: session.sessionId,
+        roles: user.role ? [user.role] : ['user'],
+        permissions: [], // Can be expanded based on RBAC implementation
+        userData: {
+          email: user.email,
+          name: user.name,
+          first_name: user.first_name,
+          last_name: user.last_name,
+        },
+      });
 
-      const cookie = createCookie(tokenData);
+      // Create cookie format compatible with existing system
+      const cookie = `Authorization=${accessToken}; HttpOnly; Max-Age=3600; SameSite=Strict; Path=/`;
 
       // Format the user response using our helper
       const userWithoutPassword = UserHelper.formatUserResponse(user);
@@ -93,7 +129,7 @@ export class AuthService {
       return {
         cookie,
         findUser: userWithoutPassword,
-        token: tokenData.token,
+        token: accessToken,
       };
     } catch (error) {
       logger.error(`Login error: ${error.message}`);
@@ -113,8 +149,16 @@ export class AuthService {
       throw new HttpException(HttpStatusCodes.NOT_FOUND, `User with email ${email} not found`);
     }
 
-    // Blacklist the token
-    await jwtBlacklist.blacklistToken(token);
+    // Get token payload to extract session information
+    const tokenPayload = this.jwtProvider.getTokenPayload(token);
+
+    if (tokenPayload && tokenPayload.sessionId) {
+      // Destroy the session using auth package
+      await this.sessionManager.destroySession(tokenPayload.sessionId);
+    }
+
+    // Blacklist the token using auth package
+    await this.jwtProvider.blacklistToken(token);
 
     // Format the user response using our helper
     return UserHelper.formatUserResponse(user);
@@ -123,133 +167,78 @@ export class AuthService {
   public async requestPasswordReset(passwordResetData: RequestPasswordResetDto): Promise<{ message: string }> {
     const { email } = passwordResetData;
 
-    // Using transaction to ensure atomicity of the password reset request
-    return await DbHelper.withTransaction(async (client: PoolClient) => {
+    try {
       // 1. Find user by email
-      const {
-        rows: [user],
-      } = await DbHelper.query(`SELECT id, email FROM users WHERE email = $1 LIMIT 1`, [email], client);
+      const { rows } = await DbHelper.query(`SELECT id, email FROM users WHERE email = $1 LIMIT 1`, [email]);
+      const user = rows[0];
 
       if (!user) {
-        // Changed to NOT_FOUND status code
         throw new HttpException(HttpStatusCodes.NOT_FOUND, `User with email ${email} not found`);
       }
 
-      // 2. Generate reset token & hash
-      const { token, expiresAt } = createPasswordResetToken(email);
-      const generatedHashedToken = hashedToken(token);
+      // 2. Generate reset token using auth package
+      const { token } = await this.passwordManager.createResetToken(user.id, 30);
 
-      // 3. Remove any existing reset tokens for the user
-      await DbHelper.query(`DELETE FROM password_reset_tokens WHERE user_id = $1`, [user.id], client);
+      // 3. Revoke any existing reset tokens for the user (handled by auth package)
+      await this.passwordManager.revokeResetTokens(user.id);
 
-      // 4. Store new hashed reset token
-      await DbHelper.query(
-        `INSERT INTO password_reset_tokens (user_id, token, expires_at)
-         VALUES ($1, $2, $3)`,
-        [user.id, generatedHashedToken, expiresAt],
-        client,
-      );
-
-      // 5. Simulated email message (replace with email logic in production)
+      // 4. Simulated email message (replace with email logic in production)
       return {
         message: `Password reset link has been sent to ${email}. In production, the link would contain: ${token}`,
       };
-    });
+    } catch (error) {
+      this.logger.error(`Password reset request error: ${error.message}`);
+      throw error;
+    }
   }
 
   public async resetPassword(resetData: ResetPasswordDto): Promise<{ message: string }> {
     const { token, password } = resetData;
 
-    // Using transaction to ensure atomicity of the password reset process
-    return await DbHelper.withTransaction(async (client: PoolClient) => {
-      // 1. Hash the provided token
-      const generatedHashedToken = hashedToken(token);
+    try {
+      // 1. Verify the reset token and get user ID using auth package
+      const userId = await this.passwordManager.verifyResetToken(token);
 
-      // 2. Look up the valid token record
-      const {
-        rows: [resetToken],
-      } = await DbHelper.query(
-        `SELECT user_id, expires_at
-         FROM password_reset_tokens
-         WHERE token = $1 AND expires_at > NOW()
-         LIMIT 1`,
-        [generatedHashedToken],
-        client,
-      );
-
-      if (!resetToken) {
-        // Changed to BAD_REQUEST as it's an invalid token
-        throw new HttpException(HttpStatusCodes.BAD_REQUEST, 'Invalid or expired password reset token');
-      }
-
-      const userId = resetToken.user_id;
-
-      // 3. Confirm user exists
-      const {
-        rows: [user],
-      } = await DbHelper.query(`SELECT id FROM users WHERE id = $1 LIMIT 1`, [userId], client);
+      // 2. Confirm user exists
+      const { rows } = await DbHelper.query(`SELECT id FROM users WHERE id = $1 LIMIT 1`, [userId]);
+      const user = rows[0];
 
       if (!user) {
-        // Changed to NOT_FOUND status code
         throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
       }
 
-      // 4. Hash the new password
-      const hashedPassword = await hashPassword(password);
+      // 3. Hash the new password using auth package
+      const hashedPassword = await this.passwordManager.hashPassword(password);
 
-      // 5. Update user's password
-      await DbHelper.query(`UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2`, [hashedPassword, userId], client);
-
-      // 6. Remove used token
-      await DbHelper.query(`DELETE FROM password_reset_tokens WHERE user_id = $1`, [userId], client);
+      // 4. Update user's password
+      await DbHelper.query(`UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2`, [hashedPassword, userId]);
 
       return { message: 'Password has been reset successfully' };
-    });
+    } catch (error) {
+      this.logger.error(`Password reset error: ${error.message}`);
+      throw error;
+    }
   }
 
   // Development-only method to retrieve a fresh password reset token
   public async getResetTokenForDev(email: string): Promise<string | null> {
     try {
-      return await DbHelper.withTransaction(async (client: PoolClient) => {
-        // 1. Lookup user by email
-        const {
-          rows: [user],
-        } = await DbHelper.query(`SELECT id FROM users WHERE email = $1 LIMIT 1`, [email], client);
+      // 1. Lookup user by email
+      const { rows } = await DbHelper.query(`SELECT id FROM users WHERE email = $1 LIMIT 1`, [email]);
+      const user = rows[0];
 
-        if (!user) return null;
+      if (!user) return null;
 
-        const userId = user.id;
+      const userId = user.id;
 
-        // 2. Generate a new reset token
-        const { token, expiresAt } = createPasswordResetToken(email);
-        const generatedHashedToken = hashedToken(token);
+      // 2. Generate a new reset token using auth package
+      const { token } = await this.passwordManager.createResetToken(userId, 30);
 
-        // 3. Update or insert reset token record
-        const { rowCount: tokenExists } = await DbHelper.query(`SELECT 1 FROM password_reset_tokens WHERE user_id = $1 LIMIT 1`, [userId], client);
-
-        if (tokenExists) {
-          // Update existing token
-          await DbHelper.query(
-            `UPDATE password_reset_tokens SET token = $1, expires_at = $2 WHERE user_id = $3`,
-            [generatedHashedToken, expiresAt, userId],
-            client,
-          );
-        } else {
-          // Insert new token
-          await DbHelper.query(
-            `INSERT INTO password_reset_tokens (user_id, token, expires_at)
-             VALUES ($1, $2, $3)`,
-            [userId, generatedHashedToken, expiresAt],
-            client,
-          );
-        }
-
-        // 4. Return the unhashed token (for dev use only!)
-        return token;
-      });
+      // 3. Return the unhashed token (for dev use only!)
+      return token;
     } catch (error) {
       // Only log the error message, not the full error object which might contain sensitive data
-      logger.error(`Dev reset token error: ${error.message}`);
+      this.logger.error(`Dev reset token error: ${error.message}`);
       return null;
     }
   }

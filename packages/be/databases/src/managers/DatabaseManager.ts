@@ -1,4 +1,4 @@
-import { Pool, Client } from "pg";
+import { Pool, Client } from 'pg';
 import {
   DatabaseManagerConfig,
   DatabaseConnectionConfig,
@@ -6,11 +6,11 @@ import {
   TransactionCallback,
   ConnectionStatus,
   HealthCheckResult,
-} from "@thrilled/be-types";
-import { Logger } from "@mono/be-core";
-import { QueryBuilder } from "../builders/QueryBuilder.js";
-import { MigrationRunner } from "../migrations/MigrationRunner.js";
-import { CacheManager } from "../cache/CacheManager.js";
+} from '@thrilled/be-types';
+import { Logger } from '@mono/be-core';
+import { QueryBuilder } from '../builders/QueryBuilder.js';
+import { MigrationRunner } from '../migrations/MigrationRunner.js';
+import { CacheManager } from '../cache/CacheManager.js';
 
 export class DatabaseManager {
   private connections: Map<string, Pool> = new Map();
@@ -20,10 +20,7 @@ export class DatabaseManager {
   private isInitialized = false;
   private startTime = Date.now();
 
-  constructor(
-    private config: DatabaseManagerConfig,
-    private logger: Logger
-  ) {
+  constructor(private config: DatabaseManagerConfig, private logger: Logger) {
     // Logger from be-core doesn't have child method, will use prefix instead
   }
 
@@ -32,12 +29,12 @@ export class DatabaseManager {
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) {
-      this.logger.warn("DatabaseManager already initialized");
+      this.logger.warn('DatabaseManager already initialized');
       return;
     }
 
     try {
-      this.logger.info("Initializing DatabaseManager...");
+      this.logger.info('Initializing DatabaseManager...');
 
       // Initialize connections
       await this.initializeConnections();
@@ -61,9 +58,9 @@ export class DatabaseManager {
       }
 
       this.isInitialized = true;
-      this.logger.info("DatabaseManager initialized successfully");
+      this.logger.info('DatabaseManager initialized successfully');
     } catch (error) {
-      this.logger.error("Failed to initialize DatabaseManager:", {
+      this.logger.error('Failed to initialize DatabaseManager:', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -96,14 +93,14 @@ export class DatabaseManager {
     const failures = results
       .filter(
         (result) =>
-          result.status === "rejected" ||
-          (result.status === "fulfilled" && !result.value.success)
+          result.status === 'rejected' ||
+          (result.status === 'fulfilled' && !result.value.success)
       )
       .map((_, index) => Object.keys(this.config.connections)[index]);
 
     if (failures.length > 0) {
       this.logger.warn(
-        `Failed to connect to databases: ${failures.join(", ")}`
+        `Failed to connect to databases: ${failures.join(', ')}`
       );
     }
   }
@@ -123,7 +120,7 @@ export class DatabaseManager {
       // Create a temporary connection to the 'postgres' system database
       const systemConfig = {
         ...config,
-        database: "postgres", // Connect to system database first
+        database: 'postgres', // Connect to system database first
       };
 
       const systemClient = new Client({
@@ -139,7 +136,7 @@ export class DatabaseManager {
       try {
         // Check if database exists
         const result = await systemClient.query(
-          "SELECT 1 FROM pg_database WHERE datname = $1",
+          'SELECT 1 FROM pg_database WHERE datname = $1',
           [config.database]
         );
 
@@ -172,7 +169,7 @@ export class DatabaseManager {
    * Connect to a specific database
    */
   async connect(
-    name: string = this.config.default || "default"
+    name: string = this.config.default || 'default'
   ): Promise<Pool> {
     if (!this.config.connections[name]) {
       throw new Error(`Database connection '${name}' not configured`);
@@ -195,17 +192,17 @@ export class DatabaseManager {
       });
 
       // Add event listeners for monitoring
-      pool.on("connect", (_client) => {
+      pool.on('connect', (_client) => {
         this.logger.debug(`New client connected to database '${name}'`);
       });
 
-      pool.on("error", (err) => {
+      pool.on('error', (err) => {
         this.logger.error(`Database pool error for '${name}':`, {
           error: err.message,
         });
       });
 
-      pool.on("remove", (_client) => {
+      pool.on('remove', (_client) => {
         this.logger.debug(`Client removed from database pool '${name}'`);
       });
 
@@ -224,7 +221,7 @@ export class DatabaseManager {
   private async testConnection(pool: Pool, name: string): Promise<void> {
     const client = await pool.connect();
     try {
-      await client.query("SELECT 1");
+      await client.query('SELECT 1');
       this.logger.debug(`Connection test successful for database '${name}'`);
     } finally {
       client.release();
@@ -235,7 +232,7 @@ export class DatabaseManager {
    * Get a database connection
    */
   getConnection(name?: string): Pool {
-    const connectionName = name || this.config.default || "default";
+    const connectionName = name || this.config.default || 'default';
     const connection = this.connections.get(connectionName);
 
     if (!connection) {
@@ -280,18 +277,18 @@ export class DatabaseManager {
     const client = await pool.connect();
 
     try {
-      await client.query("BEGIN");
-      this.logger.debug("Transaction started");
+      await client.query('BEGIN');
+      this.logger.debug('Transaction started');
 
       const result = await callback(client);
 
-      await client.query("COMMIT");
-      this.logger.debug("Transaction committed");
+      await client.query('COMMIT');
+      this.logger.debug('Transaction committed');
 
       return result;
     } catch (error) {
-      await client.query("ROLLBACK");
-      this.logger.error("Transaction rolled back:", {
+      await client.query('ROLLBACK');
+      this.logger.error('Transaction rolled back:', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -312,7 +309,7 @@ export class DatabaseManager {
    */
   getCache(): CacheManager {
     if (!this.cacheManager) {
-      throw new Error("Cache not configured");
+      throw new Error('Cache not configured');
     }
     return this.cacheManager;
   }
@@ -322,7 +319,7 @@ export class DatabaseManager {
    */
   async runMigrations(connectionName?: string): Promise<void> {
     if (!this.migrationRunner) {
-      throw new Error("Migration runner not initialized");
+      throw new Error('Migration runner not initialized');
     }
 
     await this.migrationRunner.runMigrations(connectionName);
@@ -339,7 +336,7 @@ export class DatabaseManager {
         name,
         connected: false,
         lastChecked: new Date(),
-        error: "Connection not found",
+        error: 'Connection not found',
       };
     }
 
@@ -378,12 +375,12 @@ export class DatabaseManager {
     const connections = await Promise.all(connectionPromises);
     const healthyConnections = connections.filter((conn) => conn.connected);
 
-    let status: "healthy" | "unhealthy" | "degraded" = "healthy";
+    let status: 'healthy' | 'unhealthy' | 'degraded' = 'healthy';
 
     if (healthyConnections.length === 0) {
-      status = "unhealthy";
+      status = 'unhealthy';
     } else if (healthyConnections.length < connections.length) {
-      status = "degraded";
+      status = 'degraded';
     }
 
     const result: HealthCheckResult = {
@@ -397,10 +394,10 @@ export class DatabaseManager {
     if (this.cacheManager) {
       try {
         await this.cacheManager.ping();
-        result.cache = { status: "connected" };
+        result.cache = { status: 'connected' };
       } catch (error) {
         result.cache = {
-          status: "error",
+          status: 'error',
           error: error instanceof Error ? error.message : String(error),
         };
       }
@@ -419,15 +416,15 @@ export class DatabaseManager {
       try {
         const health = await this.getHealthCheck();
 
-        if (health.status === "unhealthy") {
-          this.logger.error("Database health check failed:", health);
-        } else if (health.status === "degraded") {
-          this.logger.warn("Database health check degraded:", health);
+        if (health.status === 'unhealthy') {
+          this.logger.error('Database health check failed:', health);
+        } else if (health.status === 'degraded') {
+          this.logger.warn('Database health check degraded:', health);
         } else {
-          this.logger.debug("Database health check passed");
+          this.logger.debug('Database health check passed');
         }
       } catch (error) {
-        this.logger.error("Health check error:", {
+        this.logger.error('Health check error:', {
           error: error instanceof Error ? error.message : String(error),
         });
       }
@@ -443,7 +440,7 @@ export class DatabaseManager {
     if (this.healthCheckInterval) {
       clearInterval(this.healthCheckInterval);
       this.healthCheckInterval = undefined;
-      this.logger.info("Health checks stopped");
+      this.logger.info('Health checks stopped');
     }
   }
 
@@ -451,7 +448,7 @@ export class DatabaseManager {
    * Close all connections and cleanup
    */
   async close(): Promise<void> {
-    this.logger.info("Closing DatabaseManager...");
+    this.logger.info('Closing DatabaseManager...');
 
     // Stop health checks
     this.stopHealthChecks();
@@ -479,6 +476,6 @@ export class DatabaseManager {
     this.connections.clear();
     this.isInitialized = false;
 
-    this.logger.info("DatabaseManager closed successfully");
+    this.logger.info('DatabaseManager closed successfully');
   }
 }

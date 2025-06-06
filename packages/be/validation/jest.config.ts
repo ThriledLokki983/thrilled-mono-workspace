@@ -18,8 +18,5 @@ export default {
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../../coverage/packages/be/validation',
-  testPathIgnorePatterns: [
-    '<rootDir>/dist/',
-    '<rootDir>/node_modules/'
-  ],
+  testPathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/node_modules/'],
 };

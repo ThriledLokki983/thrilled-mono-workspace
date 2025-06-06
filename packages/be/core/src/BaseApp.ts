@@ -1,17 +1,17 @@
-import "reflect-metadata";
-import express, { Express, RequestHandler } from "express";
-import helmet from "helmet";
-import compression from "compression";
-import cors from "cors";
-import rateLimit, { RateLimitRequestHandler } from "express-rate-limit";
-import hpp from "hpp";
-import morgan from "morgan";
-import { Logger } from "./logging/Logger";
-import { Plugin } from "./plugins/Plugin";
-import { PluginManager } from "./plugins/PluginManager";
-import { HealthCheckManager, HealthCheck } from "./utils/HealthCheck";
-import { GracefulShutdown } from "./utils/GracefulShutdown";
-import { AppConfig, RateLimitConfig, PluginConfig } from "./types";
+import 'reflect-metadata';
+import express, { Express, RequestHandler } from 'express';
+import helmet from 'helmet';
+import compression from 'compression';
+import cors from 'cors';
+import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
+import hpp from 'hpp';
+import morgan from 'morgan';
+import { Logger } from './logging/Logger';
+import { Plugin } from './plugins/Plugin';
+import { PluginManager } from './plugins/PluginManager';
+import { HealthCheckManager, HealthCheck } from './utils/HealthCheck';
+import { GracefulShutdown } from './utils/GracefulShutdown';
+import { AppConfig, RateLimitConfig, PluginConfig } from './types';
 
 export class BaseApp {
   private app: Express;
@@ -24,8 +24,14 @@ export class BaseApp {
     this.app = express();
     this.logger = Logger.create(config.logging || {});
     this.pluginManager = new PluginManager(this.logger);
-    this.healthCheckManager = new HealthCheckManager(config.health, this.logger);
-    this.gracefulShutdown = new GracefulShutdown(config.gracefulShutdown, this.logger);
+    this.healthCheckManager = new HealthCheckManager(
+      config.health,
+      this.logger
+    );
+    this.gracefulShutdown = new GracefulShutdown(
+      config.gracefulShutdown,
+      this.logger
+    );
     this.initializeCore();
     this.setupHealthChecks();
   }
@@ -88,7 +94,7 @@ export class BaseApp {
       await this.initializePlugins();
       await this.listen();
     } catch (error) {
-      this.logger.error(error as Error, { context: "BaseApp.start" });
+      this.logger.error(error as Error, { context: 'BaseApp.start' });
       process.exit(1);
     }
   }
@@ -111,14 +117,17 @@ export class BaseApp {
 
     // Rate limiting
     if (this.config.rateLimit) {
-      this.app.use(this.createRateLimit(this.config.rateLimit) as unknown as RequestHandler);
+      this.app.use(
+        this.createRateLimit(this.config.rateLimit) as unknown as RequestHandler
+      );
     }
 
     // Logging
     if (this.config.logging?.httpLogging !== false) {
       // Custom format: shows response time in milliseconds instead of response size
-      const customFormat = ':method :url HTTP/:http-version" :status ==> :response-time ms';
-      
+      const customFormat =
+        ':method :url HTTP/:http-version" :status ==> :response-time ms';
+
       this.app.use(
         morgan(customFormat, {
           stream: { write: (message) => this.logger.info(message.trim()) },
@@ -127,8 +136,8 @@ export class BaseApp {
     }
 
     // Body parsing
-    this.app.use(express.json({ limit: "10mb" }));
-    this.app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+    this.app.use(express.json({ limit: '10mb' }));
+    this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
   }
 
   /**
@@ -145,7 +154,7 @@ export class BaseApp {
     return rateLimit({
       windowMs: config.windowMs || 15 * 60 * 1000, // 15 minutes
       max: config.max || 100, // limit each IP to 100 requests per windowMs
-      message: config.message || "Too many requests from this IP",
+      message: config.message || 'Too many requests from this IP',
       standardHeaders: true,
       legacyHeaders: false,
       ...config,
@@ -157,13 +166,17 @@ export class BaseApp {
    */
   private async listen(): Promise<void> {
     return new Promise((resolve) => {
+      const environment = this.config.environment || this.config.env || 'development';
+      const appName = this.config.name || 'Application';
+      const appPort = this.config.port || 3000;
+
       this.app.listen(this.config.port || 3000, () => {
+        // Log application startup information
         this.logger.info(`==================================================`);
-        this.logger.info(`======== ENV: ${this.config.environment || this.config.env || 'development'} =========`);
-        this.logger.info(
-          `🚀 ${this.config.name || 'Application'} listening on port ${this.config.port || 3000}`
-        );
+        this.logger.info(`============== ENV: ${environment} ===============`);
+        this.logger.info(`🚀 ${appName || 'Base App'} is on port: ${appPort}`);
         this.logger.info(`==================================================`);
+        this.logger.info(`Listening for incoming requests...`);
         resolve();
       });
     });

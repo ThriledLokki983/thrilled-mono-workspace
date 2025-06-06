@@ -1,10 +1,10 @@
 import Joi from 'joi';
 import { BaseValidator } from './BaseValidator.js';
-import { 
-  ValidationResult, 
-  ValidationError, 
+import {
+  ValidationResult,
+  ValidationError,
   ValidationOptions,
-  ValidatorType 
+  ValidatorType,
 } from '../types/index.js';
 
 /**
@@ -38,8 +38,8 @@ export class JoiValidator extends BaseValidator<Joi.Schema> {
           metadata: {
             validator: this.type,
             schema: this._schema.describe(),
-            options: this.options
-          }
+            options: this.options,
+          },
         };
       }
 
@@ -50,23 +50,26 @@ export class JoiValidator extends BaseValidator<Joi.Schema> {
         metadata: {
           validator: this.type,
           schema: this._schema.describe(),
-          options: this.options
-        }
+          options: this.options,
+        },
       };
     } catch (error) {
       return {
         isValid: false,
         data: null,
-        errors: [{
-          field: 'unknown',
-          message: error instanceof Error ? error.message : 'Validation failed',
-          value: data
-        }],
+        errors: [
+          {
+            field: 'unknown',
+            message:
+              error instanceof Error ? error.message : 'Validation failed',
+            value: data,
+          },
+        ],
         metadata: {
           validator: this.type,
           schema: this._schema.describe(),
-          options: this.options
-        }
+          options: this.options,
+        },
       };
     }
   }
@@ -92,8 +95,8 @@ export class JoiValidator extends BaseValidator<Joi.Schema> {
           metadata: {
             validator: this.type,
             schema: this._schema.describe(),
-            options: this.options
-          }
+            options: this.options,
+          },
         };
       }
 
@@ -104,23 +107,26 @@ export class JoiValidator extends BaseValidator<Joi.Schema> {
         metadata: {
           validator: this.type,
           schema: this._schema.describe(),
-          options: this.options
-        }
+          options: this.options,
+        },
       };
     } catch (error) {
       return {
         isValid: false,
         data: null,
-        errors: [{
-          field: 'unknown',
-          message: error instanceof Error ? error.message : 'Validation failed',
-          value: data
-        }],
+        errors: [
+          {
+            field: 'unknown',
+            message:
+              error instanceof Error ? error.message : 'Validation failed',
+            value: data,
+          },
+        ],
         metadata: {
           validator: this.type,
           schema: this._schema.describe(),
-          options: this.options
-        }
+          options: this.options,
+        },
       };
     }
   }
@@ -143,7 +149,7 @@ export class JoiValidator extends BaseValidator<Joi.Schema> {
       abortEarly: !this.options.collectAllErrors,
       allowUnknown: this.options.allowUnknown,
       stripUnknown: this.options.stripUnknown,
-      convert: this.options.coerceTypes
+      convert: this.options.coerceTypes,
     };
   }
 
@@ -151,10 +157,10 @@ export class JoiValidator extends BaseValidator<Joi.Schema> {
    * Map Joi validation errors to our ValidationError format
    */
   private mapJoiErrors(joiError: Joi.ValidationError): ValidationError[] {
-    return joiError.details.map(detail => ({
+    return joiError.details.map((detail) => ({
       field: detail.path.length > 0 ? detail.path.join('.') : 'root',
       message: detail.message,
-      value: detail.context?.value
+      value: detail.context?.value,
     }));
   }
 
@@ -166,10 +172,12 @@ export class JoiValidator extends BaseValidator<Joi.Schema> {
       throw new Error('Schema is not defined');
     }
 
-    const extendedSchema = (this._schema as any).keys 
-      ? (this._schema as Joi.ObjectSchema).keys((additionalSchema as Joi.ObjectSchema).describe())
+    const extendedSchema = (this._schema as any).keys
+      ? (this._schema as Joi.ObjectSchema).keys(
+          (additionalSchema as Joi.ObjectSchema).describe()
+        )
       : this._schema;
-    
+
     return new JoiValidator(extendedSchema, this.options);
   }
 

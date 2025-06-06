@@ -9,9 +9,7 @@
           "projectType": "library",
           "targets": {
             "typecheck": {
-              "dependsOn": [
-                "^typecheck"
-              ],
+              "dependsOn": ["^typecheck"],
               "options": {
                 "cwd": "apps/be/faithcircle/faithcircle-be-e2e",
                 "command": "tsc --build --emitDeclarationOnly"
@@ -21,29 +19,21 @@
                 "production",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
+                  "externalDependencies": ["typescript"]
                 }
               ],
               "outputs": [
                 "{projectRoot}/out-tsc/faithcircle-be-e2e/**/*.d.ts",
                 "{projectRoot}/out-tsc/faithcircle-be-e2e/tsconfig.tsbuildinfo"
               ],
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "metadata": {
-                "technologies": [
-                  "typescript"
-                ],
+                "technologies": ["typescript"],
                 "description": "Runs type-checking for the project.",
                 "help": {
                   "command": "yarn tsc --build --help",
                   "example": {
-                    "args": [
-                      "--force"
-                    ]
+                    "args": ["--force"]
                   }
                 }
               },
@@ -64,18 +54,12 @@
                 "{projectRoot}/.eslintrc.json",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "yarn eslint --help",
@@ -104,9 +88,7 @@
           "projectType": "application",
           "targets": {
             "typecheck": {
-              "dependsOn": [
-                "^typecheck"
-              ],
+              "dependsOn": ["^typecheck"],
               "options": {
                 "cwd": "apps/be/faithcircle/faithcircle-be",
                 "command": "tsc --build --emitDeclarationOnly"
@@ -118,9 +100,7 @@
                   "dependentTasksOutputFiles": "**/*.d.ts"
                 },
                 {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
+                  "externalDependencies": ["typescript"]
                 }
               ],
               "outputs": [
@@ -142,20 +122,14 @@
                 "{projectRoot}/out-tsc/jest/**/*.d.ts",
                 "{projectRoot}/out-tsc/jest/tsconfig.tsbuildinfo"
               ],
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "metadata": {
-                "technologies": [
-                  "typescript"
-                ],
+                "technologies": ["typescript"],
                 "description": "Runs type-checking for the project.",
                 "help": {
                   "command": "yarn tsc --build --help",
                   "example": {
-                    "args": [
-                      "--force"
-                    ]
+                    "args": ["--force"]
                   }
                 }
               },
@@ -176,18 +150,12 @@
                 "{projectRoot}/.eslintrc.json",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "yarn eslint --help",
@@ -205,31 +173,23 @@
             "build": {
               "options": {
                 "cwd": "apps/be/faithcircle/faithcircle-be",
-                "args": [
-                  "--node-env=production"
-                ],
+                "args": ["--node-env=production"],
                 "command": "webpack-cli build"
               },
               "cache": true,
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "inputs": [
                 "production",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "webpack-cli"
-                  ]
+                  "externalDependencies": ["webpack-cli"]
                 }
               ],
               "outputs": [
                 "{workspaceRoot}/apps/be/faithcircle/faithcircle-be/dist"
               ],
               "metadata": {
-                "technologies": [
-                  "webpack"
-                ],
+                "technologies": ["webpack"],
                 "description": "Runs Webpack build",
                 "help": {
                   "command": "yarn webpack-cli build --help",
@@ -237,15 +197,11 @@
                     "options": {
                       "json": "stats.json"
                     },
-                    "args": [
-                      "--profile"
-                    ]
+                    "args": ["--profile"]
                   }
                 }
               },
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true
@@ -254,31 +210,22 @@
               "continuous": true,
               "options": {
                 "cwd": "apps/be/faithcircle/faithcircle-be",
-                "args": [
-                  "--node-env=development"
-                ],
+                "args": ["--node-env=development"],
                 "command": "webpack-cli serve"
               },
               "metadata": {
-                "technologies": [
-                  "webpack"
-                ],
+                "technologies": ["webpack"],
                 "description": "Starts Webpack dev server",
                 "help": {
                   "command": "yarn webpack-cli serve --help",
                   "example": {
                     "options": {
-                      "args": [
-                        "--client-progress",
-                        "--history-api-fallback "
-                      ]
+                      "args": ["--client-progress", "--history-api-fallback "]
                     }
                   }
                 }
               },
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true
@@ -287,55 +234,40 @@
               "continuous": true,
               "options": {
                 "cwd": "apps/be/faithcircle/faithcircle-be",
-                "args": [
-                  "--node-env=production"
-                ],
+                "args": ["--node-env=production"],
                 "command": "webpack-cli serve"
               },
               "metadata": {
-                "technologies": [
-                  "webpack"
-                ],
+                "technologies": ["webpack"],
                 "description": "Starts Webpack dev server in production mode",
                 "help": {
                   "command": "yarn webpack-cli serve --help",
                   "example": {
                     "options": {
-                      "args": [
-                        "--client-progress",
-                        "--history-api-fallback "
-                      ]
+                      "args": ["--client-progress", "--history-api-fallback "]
                     }
                   }
                 }
               },
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true
             },
             "serve-static": {
               "continuous": true,
-              "dependsOn": [
-                "build"
-              ],
+              "dependsOn": ["build"],
               "executor": "@nx/web:file-server",
               "options": {
                 "buildTarget": "build",
                 "spa": true
               },
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "configurations": {},
               "parallelism": true
             },
             "build-deps": {
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "configurations": {},
               "options": {},
               "parallelism": true,
@@ -343,9 +275,7 @@
             },
             "watch-deps": {
               "continuous": true,
-              "dependsOn": [
-                "build-deps"
-              ],
+              "dependsOn": ["build-deps"],
               "executor": "nx:run-commands",
               "options": {
                 "command": "yarn nx watch --projects faithcircle-be --includeDependentProjects -- yarn nx build-deps faithcircle-be"
@@ -368,10 +298,7 @@
           "projectType": "library",
           "targets": {
             "typecheck": {
-              "dependsOn": [
-                "build",
-                "^typecheck"
-              ],
+              "dependsOn": ["build", "^typecheck"],
               "options": {
                 "cwd": "packages/shared/custom-eslint",
                 "command": "tsc --build --emitDeclarationOnly"
@@ -383,9 +310,7 @@
                   "dependentTasksOutputFiles": "**/*.d.ts"
                 },
                 {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
+                  "externalDependencies": ["typescript"]
                 }
               ],
               "outputs": [
@@ -403,20 +328,14 @@
                 "{projectRoot}/**/*.d.mts.map",
                 "{projectRoot}/tsconfig.tsbuildinfo"
               ],
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "metadata": {
-                "technologies": [
-                  "typescript"
-                ],
+                "technologies": ["typescript"],
                 "description": "Runs type-checking for the project.",
                 "help": {
                   "command": "yarn tsc --build --help",
                   "example": {
-                    "args": [
-                      "--force"
-                    ]
+                    "args": ["--force"]
                   }
                 }
               },
@@ -425,9 +344,7 @@
               "parallelism": true
             },
             "build": {
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "options": {
                 "cwd": "packages/shared/custom-eslint",
                 "command": "tsc --build tsconfig.lib.json"
@@ -437,28 +354,18 @@
                 "production",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
+                  "externalDependencies": ["typescript"]
                 }
               ],
-              "outputs": [
-                "{projectRoot}/dist"
-              ],
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "outputs": ["{projectRoot}/dist"],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "metadata": {
-                "technologies": [
-                  "typescript"
-                ],
+                "technologies": ["typescript"],
                 "description": "Builds the project with `tsc`.",
                 "help": {
                   "command": "yarn tsc --build --help",
                   "example": {
-                    "args": [
-                      "--force"
-                    ]
+                    "args": ["--force"]
                   }
                 }
               },
@@ -467,9 +374,7 @@
               "parallelism": true
             },
             "build-deps": {
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "configurations": {},
               "options": {},
               "parallelism": true,
@@ -477,9 +382,7 @@
             },
             "watch-deps": {
               "continuous": true,
-              "dependsOn": [
-                "build-deps"
-              ],
+              "dependsOn": ["build-deps"],
               "executor": "nx:run-commands",
               "options": {
                 "command": "yarn nx watch --projects custom-eslint --includeDependentProjects -- yarn nx build-deps custom-eslint"
@@ -500,18 +403,12 @@
                 "{projectRoot}/.eslintrc.json",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "yarn eslint --help",
@@ -528,20 +425,14 @@
             },
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
-              "dependsOn": [
-                "^nx-release-publish"
-              ],
+              "dependsOn": ["^nx-release-publish"],
               "options": {},
               "configurations": {},
               "parallelism": true
             }
           },
           "name": "custom-eslint",
-          "tags": [
-            "npm:public",
-            "type:eslint-config",
-            "scope:shared"
-          ],
+          "tags": ["npm:public", "type:eslint-config", "scope:shared"],
           "metadata": {
             "targetGroups": {},
             "js": {
@@ -579,9 +470,7 @@
           "projectType": "library",
           "targets": {
             "typecheck": {
-              "dependsOn": [
-                "^typecheck"
-              ],
+              "dependsOn": ["^typecheck"],
               "options": {
                 "cwd": "apps/fe/faithcircle-fe-e2e",
                 "command": "tsc --build --emitDeclarationOnly"
@@ -591,29 +480,21 @@
                 "production",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
+                  "externalDependencies": ["typescript"]
                 }
               ],
               "outputs": [
                 "{projectRoot}/out-tsc/playwright/**/*.d.ts",
                 "{projectRoot}/out-tsc/playwright/tsconfig.tsbuildinfo"
               ],
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "metadata": {
-                "technologies": [
-                  "typescript"
-                ],
+                "technologies": ["typescript"],
                 "description": "Runs type-checking for the project.",
                 "help": {
                   "command": "yarn tsc --build --help",
                   "example": {
-                    "args": [
-                      "--force"
-                    ]
+                    "args": ["--force"]
                   }
                 }
               },
@@ -634,18 +515,12 @@
                 "{projectRoot}/.eslintrc.json",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "yarn eslint --help",
@@ -666,9 +541,7 @@
                 "command": "playwright test"
               },
               "metadata": {
-                "technologies": [
-                  "playwright"
-                ],
+                "technologies": ["playwright"],
                 "description": "Runs Playwright Tests",
                 "help": {
                   "command": "yarn playwright test --help",
@@ -681,9 +554,7 @@
               },
               "dependsOn": [
                 {
-                  "projects": [
-                    "faithcircle-fe"
-                  ],
+                  "projects": ["faithcircle-fe"],
                   "target": "preview"
                 }
               ],
@@ -692,9 +563,7 @@
                 "default",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "@playwright/test"
-                  ]
+                  "externalDependencies": ["@playwright/test"]
                 }
               ],
               "outputs": [
@@ -715,9 +584,7 @@
                 "command": "playwright test src/example.spec.ts --output=test-output/playwright/output/src-example-spec-ts"
               },
               "metadata": {
-                "technologies": [
-                  "playwright"
-                ],
+                "technologies": ["playwright"],
                 "description": "Runs Playwright Tests in src/example.spec.ts in CI",
                 "help": {
                   "command": "yarn playwright test --help",
@@ -730,9 +597,7 @@
               },
               "dependsOn": [
                 {
-                  "projects": [
-                    "faithcircle-fe"
-                  ],
+                  "projects": ["faithcircle-fe"],
                   "target": "preview"
                 }
               ],
@@ -741,9 +606,7 @@
                 "default",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "@playwright/test"
-                  ]
+                  "externalDependencies": ["@playwright/test"]
                 }
               ],
               "outputs": [
@@ -761,9 +624,7 @@
                 "default",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "@playwright/test"
-                  ]
+                  "externalDependencies": ["@playwright/test"]
                 }
               ],
               "outputs": [
@@ -778,9 +639,7 @@
                 }
               ],
               "metadata": {
-                "technologies": [
-                  "playwright"
-                ],
+                "technologies": ["playwright"],
                 "description": "Runs Playwright Tests in CI",
                 "nonAtomizedTarget": "e2e",
                 "help": {
@@ -799,10 +658,7 @@
           },
           "metadata": {
             "targetGroups": {
-              "E2E (CI)": [
-                "e2e-ci--src/example.spec.ts",
-                "e2e-ci"
-              ]
+              "E2E (CI)": ["e2e-ci--src/example.spec.ts", "e2e-ci"]
             }
           },
           "name": "faithcircle-fe-e2e",
@@ -818,17 +674,13 @@
           "projectType": "library",
           "targets": {
             "typecheck": {
-              "dependsOn": [
-                "^typecheck"
-              ],
+              "dependsOn": ["^typecheck"],
               "cache": true,
               "inputs": [
                 "production",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
+                  "externalDependencies": ["typescript"]
                 }
               ],
               "outputs": [
@@ -850,21 +702,14 @@
                 "{projectRoot}/out-tsc/vitest/**/*.d.ts",
                 "{projectRoot}/out-tsc/vitest/tsconfig.tsbuildinfo"
               ],
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "metadata": {
-                "technologies": [
-                  "typescript",
-                  "typescript"
-                ],
+                "technologies": ["typescript", "typescript"],
                 "description": "Runs type-checking for the project.",
                 "help": {
                   "command": "yarn tsc --build --help",
                   "example": {
-                    "args": [
-                      "--force"
-                    ]
+                    "args": ["--force"]
                   }
                 }
               },
@@ -882,26 +727,17 @@
                 "command": "vite build"
               },
               "cache": true,
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "inputs": [
                 "production",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "vite"
-                  ]
+                  "externalDependencies": ["vite"]
                 }
               ],
-              "outputs": [
-                "{projectRoot}/dist"
-              ],
+              "outputs": ["{projectRoot}/dist"],
               "metadata": {
-                "technologies": [
-                  "typescript",
-                  "vite"
-                ],
+                "technologies": ["typescript", "vite"],
                 "description": "Run Vite build",
                 "help": {
                   "command": "yarn vite build --help",
@@ -913,17 +749,13 @@
                   }
                 }
               },
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true
             },
             "build-deps": {
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "configurations": {},
               "options": {},
               "parallelism": true,
@@ -931,9 +763,7 @@
             },
             "watch-deps": {
               "continuous": true,
-              "dependsOn": [
-                "build-deps"
-              ],
+              "dependsOn": ["build-deps"],
               "executor": "nx:run-commands",
               "options": {
                 "command": "yarn nx watch --projects components --includeDependentProjects -- yarn nx build-deps components"
@@ -954,18 +784,12 @@
                 "{projectRoot}/.eslintrc.json",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "yarn eslint --help",
@@ -990,21 +814,15 @@
                 "default",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "vitest"
-                  ]
+                  "externalDependencies": ["vitest"]
                 },
                 {
                   "env": "CI"
                 }
               ],
-              "outputs": [
-                "{projectRoot}/test-output/vitest/coverage"
-              ],
+              "outputs": ["{projectRoot}/test-output/vitest/coverage"],
               "metadata": {
-                "technologies": [
-                  "vite"
-                ],
+                "technologies": ["vite"],
                 "description": "Run Vite tests",
                 "help": {
                   "command": "yarn vitest --help",
@@ -1019,9 +837,7 @@
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true,
-              "dependsOn": [
-                "^build"
-              ]
+              "dependsOn": ["^build"]
             },
             "serve": {
               "continuous": true,
@@ -1030,9 +846,7 @@
                 "command": "vite"
               },
               "metadata": {
-                "technologies": [
-                  "vite"
-                ],
+                "technologies": ["vite"],
                 "description": "Starts Vite dev server",
                 "help": {
                   "command": "yarn vite --help",
@@ -1044,9 +858,7 @@
                 },
                 "deprecated": "Use devTargetName instead. This option will be removed in Nx 22."
               },
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true
@@ -1058,9 +870,7 @@
                 "command": "vite"
               },
               "metadata": {
-                "technologies": [
-                  "vite"
-                ],
+                "technologies": ["vite"],
                 "description": "Starts Vite dev server",
                 "help": {
                   "command": "yarn vite --help",
@@ -1071,26 +881,20 @@
                   }
                 }
               },
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true
             },
             "preview": {
               "continuous": true,
-              "dependsOn": [
-                "build"
-              ],
+              "dependsOn": ["build"],
               "options": {
                 "cwd": "packages/fe/components",
                 "command": "vite preview"
               },
               "metadata": {
-                "technologies": [
-                  "vite"
-                ],
+                "technologies": ["vite"],
                 "description": "Locally preview Vite production build",
                 "help": {
                   "command": "yarn vite preview --help",
@@ -1112,9 +916,7 @@
                 "buildTarget": "build",
                 "spa": true
               },
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "configurations": {},
               "parallelism": true
             }
@@ -1133,17 +935,13 @@
           "projectType": "application",
           "targets": {
             "typecheck": {
-              "dependsOn": [
-                "^typecheck"
-              ],
+              "dependsOn": ["^typecheck"],
               "cache": true,
               "inputs": [
                 "production",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
+                  "externalDependencies": ["typescript"]
                 }
               ],
               "outputs": [
@@ -1165,21 +963,14 @@
                 "{projectRoot}/out-tsc/vitest/**/*.d.ts",
                 "{projectRoot}/out-tsc/vitest/tsconfig.tsbuildinfo"
               ],
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "metadata": {
-                "technologies": [
-                  "typescript",
-                  "typescript"
-                ],
+                "technologies": ["typescript", "typescript"],
                 "description": "Runs type-checking for the project.",
                 "help": {
                   "command": "yarn tsc --build --help",
                   "example": {
-                    "args": [
-                      "--force"
-                    ]
+                    "args": ["--force"]
                   }
                 }
               },
@@ -1204,18 +995,12 @@
                 "{projectRoot}/.eslintrc.json",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "yarn eslint --help",
@@ -1232,24 +1017,18 @@
             },
             "test": {
               "executor": "@nx/vite:test",
-              "outputs": [
-                "{options.reportsDirectory}"
-              ],
+              "outputs": ["{options.reportsDirectory}"],
               "options": {
                 "passWithNoTests": true,
                 "reportsDirectory": "./test-output/vitest"
               },
               "configurations": {},
               "parallelism": true,
-              "dependsOn": [
-                "^build"
-              ]
+              "dependsOn": ["^build"]
             },
             "build": {
               "executor": "@nx/vite:build",
-              "outputs": [
-                "{options.outputPath}"
-              ],
+              "outputs": ["{options.outputPath}"],
               "defaultConfiguration": "production",
               "options": {
                 "outputPath": "dist/apps/fe/faithcircle-fe"
@@ -1290,9 +1069,7 @@
                 "command": "vite"
               },
               "metadata": {
-                "technologies": [
-                  "vite"
-                ],
+                "technologies": ["vite"],
                 "description": "Starts Vite dev server",
                 "help": {
                   "command": "yarn vite --help",
@@ -1303,9 +1080,7 @@
                   }
                 }
               },
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true
@@ -1334,16 +1109,12 @@
                 "buildTarget": "build",
                 "spa": true
               },
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "configurations": {},
               "parallelism": true
             },
             "build-deps": {
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "configurations": {},
               "options": {},
               "parallelism": true,
@@ -1351,9 +1122,7 @@
             },
             "watch-deps": {
               "continuous": true,
-              "dependsOn": [
-                "build-deps"
-              ],
+              "dependsOn": ["build-deps"],
               "executor": "nx:run-commands",
               "options": {
                 "command": "yarn nx watch --projects faithcircle-fe --includeDependentProjects -- yarn nx build-deps faithcircle-fe"
@@ -1370,11 +1139,7 @@
             }
           },
           "name": "faithcircle-fe",
-          "tags": [
-            "npm:private",
-            "type:app",
-            "scope:fe"
-          ],
+          "tags": ["npm:private", "type:app", "scope:fe"],
           "$schema": "../../../node_modules/nx/schemas/project-schema.json",
           "sourceRoot": "apps/fe/faithcircle-fe/src",
           "implicitDependencies": []
@@ -1388,17 +1153,13 @@
           "projectType": "library",
           "targets": {
             "typecheck": {
-              "dependsOn": [
-                "^typecheck"
-              ],
+              "dependsOn": ["^typecheck"],
               "cache": true,
               "inputs": [
                 "production",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
+                  "externalDependencies": ["typescript"]
                 }
               ],
               "outputs": [
@@ -1420,21 +1181,14 @@
                 "{projectRoot}/out-tsc/vitest/**/*.d.ts",
                 "{projectRoot}/out-tsc/vitest/tsconfig.tsbuildinfo"
               ],
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "metadata": {
-                "technologies": [
-                  "typescript",
-                  "typescript"
-                ],
+                "technologies": ["typescript", "typescript"],
                 "description": "Runs type-checking for the project.",
                 "help": {
                   "command": "yarn tsc --build --help",
                   "example": {
-                    "args": [
-                      "--force"
-                    ]
+                    "args": ["--force"]
                   }
                 }
               },
@@ -1452,26 +1206,17 @@
                 "command": "vite build"
               },
               "cache": true,
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "inputs": [
                 "production",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "vite"
-                  ]
+                  "externalDependencies": ["vite"]
                 }
               ],
-              "outputs": [
-                "{projectRoot}/dist"
-              ],
+              "outputs": ["{projectRoot}/dist"],
               "metadata": {
-                "technologies": [
-                  "typescript",
-                  "vite"
-                ],
+                "technologies": ["typescript", "vite"],
                 "description": "Run Vite build",
                 "help": {
                   "command": "yarn vite build --help",
@@ -1483,17 +1228,13 @@
                   }
                 }
               },
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true
             },
             "build-deps": {
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "configurations": {},
               "options": {},
               "parallelism": true,
@@ -1501,9 +1242,7 @@
             },
             "watch-deps": {
               "continuous": true,
-              "dependsOn": [
-                "build-deps"
-              ],
+              "dependsOn": ["build-deps"],
               "executor": "nx:run-commands",
               "options": {
                 "command": "yarn nx watch --projects @thrilled/shared --includeDependentProjects -- yarn nx build-deps @thrilled/shared"
@@ -1524,18 +1263,12 @@
                 "{projectRoot}/.eslintrc.json",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "yarn eslint --help",
@@ -1560,21 +1293,15 @@
                 "default",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "vitest"
-                  ]
+                  "externalDependencies": ["vitest"]
                 },
                 {
                   "env": "CI"
                 }
               ],
-              "outputs": [
-                "{projectRoot}/test-output/vitest/coverage"
-              ],
+              "outputs": ["{projectRoot}/test-output/vitest/coverage"],
               "metadata": {
-                "technologies": [
-                  "vite"
-                ],
+                "technologies": ["vite"],
                 "description": "Run Vite tests",
                 "help": {
                   "command": "yarn vitest --help",
@@ -1589,9 +1316,7 @@
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true,
-              "dependsOn": [
-                "^build"
-              ]
+              "dependsOn": ["^build"]
             },
             "serve": {
               "continuous": true,
@@ -1600,9 +1325,7 @@
                 "command": "vite"
               },
               "metadata": {
-                "technologies": [
-                  "vite"
-                ],
+                "technologies": ["vite"],
                 "description": "Starts Vite dev server",
                 "help": {
                   "command": "yarn vite --help",
@@ -1614,9 +1337,7 @@
                 },
                 "deprecated": "Use devTargetName instead. This option will be removed in Nx 22."
               },
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true
@@ -1628,9 +1349,7 @@
                 "command": "vite"
               },
               "metadata": {
-                "technologies": [
-                  "vite"
-                ],
+                "technologies": ["vite"],
                 "description": "Starts Vite dev server",
                 "help": {
                   "command": "yarn vite --help",
@@ -1641,26 +1360,20 @@
                   }
                 }
               },
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true
             },
             "preview": {
               "continuous": true,
-              "dependsOn": [
-                "build"
-              ],
+              "dependsOn": ["build"],
               "options": {
                 "cwd": "packages/shared/types",
                 "command": "vite preview"
               },
               "metadata": {
-                "technologies": [
-                  "vite"
-                ],
+                "technologies": ["vite"],
                 "description": "Locally preview Vite production build",
                 "help": {
                   "command": "yarn vite preview --help",
@@ -1682,9 +1395,7 @@
                 "buildTarget": "build",
                 "spa": true
               },
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "configurations": {},
               "parallelism": true
             }
@@ -1703,10 +1414,7 @@
           "projectType": "library",
           "targets": {
             "typecheck": {
-              "dependsOn": [
-                "build",
-                "^typecheck"
-              ],
+              "dependsOn": ["build", "^typecheck"],
               "options": {
                 "cwd": "packages/be/be-types",
                 "command": "tsc --build --emitDeclarationOnly"
@@ -1716,9 +1424,7 @@
                 "production",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
+                  "externalDependencies": ["typescript"]
                 }
               ],
               "outputs": [
@@ -1740,20 +1446,14 @@
                 "{projectRoot}/out-tsc/jest/**/*.d.ts",
                 "{projectRoot}/out-tsc/jest/tsconfig.tsbuildinfo"
               ],
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "metadata": {
-                "technologies": [
-                  "typescript"
-                ],
+                "technologies": ["typescript"],
                 "description": "Runs type-checking for the project.",
                 "help": {
                   "command": "yarn tsc --build --help",
                   "example": {
-                    "args": [
-                      "--force"
-                    ]
+                    "args": ["--force"]
                   }
                 }
               },
@@ -1762,9 +1462,7 @@
               "parallelism": true
             },
             "build": {
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "options": {
                 "cwd": "packages/be/be-types",
                 "command": "tsc --build tsconfig.lib.json"
@@ -1774,28 +1472,18 @@
                 "production",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
+                  "externalDependencies": ["typescript"]
                 }
               ],
-              "outputs": [
-                "{projectRoot}/dist"
-              ],
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "outputs": ["{projectRoot}/dist"],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "metadata": {
-                "technologies": [
-                  "typescript"
-                ],
+                "technologies": ["typescript"],
                 "description": "Builds the project with `tsc`.",
                 "help": {
                   "command": "yarn tsc --build --help",
                   "example": {
-                    "args": [
-                      "--force"
-                    ]
+                    "args": ["--force"]
                   }
                 }
               },
@@ -1804,9 +1492,7 @@
               "parallelism": true
             },
             "build-deps": {
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "configurations": {},
               "options": {},
               "parallelism": true,
@@ -1814,9 +1500,7 @@
             },
             "watch-deps": {
               "continuous": true,
-              "dependsOn": [
-                "build-deps"
-              ],
+              "dependsOn": ["build-deps"],
               "executor": "nx:run-commands",
               "options": {
                 "command": "yarn nx watch --projects be-types --includeDependentProjects -- yarn nx build-deps be-types"
@@ -1837,18 +1521,12 @@
                 "{projectRoot}/.eslintrc.json",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "yarn eslint --help",
@@ -1872,9 +1550,7 @@
                 "command": "jest"
               },
               "metadata": {
-                "technologies": [
-                  "jest"
-                ],
+                "technologies": ["jest"],
                 "description": "Run Jest Tests",
                 "help": {
                   "command": "yarn jest --help",
@@ -1891,28 +1567,18 @@
                 "^production",
                 "{workspaceRoot}/jest.preset.js",
                 {
-                  "externalDependencies": [
-                    "jest"
-                  ]
+                  "externalDependencies": ["jest"]
                 }
               ],
-              "outputs": [
-                "{projectRoot}/test-output/jest/coverage"
-              ],
+              "outputs": ["{projectRoot}/test-output/jest/coverage"],
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true,
-              "dependsOn": [
-                "^build"
-              ]
+              "dependsOn": ["^build"]
             }
           },
           "name": "be-types",
-          "tags": [
-            "npm:private",
-            "type:lib",
-            "scope:be"
-          ],
+          "tags": ["npm:private", "type:lib", "scope:be"],
           "metadata": {
             "targetGroups": {},
             "js": {
@@ -1941,17 +1607,13 @@
           "projectType": "library",
           "targets": {
             "typecheck": {
-              "dependsOn": [
-                "^typecheck"
-              ],
+              "dependsOn": ["^typecheck"],
               "cache": true,
               "inputs": [
                 "production",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
+                  "externalDependencies": ["typescript"]
                 }
               ],
               "outputs": [
@@ -1973,21 +1635,14 @@
                 "{projectRoot}/out-tsc/vitest/**/*.d.ts",
                 "{projectRoot}/out-tsc/vitest/tsconfig.tsbuildinfo"
               ],
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "metadata": {
-                "technologies": [
-                  "typescript",
-                  "typescript"
-                ],
+                "technologies": ["typescript", "typescript"],
                 "description": "Runs type-checking for the project.",
                 "help": {
                   "command": "yarn tsc --build --help",
                   "example": {
-                    "args": [
-                      "--force"
-                    ]
+                    "args": ["--force"]
                   }
                 }
               },
@@ -2005,26 +1660,17 @@
                 "command": "vite build"
               },
               "cache": true,
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "inputs": [
                 "production",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "vite"
-                  ]
+                  "externalDependencies": ["vite"]
                 }
               ],
-              "outputs": [
-                "{projectRoot}/dist"
-              ],
+              "outputs": ["{projectRoot}/dist"],
               "metadata": {
-                "technologies": [
-                  "typescript",
-                  "vite"
-                ],
+                "technologies": ["typescript", "vite"],
                 "description": "Run Vite build",
                 "help": {
                   "command": "yarn vite build --help",
@@ -2036,17 +1682,13 @@
                   }
                 }
               },
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true
             },
             "build-deps": {
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "configurations": {},
               "options": {},
               "parallelism": true,
@@ -2054,9 +1696,7 @@
             },
             "watch-deps": {
               "continuous": true,
-              "dependsOn": [
-                "build-deps"
-              ],
+              "dependsOn": ["build-deps"],
               "executor": "nx:run-commands",
               "options": {
                 "command": "yarn nx watch --projects styles --includeDependentProjects -- yarn nx build-deps styles"
@@ -2077,18 +1717,12 @@
                 "{projectRoot}/.eslintrc.json",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "yarn eslint --help",
@@ -2113,21 +1747,15 @@
                 "default",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "vitest"
-                  ]
+                  "externalDependencies": ["vitest"]
                 },
                 {
                   "env": "CI"
                 }
               ],
-              "outputs": [
-                "{projectRoot}/test-output/vitest/coverage"
-              ],
+              "outputs": ["{projectRoot}/test-output/vitest/coverage"],
               "metadata": {
-                "technologies": [
-                  "vite"
-                ],
+                "technologies": ["vite"],
                 "description": "Run Vite tests",
                 "help": {
                   "command": "yarn vitest --help",
@@ -2142,9 +1770,7 @@
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true,
-              "dependsOn": [
-                "^build"
-              ]
+              "dependsOn": ["^build"]
             },
             "serve": {
               "continuous": true,
@@ -2153,9 +1779,7 @@
                 "command": "vite"
               },
               "metadata": {
-                "technologies": [
-                  "vite"
-                ],
+                "technologies": ["vite"],
                 "description": "Starts Vite dev server",
                 "help": {
                   "command": "yarn vite --help",
@@ -2167,9 +1791,7 @@
                 },
                 "deprecated": "Use devTargetName instead. This option will be removed in Nx 22."
               },
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true
@@ -2181,9 +1803,7 @@
                 "command": "vite"
               },
               "metadata": {
-                "technologies": [
-                  "vite"
-                ],
+                "technologies": ["vite"],
                 "description": "Starts Vite dev server",
                 "help": {
                   "command": "yarn vite --help",
@@ -2194,26 +1814,20 @@
                   }
                 }
               },
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true
             },
             "preview": {
               "continuous": true,
-              "dependsOn": [
-                "build"
-              ],
+              "dependsOn": ["build"],
               "options": {
                 "cwd": "packages/fe/styles",
                 "command": "vite preview"
               },
               "metadata": {
-                "technologies": [
-                  "vite"
-                ],
+                "technologies": ["vite"],
                 "description": "Locally preview Vite production build",
                 "help": {
                   "command": "yarn vite preview --help",
@@ -2235,9 +1849,7 @@
                 "buildTarget": "build",
                 "spa": true
               },
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "configurations": {},
               "parallelism": true
             }
@@ -2256,10 +1868,7 @@
           "projectType": "library",
           "targets": {
             "typecheck": {
-              "dependsOn": [
-                "build",
-                "^typecheck"
-              ],
+              "dependsOn": ["build", "^typecheck"],
               "options": {
                 "cwd": "packages/be/core",
                 "command": "tsc --build --emitDeclarationOnly"
@@ -2271,9 +1880,7 @@
                   "dependentTasksOutputFiles": "**/*.d.ts"
                 },
                 {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
+                  "externalDependencies": ["typescript"]
                 }
               ],
               "outputs": [
@@ -2293,20 +1900,14 @@
                 "{projectRoot}/out-tsc/jest/**/*.d.ts",
                 "{projectRoot}/out-tsc/jest/tsconfig.tsbuildinfo"
               ],
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "metadata": {
-                "technologies": [
-                  "typescript"
-                ],
+                "technologies": ["typescript"],
                 "description": "Runs type-checking for the project.",
                 "help": {
                   "command": "yarn tsc --build --help",
                   "example": {
-                    "args": [
-                      "--force"
-                    ]
+                    "args": ["--force"]
                   }
                 }
               },
@@ -2315,9 +1916,7 @@
               "parallelism": true
             },
             "build": {
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "options": {
                 "cwd": "packages/be/core",
                 "command": "tsc --build tsconfig.lib.json"
@@ -2327,28 +1926,18 @@
                 "production",
                 "^production",
                 {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
+                  "externalDependencies": ["typescript"]
                 }
               ],
-              "outputs": [
-                "{projectRoot}/dist"
-              ],
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
+              "outputs": ["{projectRoot}/dist"],
+              "syncGenerators": ["@nx/js:typescript-sync"],
               "metadata": {
-                "technologies": [
-                  "typescript"
-                ],
+                "technologies": ["typescript"],
                 "description": "Builds the project with `tsc`.",
                 "help": {
                   "command": "yarn tsc --build --help",
                   "example": {
-                    "args": [
-                      "--force"
-                    ]
+                    "args": ["--force"]
                   }
                 }
               },
@@ -2357,9 +1946,7 @@
               "parallelism": true
             },
             "build-deps": {
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "configurations": {},
               "options": {},
               "parallelism": true,
@@ -2367,9 +1954,7 @@
             },
             "watch-deps": {
               "continuous": true,
-              "dependsOn": [
-                "build-deps"
-              ],
+              "dependsOn": ["build-deps"],
               "executor": "nx:run-commands",
               "options": {
                 "command": "yarn nx watch --projects core --includeDependentProjects -- yarn nx build-deps core"
@@ -2390,18 +1975,12 @@
                 "{projectRoot}/.eslintrc.json",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "yarn eslint --help",
@@ -2425,9 +2004,7 @@
                 "command": "jest"
               },
               "metadata": {
-                "technologies": [
-                  "jest"
-                ],
+                "technologies": ["jest"],
                 "description": "Run Jest Tests",
                 "help": {
                   "command": "yarn jest --help",
@@ -2444,28 +2021,18 @@
                 "^production",
                 "{workspaceRoot}/jest.preset.js",
                 {
-                  "externalDependencies": [
-                    "jest"
-                  ]
+                  "externalDependencies": ["jest"]
                 }
               ],
-              "outputs": [
-                "{projectRoot}/test-output/jest/coverage"
-              ],
+              "outputs": ["{projectRoot}/test-output/jest/coverage"],
               "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true,
-              "dependsOn": [
-                "^build"
-              ]
+              "dependsOn": ["^build"]
             }
           },
           "name": "core",
-          "tags": [
-            "npm:private",
-            "type:lib",
-            "scope:be"
-          ],
+          "tags": ["npm:private", "type:lib", "scope:be"],
           "metadata": {
             "targetGroups": {},
             "js": {
@@ -2499,9 +2066,7 @@
                 "command": "tsc --noEmit",
                 "cwd": "apps/be/base"
               },
-              "dependsOn": [
-                "^typecheck"
-              ],
+              "dependsOn": ["^typecheck"],
               "configurations": {},
               "parallelism": true
             },
@@ -2520,17 +2085,13 @@
                 "command": "jest --forceExit --detectOpenHandles",
                 "cwd": "apps/be/base"
               },
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "configurations": {},
               "parallelism": true
             },
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
-              "dependsOn": [
-                "^nx-release-publish"
-              ],
+              "dependsOn": ["^nx-release-publish"],
               "options": {},
               "configurations": {},
               "parallelism": true
@@ -2541,12 +2102,8 @@
                 "command": "swc src -d dist --source-maps --copy-files",
                 "cwd": "apps/be/base"
               },
-              "outputs": [
-                "{projectRoot}/dist"
-              ],
-              "dependsOn": [
-                "^build"
-              ],
+              "outputs": ["{projectRoot}/dist"],
+              "dependsOn": ["^build"],
               "configurations": {},
               "parallelism": true
             },
@@ -2556,9 +2113,7 @@
                 "command": "tsc && tsc-alias",
                 "cwd": "apps/be/base"
               },
-              "outputs": [
-                "{projectRoot}/dist"
-              ],
+              "outputs": ["{projectRoot}/dist"],
               "configurations": {},
               "parallelism": true
             },
@@ -2588,9 +2143,7 @@
                 "command": "npm run build && cross-env NODE_ENV=production node dist/server.js",
                 "cwd": "apps/be/base"
               },
-              "dependsOn": [
-                "build"
-              ],
+              "dependsOn": ["build"],
               "configurations": {},
               "parallelism": true
             },
@@ -2672,9 +2225,7 @@
                 "command": "npm run build && pm2 start ecosystem.config.js --only prod",
                 "cwd": "apps/be/base"
               },
-              "dependsOn": [
-                "build"
-              ],
+              "dependsOn": ["build"],
               "configurations": {},
               "parallelism": true
             },
@@ -2689,11 +2240,7 @@
             }
           },
           "name": "base-be",
-          "tags": [
-            "npm:public",
-            "type:app",
-            "scope:be"
-          ],
+          "tags": ["npm:public", "type:app", "scope:be"],
           "metadata": {
             "targetGroups": {},
             "description": "TypeScript + PostgreSQL + Express API Server",
@@ -2714,9 +2261,7 @@
           "root": ".",
           "name": "@thrilled/source",
           "includedScripts": [],
-          "tags": [
-            "npm:private"
-          ],
+          "tags": ["npm:private"],
           "metadata": {
             "targetGroups": {},
             "js": {

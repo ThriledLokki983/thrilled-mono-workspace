@@ -1,4 +1,3 @@
-
 import { Server } from 'http';
 import { Logger } from '../logging/Logger';
 
@@ -91,8 +90,10 @@ export class GracefulShutdown {
 
       // Run custom shutdown handlers
       if (this.shutdownHandlers.length > 0) {
-        this.logger.info(`Running ${this.shutdownHandlers.length} shutdown handlers...`);
-        
+        this.logger.info(
+          `Running ${this.shutdownHandlers.length} shutdown handlers...`
+        );
+
         await Promise.all(
           this.shutdownHandlers.map(async (handler, index) => {
             try {
@@ -128,10 +129,10 @@ export class GracefulShutdown {
       }
 
       clearTimeout(shutdownTimeout);
-      
+
       const shutdownTime = Date.now() - startTime;
       this.logger.info(`Graceful shutdown completed in ${shutdownTime}ms`);
-      
+
       process.exit(exitCode);
     } catch (error) {
       this.logger.error(error as Error, { context: 'GracefulShutdown' });

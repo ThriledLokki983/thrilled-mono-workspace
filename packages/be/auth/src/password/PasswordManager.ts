@@ -1,20 +1,20 @@
-import bcrypt from "bcrypt";
-import { randomBytes, createHash } from "crypto";
-import type { Logger } from "@mono/be-core";
-import type { PasswordConfig, PasswordResetToken, CacheManager } from "../types/index.js";
+import bcrypt from 'bcrypt';
+import { randomBytes, createHash } from 'crypto';
+import type { Logger } from '@mono/be-core';
+import type {
+  PasswordConfig,
+  PasswordResetToken,
+  CacheManager,
+} from '../types/index.js';
 
 export class PasswordManager {
   private readonly config: PasswordConfig;
   private readonly cache: CacheManager;
   private readonly logger: Logger;
-  private readonly resetTokenPrefix = "pwd:reset:";
-  private readonly attemptPrefix = "pwd:attempt:";
+  private readonly resetTokenPrefix = 'pwd:reset:';
+  private readonly attemptPrefix = 'pwd:attempt:';
 
-  constructor(
-    config: PasswordConfig,
-    cache: CacheManager,
-    logger: Logger
-  ) {
+  constructor(config: PasswordConfig, cache: CacheManager, logger: Logger) {
     // Set defaults for missing config properties
     const defaults: PasswordConfig = {
       saltRounds: 12,
@@ -25,9 +25,9 @@ export class PasswordManager {
       requireSymbols: false,
       requireSpecialChars: false,
       maxAttempts: 5,
-      lockoutDuration: "15m",
+      lockoutDuration: '15m',
     };
-    
+
     this.config = { ...defaults, ...config };
     this.cache = cache;
     this.logger = logger;
@@ -39,17 +39,17 @@ export class PasswordManager {
   async hashPassword(password: string): Promise<string> {
     try {
       this.validatePasswordPolicy(password);
-      
+
       const salt = await bcrypt.genSalt(this.config.saltRounds);
       const hash = await bcrypt.hash(password, salt);
-      
-      this.logger.debug("Password hashed successfully", {
+
+      this.logger.debug('Password hashed successfully', {
         saltRounds: this.config.saltRounds,
       });
-      
+
       return hash;
     } catch (error) {
-      this.logger.error("Password hashing failed", {
+      this.logger.error('Password hashing failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -62,14 +62,14 @@ export class PasswordManager {
   async verifyPassword(password: string, hash: string): Promise<boolean> {
     try {
       const isValid = await bcrypt.compare(password, hash);
-      
-      this.logger.debug("Password verification completed", {
+
+      this.logger.debug('Password verification completed', {
         isValid,
       });
-      
+
       return isValid;
     } catch (error) {
-      this.logger.error("Password verification failed", {
+      this.logger.error('Password verification failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       return false;
@@ -84,27 +84,32 @@ export class PasswordManager {
 
     // Length check
     if (password.length < this.config.minLength) {
-      errors.push(`Password must be at least ${this.config.minLength} characters long`);
+      errors.push(
+        `Password must be at least ${this.config.minLength} characters long`
+      );
     }
 
     // Uppercase check
     if (this.config.requireUppercase && !/[A-Z]/.test(password)) {
-      errors.push("Password must contain at least one uppercase letter");
+      errors.push('Password must contain at least one uppercase letter');
     }
 
     // Lowercase check
     if (this.config.requireLowercase && !/[a-z]/.test(password)) {
-      errors.push("Password must contain at least one lowercase letter");
+      errors.push('Password must contain at least one lowercase letter');
     }
 
     // Numbers check
     if (this.config.requireNumbers && !/\d/.test(password)) {
-      errors.push("Password must contain at least one number");
+      errors.push('Password must contain at least one number');
     }
 
     // Symbols check
-    if (this.config.requireSymbols && !/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>?]/.test(password)) {
-      errors.push("Password must contain at least one special character");
+    if (
+      this.config.requireSymbols &&
+      !/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>?]/.test(password)
+    ) {
+      errors.push('Password must contain at least one special character');
     }
 
     // Blacklist check
@@ -112,14 +117,16 @@ export class PasswordManager {
       const lowercasePassword = password.toLowerCase();
       for (const blacklisted of this.config.blacklistedPasswords) {
         if (lowercasePassword.includes(blacklisted.toLowerCase())) {
-          errors.push("Password contains forbidden words or patterns");
+          errors.push('Password contains forbidden words or patterns');
           break;
         }
       }
     }
 
     if (errors.length > 0) {
-      throw new Error(`Password policy validation failed: ${errors.join(", ")}`);
+      throw new Error(
+        `Password policy validation failed: ${errors.join(', ')}`
+      );
     }
   }
 
@@ -138,37 +145,37 @@ export class PasswordManager {
     if (password.length >= 12) score += 10;
     if (password.length >= 16) score += 10;
     else if (password.length < 8) {
-      feedback.push("Use at least 8 characters");
+      feedback.push('Use at least 8 characters');
     }
 
     // Character variety
     if (/[a-z]/.test(password)) score += 10;
-    else feedback.push("Add lowercase letters");
+    else feedback.push('Add lowercase letters');
 
     if (/[A-Z]/.test(password)) score += 10;
-    else feedback.push("Add uppercase letters");
+    else feedback.push('Add uppercase letters');
 
     if (/\d/.test(password)) score += 10;
-    else feedback.push("Add numbers");
+    else feedback.push('Add numbers');
 
     if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>?]/.test(password)) score += 15;
-    else feedback.push("Add special characters");
+    else feedback.push('Add special characters');
 
     // Pattern checking
     if (!/(.)\1{2,}/.test(password)) score += 10; // No repeated characters
-    else feedback.push("Avoid repeated characters");
+    else feedback.push('Avoid repeated characters');
 
     if (!/(\d{3,})/.test(password)) score += 5; // No long number sequences
-    else feedback.push("Avoid long number sequences");
+    else feedback.push('Avoid long number sequences');
 
     // Common patterns
     const commonPatterns = ['123', 'abc', 'qwe', 'password', 'admin'];
-    const hasCommonPattern = commonPatterns.some(pattern => 
+    const hasCommonPattern = commonPatterns.some((pattern) =>
       password.toLowerCase().includes(pattern)
     );
-    
+
     if (!hasCommonPattern) score += 10;
-    else feedback.push("Avoid common patterns");
+    else feedback.push('Avoid common patterns');
 
     return {
       score: Math.min(score, 100),
@@ -215,7 +222,10 @@ export class PasswordManager {
     }
 
     // Shuffle the password to avoid predictable patterns
-    return password.split('').sort(() => Math.random() - 0.5).join('');
+    return password
+      .split('')
+      .sort(() => Math.random() - 0.5)
+      .join('');
   }
 
   /**
@@ -229,7 +239,7 @@ export class PasswordManager {
       // Generate random token
       const token = randomBytes(32).toString('hex');
       const hashedToken = createHash('sha256').update(token).digest('hex');
-      
+
       // Store in cache with expiration
       const resetData: PasswordResetToken = {
         token,
@@ -253,14 +263,14 @@ export class PasswordManager {
         expiresInMinutes * 60
       );
 
-      this.logger.info("Password reset token created", {
+      this.logger.info('Password reset token created', {
         userId,
         expiresInMinutes,
       });
 
       return { token, hashedToken };
     } catch (error) {
-      this.logger.error("Failed to create reset token", {
+      this.logger.error('Failed to create reset token', {
         error: error instanceof Error ? error.message : String(error),
         userId,
       });
@@ -274,23 +284,23 @@ export class PasswordManager {
   async verifyResetToken(token: string): Promise<string> {
     try {
       const hashedToken = createHash('sha256').update(token).digest('hex');
-      
+
       const resetData = await this.cache.getObject<PasswordResetToken>(
         `${this.resetTokenPrefix}${hashedToken}`
       );
 
       if (!resetData) {
-        throw new Error("Invalid or expired reset token");
+        throw new Error('Invalid or expired reset token');
       }
 
       if (resetData.used) {
-        throw new Error("Reset token has already been used");
+        throw new Error('Reset token has already been used');
       }
 
       if (new Date() > resetData.expiresAt) {
         // Clean up expired token
         await this.cache.del(`${this.resetTokenPrefix}${hashedToken}`);
-        throw new Error("Reset token has expired");
+        throw new Error('Reset token has expired');
       }
 
       // Mark token as used
@@ -304,13 +314,13 @@ export class PasswordManager {
       // Clean up user mapping
       await this.cache.del(`${this.resetTokenPrefix}user:${resetData.userId}`);
 
-      this.logger.info("Reset token verified and consumed", {
+      this.logger.info('Reset token verified and consumed', {
         userId: resetData.userId,
       });
 
       return resetData.userId;
     } catch (error) {
-      this.logger.error("Reset token verification failed", {
+      this.logger.error('Reset token verification failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -330,9 +340,9 @@ export class PasswordManager {
         await this.cache.del(userTokenKey);
       }
 
-      this.logger.info("Reset tokens revoked for user", { userId });
+      this.logger.info('Reset tokens revoked for user', { userId });
     } catch (error) {
-      this.logger.error("Failed to revoke reset tokens", {
+      this.logger.error('Failed to revoke reset tokens', {
         error: error instanceof Error ? error.message : String(error),
         userId,
       });
@@ -351,7 +361,7 @@ export class PasswordManager {
       const windowMinutes = 15;
 
       if (attempts >= maxAttempts) {
-        this.logger.warn("Reset attempt rate limit exceeded", {
+        this.logger.warn('Reset attempt rate limit exceeded', {
           identifier,
           attempts,
         });
@@ -361,7 +371,7 @@ export class PasswordManager {
       await this.cache.set(key, (attempts + 1).toString(), windowMinutes * 60);
       return true;
     } catch (error) {
-      this.logger.error("Failed to track reset attempt", {
+      this.logger.error('Failed to track reset attempt', {
         error: error instanceof Error ? error.message : String(error),
         identifier,
       });
@@ -381,6 +391,6 @@ export class PasswordManager {
    */
   updatePasswordPolicy(newConfig: Partial<PasswordConfig>): void {
     Object.assign(this.config, newConfig);
-    this.logger.info("Password policy updated", { newConfig });
+    this.logger.info('Password policy updated', { newConfig });
   }
 }

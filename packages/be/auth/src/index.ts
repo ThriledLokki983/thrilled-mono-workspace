@@ -7,7 +7,10 @@ export { SessionManager } from './session/SessionManager.js';
 
 // Middleware
 export { AuthMiddleware } from './middleware/AuthMiddleware.js';
-export type { AuthenticatedRequest, AuthMiddlewareOptions } from './middleware/AuthMiddleware.js';
+export type {
+  AuthenticatedRequest,
+  AuthMiddlewareOptions,
+} from './middleware/AuthMiddleware.js';
 
 // RBAC
 export { RBACManager } from './rbac/RBACManager.js';
@@ -26,7 +29,7 @@ export {
   TimeUtils,
   IPUtils,
   DeviceUtils,
-  RateLimitUtils
+  RateLimitUtils,
 } from './utils/index.js';
 
 // Legacy support
@@ -34,3 +37,19 @@ export * from './lib/auth.js';
 
 // Cache Adapters
 export { RedisCacheAdapter } from './cache/RedisCacheAdapter.js';
+
+// export the types for the auth package
+export type {
+  JWTConfig,
+  TokenPayload,
+  AccessTokenPayload,
+  RefreshTokenPayload,
+  TokenValidationResult,
+  AuthResult,
+  TokenPair,
+  LoginCredentials,
+  RegistrationData,
+  PasswordResetRequest,
+  PasswordResetData,
+} from './types/index.js';
+

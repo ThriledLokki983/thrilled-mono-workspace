@@ -1,9 +1,9 @@
 // Main exports for the database package
-export { DatabaseManager } from "./managers/DatabaseManager";
-export { QueryBuilder } from "./builders/QueryBuilder";
-export { MigrationRunner } from "./migrations/MigrationRunner";
-export { CacheManager } from "./cache/CacheManager";
-export { DatabaseUtils } from "./utils/DatabaseUtils";
+export { DatabaseManager } from './managers/DatabaseManager';
+export { QueryBuilder } from './builders/QueryBuilder';
+export { MigrationRunner } from './migrations/MigrationRunner';
+export { CacheManager } from './cache/CacheManager';
+export { DatabaseUtils } from './utils/DatabaseUtils';
 
 // Re-export types from be-types for convenience
 export type {
@@ -22,7 +22,7 @@ export type {
   UpdateQuery,
   DeleteQuery,
   DatabaseCreationOptions,
-} from "@thrilled/be-types";
+} from '@thrilled/be-types';
 
 // Export Migration interface
-export type { Migration } from "./migrations/MigrationRunner";
+export type { Migration } from './migrations/MigrationRunner';

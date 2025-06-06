@@ -2,16 +2,7 @@ import { Express } from 'express';
 import { BasePlugin } from '@mono/be-core';
 import { DatabaseManager } from '@thrilled/databases';
 import { DatabaseManagerConfig } from '@thrilled/be-types';
-import {
-  POSTGRES_USER,
-  POSTGRES_PASSWORD,
-  POSTGRES_HOST,
-  POSTGRES_PORT,
-  POSTGRES_DB,
-  REDIS_HOST,
-  REDIS_PORT,
-  REDIS_PASSWORD
-} from '@config';
+import { POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, POSTGRES_DB, REDIS_HOST, REDIS_PORT, REDIS_PASSWORD } from '@config';
 
 export class DatabasePlugin extends BasePlugin {
   readonly name = 'database';
@@ -40,8 +31,8 @@ export class DatabasePlugin extends BasePlugin {
               max: 20,
               idleTimeoutMillis: 30000,
               connectionTimeoutMillis: 5000,
-            }
-          }
+            },
+          },
         },
         default: 'primary',
         migrations: {
@@ -52,7 +43,7 @@ export class DatabasePlugin extends BasePlugin {
         healthCheck: {
           enabled: true,
           interval: 30000, // 30 seconds
-          timeout: 5000,   // 5 seconds
+          timeout: 5000, // 5 seconds
         },
         cache: {
           host: REDIS_HOST || 'localhost',
@@ -63,7 +54,7 @@ export class DatabasePlugin extends BasePlugin {
           ttl: 3600, // 1 hour default
           maxRetries: 3,
           retryDelay: 1000,
-        }
+        },
       };
 
       // Initialize the DatabaseManager

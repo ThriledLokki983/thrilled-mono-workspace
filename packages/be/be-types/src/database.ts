@@ -95,10 +95,10 @@ export interface ConnectionStatus {
 
 // Health check result
 export interface HealthCheckResult {
-  status: "healthy" | "unhealthy" | "degraded";
+  status: 'healthy' | 'unhealthy' | 'degraded';
   connections: ConnectionStatus[];
   cache?: {
-    status: "connected" | "disconnected" | "error";
+    status: 'connected' | 'disconnected' | 'error';
     error?: string;
   };
   uptime: number;
@@ -120,7 +120,7 @@ export interface SelectQuery {
   join(table: string, condition: string): SelectQuery;
   leftJoin(table: string, condition: string): SelectQuery;
   rightJoin(table: string, condition: string): SelectQuery;
-  orderBy(column: string, direction?: "ASC" | "DESC"): SelectQuery;
+  orderBy(column: string, direction?: 'ASC' | 'DESC'): SelectQuery;
   groupBy(columns: string | string[]): SelectQuery;
   having(condition: string, ...params: unknown[]): SelectQuery;
   limit(count: number): SelectQuery;
@@ -131,9 +131,11 @@ export interface SelectQuery {
 
 export interface InsertQuery {
   into(table: string): InsertQuery;
-  values(data: Record<string, unknown> | Record<string, unknown>[]): InsertQuery;
+  values(
+    data: Record<string, unknown> | Record<string, unknown>[]
+  ): InsertQuery;
   returning(columns?: string | string[]): InsertQuery;
-  onConflict(column: string, action?: "DO NOTHING" | "DO UPDATE"): InsertQuery;
+  onConflict(column: string, action?: 'DO NOTHING' | 'DO UPDATE'): InsertQuery;
   execute<T = unknown>(): Promise<QueryResult<T>>;
   toSQL(): { text: string; values: unknown[] };
 }

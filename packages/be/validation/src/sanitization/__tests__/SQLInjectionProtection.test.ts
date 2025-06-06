@@ -1,19 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
 import { SQLInjectionProtection } from '../SQLInjectionProtection.js';
 
-const createMockRequest = (overrides: Partial<Request> = {}): Request => ({
-  body: {},
-  query: {},
-  params: {},
-  headers: {},
-  ...overrides
-} as Request);
+const createMockRequest = (overrides: Partial<Request> = {}): Request =>
+  ({
+    body: {},
+    query: {},
+    params: {},
+    headers: {},
+    ...overrides,
+  } as Request);
 
 const createMockResponse = (): Response => {
   const res = {
     status: jest.fn().mockReturnThis(),
     json: jest.fn().mockReturnThis(),
-    locals: {}
+    locals: {},
   } as unknown as Response;
   return res;
 };
@@ -23,7 +24,9 @@ const createMockNext = (): NextFunction => jest.fn();
 describe('SQLInjectionProtection', () => {
   describe('scanForSQLInjection', () => {
     test('should detect union-based injection', () => {
-      const result = SQLInjectionProtection.scanForSQLInjection('1 UNION SELECT * FROM users');
+      const result = SQLInjectionProtection.scanForSQLInjection(
+        '1 UNION SELECT * FROM users'
+      );
       expect(result.hasSQLInjection).toBe(true);
       expect(result.severity).toBe('high');
       expect(result.risk).toContain('Union-based injection');
@@ -37,35 +40,42 @@ describe('SQLInjectionProtection', () => {
     });
 
     test('should detect time-based blind injection', () => {
-      const result = SQLInjectionProtection.scanForSQLInjection('1; WAITFOR DELAY \'00:00:05\'');
+      const result = SQLInjectionProtection.scanForSQLInjection(
+        "1; WAITFOR DELAY '00:00:05'"
+      );
       expect(result.hasSQLInjection).toBe(true);
       expect(result.severity).toBe('high');
       expect(result.risk).toContain('Time-based blind');
     });
 
     test('should detect stacked queries', () => {
-      const result = SQLInjectionProtection.scanForSQLInjection('1; DROP TABLE users');
+      const result = SQLInjectionProtection.scanForSQLInjection(
+        '1; DROP TABLE users'
+      );
       expect(result.hasSQLInjection).toBe(true);
       expect(result.severity).toBe('high');
       expect(result.risk).toContain('Stacked queries');
     });
 
     test('should detect comment injection', () => {
-      const result = SQLInjectionProtection.scanForSQLInjection('admin\'--');
+      const result = SQLInjectionProtection.scanForSQLInjection("admin'--");
       expect(result.hasSQLInjection).toBe(true);
       expect(result.severity).toBe('medium');
       expect(result.risk).toContain('Comment injection');
     });
 
     test('should detect information schema access', () => {
-      const result = SQLInjectionProtection.scanForSQLInjection('SELECT * FROM information_schema.tables');
+      const result = SQLInjectionProtection.scanForSQLInjection(
+        'SELECT * FROM information_schema.tables'
+      );
       expect(result.hasSQLInjection).toBe(true);
       expect(result.severity).toBe('high');
       expect(result.risk).toContain('Information schema access');
     });
 
     test('should return false for safe input', () => {
-      const result = SQLInjectionProtection.scanForSQLInjection('normal search text');
+      const result =
+        SQLInjectionProtection.scanForSQLInjection('normal search text');
       expect(result.hasSQLInjection).toBe(false);
       expect(result.severity).toBe('low');
     });
@@ -78,12 +88,16 @@ describe('SQLInjectionProtection', () => {
 
   describe('escapeString', () => {
     test('should escape single quotes', () => {
-      const result = SQLInjectionProtection.escapeString("Robert'; DROP TABLE students;--");
+      const result = SQLInjectionProtection.escapeString(
+        "Robert'; DROP TABLE students;--"
+      );
       expect(result).toBe("Robert''; DROP TABLE students;--");
     });
 
     test('should escape double quotes', () => {
-      const result = SQLInjectionProtection.escapeString('SELECT * FROM users WHERE name="admin"');
+      const result = SQLInjectionProtection.escapeString(
+        'SELECT * FROM users WHERE name="admin"'
+      );
       expect(result).toBe('SELECT * FROM users WHERE name=""admin""');
     });
 
@@ -121,8 +135,12 @@ describe('SQLInjectionProtection', () => {
     });
 
     test('should reject identifiers with special characters', () => {
-      expect(SQLInjectionProtection.validateIdentifier('user-name')).toBe(false);
-      expect(SQLInjectionProtection.validateIdentifier('user@domain')).toBe(false);
+      expect(SQLInjectionProtection.validateIdentifier('user-name')).toBe(
+        false
+      );
+      expect(SQLInjectionProtection.validateIdentifier('user@domain')).toBe(
+        false
+      );
     });
 
     test('should handle empty input', () => {
@@ -165,12 +183,16 @@ describe('SQLInjectionProtection', () => {
 
   describe('sanitizeOrderBy', () => {
     test('should allow valid order by clauses', () => {
-      const result = SQLInjectionProtection.sanitizeOrderBy('name ASC, age DESC');
+      const result =
+        SQLInjectionProtection.sanitizeOrderBy('name ASC, age DESC');
       expect(result).toBe('name ASC, age DESC');
     });
 
     test('should filter invalid columns', () => {
-      const result = SQLInjectionProtection.sanitizeOrderBy('name ASC, DROP DESC', ['name']);
+      const result = SQLInjectionProtection.sanitizeOrderBy(
+        'name ASC, DROP DESC',
+        ['name']
+      );
       expect(result).toBe('name ASC');
     });
 
@@ -192,7 +214,9 @@ describe('SQLInjectionProtection', () => {
     });
 
     test('should reject high-risk SQL injection', () => {
-      const result = SQLInjectionProtection.isSafe('1 UNION SELECT * FROM users');
+      const result = SQLInjectionProtection.isSafe(
+        '1 UNION SELECT * FROM users'
+      );
       expect(result).toBe(false);
     });
 
@@ -209,8 +233,12 @@ describe('SQLInjectionProtection', () => {
     });
 
     test('should create PostgreSQL placeholders', () => {
-      expect(SQLInjectionProtection.createPlaceholder(1, 'postgresql')).toBe('$1');
-      expect(SQLInjectionProtection.createPlaceholder(2, 'postgresql')).toBe('$2');
+      expect(SQLInjectionProtection.createPlaceholder(1, 'postgresql')).toBe(
+        '$1'
+      );
+      expect(SQLInjectionProtection.createPlaceholder(2, 'postgresql')).toBe(
+        '$2'
+      );
     });
 
     test('should create SQLite placeholders', () => {
@@ -224,13 +252,19 @@ describe('SQLInjectionProtection', () => {
 
   describe('buildWhereClause', () => {
     test('should build simple WHERE clause', () => {
-      const result = SQLInjectionProtection.buildWhereClause({ name: 'John', age: 25 });
+      const result = SQLInjectionProtection.buildWhereClause({
+        name: 'John',
+        age: 25,
+      });
       expect(result.clause).toBe('WHERE name = ? AND age = ?');
       expect(result.values).toEqual(['John', 25]);
     });
 
     test('should handle null values', () => {
-      const result = SQLInjectionProtection.buildWhereClause({ name: 'John', deleted: null });
+      const result = SQLInjectionProtection.buildWhereClause({
+        name: 'John',
+        deleted: null,
+      });
       expect(result.clause).toBe('WHERE name = ? AND deleted IS NULL');
       expect(result.values).toEqual(['John']);
     });
@@ -242,10 +276,10 @@ describe('SQLInjectionProtection', () => {
     });
 
     test('should skip invalid identifiers', () => {
-      const result = SQLInjectionProtection.buildWhereClause({ 
-        'valid_name': 'John', 
+      const result = SQLInjectionProtection.buildWhereClause({
+        valid_name: 'John',
         'invalid-name': 'value',
-        'SELECT': 'bad'
+        SELECT: 'bad',
       });
       expect(result.clause).toBe('WHERE valid_name = ?');
       expect(result.values).toEqual(['John']);
@@ -262,7 +296,7 @@ describe('SQLInjectionProtection', () => {
     test('should sanitize request body', () => {
       const middleware = SQLInjectionProtection.middleware();
       const req = createMockRequest({
-        body: { query: "'; DROP TABLE users; --" }
+        body: { query: "'; DROP TABLE users; --" },
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -276,7 +310,7 @@ describe('SQLInjectionProtection', () => {
     test('should sanitize query parameters', () => {
       const middleware = SQLInjectionProtection.middleware();
       const req = createMockRequest({
-        query: { search: "'; DROP TABLE users; --" }
+        query: { search: "'; DROP TABLE users; --" },
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -290,7 +324,7 @@ describe('SQLInjectionProtection', () => {
     test('should sanitize URL parameters', () => {
       const middleware = SQLInjectionProtection.middleware();
       const req = createMockRequest({
-        params: { id: "'; DROP TABLE users; --" }
+        params: { id: "'; DROP TABLE users; --" },
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -306,9 +340,9 @@ describe('SQLInjectionProtection', () => {
       const req = createMockRequest({
         body: {
           user: {
-            name: "'; DROP TABLE users; --"
-          }
-        }
+            name: "'; DROP TABLE users; --",
+          },
+        },
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -323,8 +357,8 @@ describe('SQLInjectionProtection', () => {
       const middleware = SQLInjectionProtection.middleware();
       const req = createMockRequest({
         body: {
-          queries: ['safe', "'; DROP TABLE users; --", 'also safe']
-        }
+          queries: ['safe', "'; DROP TABLE users; --", 'also safe'],
+        },
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -338,7 +372,7 @@ describe('SQLInjectionProtection', () => {
     test('should handle errors gracefully', () => {
       const middleware = SQLInjectionProtection.middleware();
       const req = createMockRequest({
-        body: null
+        body: null,
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -351,10 +385,10 @@ describe('SQLInjectionProtection', () => {
     test('should work with custom options', () => {
       const middleware = SQLInjectionProtection.middleware({
         escapeQuotes: true,
-        removeSqlKeywords: true
+        removeSqlKeywords: true,
       });
       const req = createMockRequest({
-        body: { query: "SELECT * FROM users WHERE name = 'admin'" }
+        body: { query: "SELECT * FROM users WHERE name = 'admin'" },
       });
       const res = createMockResponse();
       const next = createMockNext();

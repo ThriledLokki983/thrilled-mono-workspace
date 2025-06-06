@@ -1,6 +1,6 @@
-import { Pool } from "pg";
-import { Logger } from "@mono/be-core";
-import { DatabaseConnectionConfig } from "@thrilled/be-types";
+import { Pool } from 'pg';
+import { Logger } from '@mono/be-core';
+import { DatabaseConnectionConfig } from '@thrilled/be-types';
 
 /**
  * Database connection utilities
@@ -16,7 +16,7 @@ export class DatabaseUtils {
   ): Promise<boolean> {
     try {
       const result = await pool.query(
-        "SELECT 1 FROM pg_database WHERE datname = $1",
+        'SELECT 1 FROM pg_database WHERE datname = $1',
         [databaseName]
       );
       return result.rows.length > 0;
@@ -63,7 +63,7 @@ export class DatabaseUtils {
       }
 
       if (queryParts.length > 0) {
-        query += ` WITH ${queryParts.join(" ")}`;
+        query += ` WITH ${queryParts.join(' ')}`;
       }
 
       await pool.query(query);
@@ -110,7 +110,7 @@ export class DatabaseUtils {
   static async tableExists(
     pool: Pool,
     tableName: string,
-    schema = "public",
+    schema = 'public',
     logger: Logger
   ): Promise<boolean> {
     try {
@@ -134,7 +134,7 @@ export class DatabaseUtils {
   static async getTableColumns(
     pool: Pool,
     tableName: string,
-    schema = "public",
+    schema = 'public',
     logger: Logger
   ): Promise<
     Array<{
@@ -174,7 +174,7 @@ export class DatabaseUtils {
         `SELECT pg_size_pretty(pg_database_size($1)) as size`,
         [databaseName]
       );
-      return result.rows[0]?.size || "0 bytes";
+      return result.rows[0]?.size || '0 bytes';
     } catch (error) {
       logger.error(`Error getting database size for: ${databaseName}`, {
         error: error instanceof Error ? error.message : String(error),
@@ -189,7 +189,7 @@ export class DatabaseUtils {
   static async getTableSize(
     pool: Pool,
     tableName: string,
-    schema = "public",
+    schema = 'public',
     logger: Logger
   ): Promise<string> {
     try {
@@ -198,7 +198,7 @@ export class DatabaseUtils {
         `SELECT pg_size_pretty(pg_total_relation_size($1)) as size`,
         [fullTableName]
       );
-      return result.rows[0]?.size || "0 bytes";
+      return result.rows[0]?.size || '0 bytes';
     } catch (error) {
       logger.error(`Error getting table size for: ${tableName}`, {
         error: error instanceof Error ? error.message : String(error),
@@ -226,10 +226,10 @@ export class DatabaseUtils {
         databasesResult,
         versionResult,
       ] = await Promise.all([
-        pool.query("SELECT count(*) as count FROM pg_stat_activity"),
-        pool.query("SHOW max_connections"),
-        pool.query("SELECT count(*) as count FROM pg_database"),
-        pool.query("SELECT version()"),
+        pool.query('SELECT count(*) as count FROM pg_stat_activity'),
+        pool.query('SHOW max_connections'),
+        pool.query('SELECT count(*) as count FROM pg_database'),
+        pool.query('SELECT version()'),
       ]);
 
       return {
@@ -239,7 +239,7 @@ export class DatabaseUtils {
         version: versionResult.rows[0].version,
       };
     } catch (error) {
-      logger.error("Error getting database statistics:", {
+      logger.error('Error getting database statistics:', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -286,12 +286,12 @@ export class DatabaseUtils {
     logger: Logger
   ): Promise<void> {
     try {
-      const fs = await import("fs/promises");
-      const sql = await fs.readFile(filePath, "utf-8");
+      const fs = await import('fs/promises');
+      const sql = await fs.readFile(filePath, 'utf-8');
 
       // Split by semicolon and execute each statement
       const statements = sql
-        .split(";")
+        .split(';')
         .map((stmt) => stmt.trim())
         .filter((stmt) => stmt.length > 0);
 
@@ -332,7 +332,7 @@ export class DatabaseUtils {
         const columns = await this.getTableColumns(
           pool,
           table.table_name,
-          "public",
+          'public',
           logger
         );
         schema += `-- Table: ${table.table_name}\n`;
@@ -340,15 +340,17 @@ export class DatabaseUtils {
 
         const columnDefs = columns.map(
           (col) =>
-            `  ${col.column_name} ${col.data_type}${col.is_nullable === "NO" ? " NOT NULL" : ""}${col.column_default ? ` DEFAULT ${col.column_default}` : ""}`
+            `  ${col.column_name} ${col.data_type}${
+              col.is_nullable === 'NO' ? ' NOT NULL' : ''
+            }${col.column_default ? ` DEFAULT ${col.column_default}` : ''}`
         );
 
-        schema += columnDefs.join(",\n");
-        schema += "\n);\n\n";
+        schema += columnDefs.join(',\n');
+        schema += '\n);\n\n';
       }
 
-      const fs = await import("fs/promises");
-      await fs.writeFile(outputPath, schema, "utf-8");
+      const fs = await import('fs/promises');
+      await fs.writeFile(outputPath, schema, 'utf-8');
 
       logger.info(`Schema backup saved to: ${outputPath}`);
     } catch (error) {
@@ -365,32 +367,32 @@ export class DatabaseUtils {
   static validateConnectionConfig(config: DatabaseConnectionConfig): string[] {
     const errors: string[] = [];
 
-    if (!config.host) errors.push("Host is required");
-    if (!config.port) errors.push("Port is required");
-    if (!config.database) errors.push("Database name is required");
-    if (!config.username) errors.push("Username is required");
-    if (!config.password) errors.push("Password is required");
+    if (!config.host) errors.push('Host is required');
+    if (!config.port) errors.push('Port is required');
+    if (!config.database) errors.push('Database name is required');
+    if (!config.username) errors.push('Username is required');
+    if (!config.password) errors.push('Password is required');
 
     if (
       config.port &&
       (isNaN(config.port) || config.port < 1 || config.port > 65535)
     ) {
-      errors.push("Port must be a valid number between 1 and 65535");
+      errors.push('Port must be a valid number between 1 and 65535');
     }
 
     if (config.pool) {
       if (config.pool.min && (isNaN(config.pool.min) || config.pool.min < 0)) {
-        errors.push("Pool min must be a non-negative number");
+        errors.push('Pool min must be a non-negative number');
       }
       if (config.pool.max && (isNaN(config.pool.max) || config.pool.max < 1)) {
-        errors.push("Pool max must be a positive number");
+        errors.push('Pool max must be a positive number');
       }
       if (
         config.pool.min &&
         config.pool.max &&
         config.pool.min > config.pool.max
       ) {
-        errors.push("Pool min cannot be greater than pool max");
+        errors.push('Pool min cannot be greater than pool max');
       }
     }
 

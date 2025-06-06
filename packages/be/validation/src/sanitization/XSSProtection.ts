@@ -9,7 +9,7 @@ export class XSSProtection {
   private static defaultOptions: SanitizationOptions['xss'] = {
     removeScriptTags: true,
     encodeHtml: true,
-    allowSafeAttributes: []
+    allowSafeAttributes: [],
   };
 
   /**
@@ -47,7 +47,7 @@ export class XSSProtection {
    * Sanitize object for XSS protection
    */
   private static sanitizeObject(
-    obj: Record<string, any>, 
+    obj: Record<string, any>,
     options: SanitizationOptions['xss']
   ): Record<string, any> {
     const sanitized: Record<string, any> = {};
@@ -56,7 +56,7 @@ export class XSSProtection {
       if (typeof value === 'string') {
         sanitized[key] = Sanitizer.sanitizeXSS(value, options);
       } else if (Array.isArray(value)) {
-        sanitized[key] = value.map(item => 
+        sanitized[key] = value.map((item) =>
           typeof item === 'string' ? Sanitizer.sanitizeXSS(item, options) : item
         );
       } else if (typeof value === 'object' && value !== null) {
@@ -83,7 +83,10 @@ export class XSSProtection {
 
     const xssPatterns = [
       // Script tags
-      { pattern: /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, severity: 'high' as const },
+      {
+        pattern: /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+        severity: 'high' as const,
+      },
       // Event handlers
       { pattern: /on\w+\s*=\s*[^>\s]+/gi, severity: 'high' as const },
       // JavaScript protocol
@@ -93,15 +96,27 @@ export class XSSProtection {
       // Expression functions
       { pattern: /expression\s*\(/gi, severity: 'medium' as const },
       // Iframe with javascript
-      { pattern: /<iframe[^>]*src\s*=\s*["\']javascript:/gi, severity: 'high' as const },
+      {
+        pattern: /<iframe[^>]*src\s*=\s*["']javascript:/gi,
+        severity: 'high' as const,
+      },
       // Object/embed tags
       { pattern: /<(object|embed)\b[^>]*>/gi, severity: 'medium' as const },
       // Meta refresh
-      { pattern: /<meta[^>]*http-equiv\s*=\s*["\']refresh["\'][^>]*>/gi, severity: 'medium' as const },
+      {
+        pattern: /<meta[^>]*http-equiv\s*=\s*["']refresh["'][^>]*>/gi,
+        severity: 'medium' as const,
+      },
       // Link with javascript
-      { pattern: /<link[^>]*href\s*=\s*["\']javascript:/gi, severity: 'high' as const },
+      {
+        pattern: /<link[^>]*href\s*=\s*["']javascript:/gi,
+        severity: 'high' as const,
+      },
       // Style with expression
-      { pattern: /<style[^>]*>.*expression\s*\(/gi, severity: 'medium' as const }
+      {
+        pattern: /<style[^>]*>.*expression\s*\(/gi,
+        severity: 'medium' as const,
+      },
     ];
 
     const foundPatterns: string[] = [];
@@ -111,7 +126,10 @@ export class XSSProtection {
       const matches = input.match(pattern);
       if (matches) {
         foundPatterns.push(...matches);
-        if (severity === 'high' || (severity === 'medium' && maxSeverity === 'low')) {
+        if (
+          severity === 'high' ||
+          (severity === 'medium' && maxSeverity === 'low')
+        ) {
           maxSeverity = severity;
         }
       }
@@ -120,7 +138,7 @@ export class XSSProtection {
     return {
       hasXSS: foundPatterns.length > 0,
       patterns: foundPatterns,
-      severity: foundPatterns.length > 0 ? maxSeverity : 'low'
+      severity: foundPatterns.length > 0 ? maxSeverity : 'low',
     };
   }
 
@@ -128,7 +146,7 @@ export class XSSProtection {
    * Clean and validate HTML content
    */
   static cleanHTML(
-    html: string, 
+    html: string,
     options?: {
       allowedTags?: string[];
       allowedAttributes?: Record<string, string[]>;
@@ -141,13 +159,26 @@ export class XSSProtection {
 
     const sanitizationOptions: SanitizationOptions['html'] = {
       allowedTags: options?.allowedTags || [
-        'p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'
+        'p',
+        'br',
+        'strong',
+        'em',
+        'u',
+        'ol',
+        'ul',
+        'li',
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'h5',
+        'h6',
       ],
       allowedAttributes: options?.allowedAttributes || {
         '*': ['class', 'id'],
-        'a': ['href', 'title'],
-        'img': ['src', 'alt', 'title', 'width', 'height']
-      }
+        a: ['href', 'title'],
+        img: ['src', 'alt', 'title', 'width', 'height'],
+      },
     };
 
     return Sanitizer.sanitizeHTML(html, sanitizationOptions);
@@ -216,7 +247,7 @@ export class XSSProtection {
       fontSrc: options?.fontSrc || ["'self'"],
       objectSrc: options?.objectSrc || ["'none'"],
       mediaSrc: options?.mediaSrc || ["'self'"],
-      frameSrc: options?.frameSrc || ["'none'"]
+      frameSrc: options?.frameSrc || ["'none'"],
     };
 
     const directives = [
@@ -229,7 +260,7 @@ export class XSSProtection {
       `media-src ${cspOptions.mediaSrc.join(' ')}`,
       `frame-src ${cspOptions.frameSrc.join(' ')}`,
       "base-uri 'self'",
-      "form-action 'self'"
+      "form-action 'self'",
     ];
 
     return directives.join('; ');
@@ -246,7 +277,10 @@ export class XSSProtection {
   /**
    * Clean content by removing XSS patterns (alias for cleanHTML)
    */
-  static cleanContent(input: string, options?: SanitizationOptions['xss']): string {
+  static cleanContent(
+    input: string,
+    options?: SanitizationOptions['xss']
+  ): string {
     if (!input || typeof input !== 'string') {
       return '';
     }

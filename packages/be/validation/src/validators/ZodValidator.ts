@@ -1,10 +1,10 @@
 import { z } from 'zod';
 import { BaseValidator } from './BaseValidator.js';
-import { 
-  ValidationResult, 
-  ValidationError, 
+import {
+  ValidationResult,
+  ValidationError,
   ValidationOptions,
-  ValidatorType 
+  ValidatorType,
 } from '../types/index.js';
 
 /**
@@ -37,8 +37,8 @@ export class ZodValidator extends BaseValidator<z.ZodSchema> {
           metadata: {
             validator: this.type,
             schema: this.getSchemaDescription(),
-            options: this.options
-          }
+            options: this.options,
+          },
         };
       }
 
@@ -49,23 +49,26 @@ export class ZodValidator extends BaseValidator<z.ZodSchema> {
         metadata: {
           validator: this.type,
           schema: this.getSchemaDescription(),
-          options: this.options
-        }
+          options: this.options,
+        },
       };
     } catch (error) {
       return {
         isValid: false,
         data: null,
-        errors: [{
-          field: 'unknown',
-          message: error instanceof Error ? error.message : 'Validation failed',
-          value: data
-        }],
+        errors: [
+          {
+            field: 'unknown',
+            message:
+              error instanceof Error ? error.message : 'Validation failed',
+            value: data,
+          },
+        ],
         metadata: {
           validator: this.type,
           schema: this.getSchemaDescription(),
-          options: this.options
-        }
+          options: this.options,
+        },
       };
     }
   }
@@ -90,8 +93,8 @@ export class ZodValidator extends BaseValidator<z.ZodSchema> {
           metadata: {
             validator: this.type,
             schema: this.getSchemaDescription(),
-            options: this.options
-          }
+            options: this.options,
+          },
         };
       }
 
@@ -102,23 +105,26 @@ export class ZodValidator extends BaseValidator<z.ZodSchema> {
         metadata: {
           validator: this.type,
           schema: this.getSchemaDescription(),
-          options: this.options
-        }
+          options: this.options,
+        },
       };
     } catch (error) {
       return {
         isValid: false,
         data: null,
-        errors: [{
-          field: 'unknown',
-          message: error instanceof Error ? error.message : 'Validation failed',
-          value: data
-        }],
+        errors: [
+          {
+            field: 'unknown',
+            message:
+              error instanceof Error ? error.message : 'Validation failed',
+            value: data,
+          },
+        ],
         metadata: {
           validator: this.type,
           schema: this.getSchemaDescription(),
-          options: this.options
-        }
+          options: this.options,
+        },
       };
     }
   }
@@ -134,18 +140,21 @@ export class ZodValidator extends BaseValidator<z.ZodSchema> {
     return {
       type: (this._schema._def as any).typeName || 'unknown',
       description: (this._schema as any).description || 'Zod schema',
-      optional: (this._schema as any).isOptional?.() || false
+      optional: (this._schema as any).isOptional?.() || false,
     };
   }
 
   /**
    * Map Zod validation errors to our ValidationError format
    */
-  private mapZodErrors(zodError: z.ZodError, originalData: any): ValidationError[] {
-    return zodError.errors.map(error => ({
+  private mapZodErrors(
+    zodError: z.ZodError,
+    originalData: any
+  ): ValidationError[] {
+    return zodError.errors.map((error) => ({
       field: error.path.length > 0 ? error.path.join('.') : 'root',
       message: error.message,
-      value: this.getValueAtPath(originalData, error.path)
+      value: this.getValueAtPath(originalData, error.path),
     }));
   }
 
@@ -154,7 +163,7 @@ export class ZodValidator extends BaseValidator<z.ZodSchema> {
    */
   private getValueAtPath(obj: any, path: (string | number)[]): any {
     if (path.length === 0) return obj;
-    
+
     let current = obj;
     for (const key of path) {
       if (current == null) return undefined;
@@ -172,15 +181,18 @@ export class ZodValidator extends BaseValidator<z.ZodSchema> {
     }
 
     let extendedSchema: z.ZodSchema;
-    
+
     // If both schemas are ZodObject, merge them
-    if (this._schema instanceof z.ZodObject && additionalSchema instanceof z.ZodObject) {
+    if (
+      this._schema instanceof z.ZodObject &&
+      additionalSchema instanceof z.ZodObject
+    ) {
       extendedSchema = this._schema.merge(additionalSchema);
     } else {
       // Otherwise, create intersection
       extendedSchema = z.intersection(this._schema, additionalSchema);
     }
-    
+
     return new ZodValidator(extendedSchema, this.options);
   }
 

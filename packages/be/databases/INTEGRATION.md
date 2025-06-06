@@ -39,16 +39,16 @@ const config: DatabaseManagerConfig = {
       database: process.env.POSTGRES_DB || 'your_db',
       username: process.env.POSTGRES_USER || 'postgres',
       password: process.env.POSTGRES_PASSWORD || 'postgres',
-      pool: { min: 2, max: 10 }
-    }
+      pool: { min: 2, max: 10 },
+    },
   },
   default: 'primary',
   cache: {
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT || '6379'),
     keyPrefix: 'myapp:',
-    ttl: 3600
-  }
+    ttl: 3600,
+  },
 };
 
 const dbManager = new DatabaseManager(config);
@@ -137,7 +137,11 @@ For applications using `@mono/be-core`, create a database plugin:
 // plugins/database.plugin.ts
 import { BasePlugin } from '@mono/be-core';
 import { Express } from 'express';
-import { DatabaseManager, CacheManager, MigrationRunner } from '@thrilled/databases';
+import {
+  DatabaseManager,
+  CacheManager,
+  MigrationRunner,
+} from '@thrilled/databases';
 import { databaseConfig } from '../config/database';
 
 export class DatabasePlugin extends BasePlugin {
@@ -186,9 +190,9 @@ export class DatabasePlugin extends BasePlugin {
         const health = await this.dbManager?.getHealth();
         res.json({ status: 'ok', health });
       } catch (error) {
-        res.status(500).json({ 
-          status: 'error', 
-          error: error instanceof Error ? error.message : 'Unknown error' 
+        res.status(500).json({
+          status: 'error',
+          error: error instanceof Error ? error.message : 'Unknown error',
         });
       }
     });
@@ -200,8 +204,12 @@ export class DatabasePlugin extends BasePlugin {
   }
 
   // Getters for accessing services
-  get database() { return this.dbManager; }
-  get cache() { return this.cacheManager; }
+  get database() {
+    return this.dbManager;
+  }
+  get cache() {
+    return this.cacheManager;
+  }
 }
 ```
 
@@ -240,7 +248,7 @@ export class UserService {
 
   async createUser(userData: CreateUserDto) {
     const qb = new QueryBuilder();
-    
+
     const query = qb
       .insert('users')
       .values(userData)
@@ -255,7 +263,7 @@ export class UserService {
     // Try cache first
     const cacheKey = \`user:\${id}\`;
     let user = await this.cache.get(cacheKey);
-    
+
     if (!user) {
       const qb = new QueryBuilder();
       const query = qb
@@ -267,19 +275,19 @@ export class UserService {
 
       const result = await this.db.query(query.query, query.params);
       user = result.rows[0];
-      
+
       if (user) {
         await this.cache.set(cacheKey, user, 3600); // Cache for 1 hour
       }
     }
-    
+
     return user;
   }
 
   async updateUser(id: number, updates: UpdateUserDto) {
     const result = await this.db.transaction(async (client) => {
       const qb = new QueryBuilder();
-      
+
       // Update user
       const updateQuery = qb
         .update('users')
@@ -289,19 +297,19 @@ export class UserService {
         .build();
 
       const userResult = await client.query(updateQuery.query, updateQuery.params);
-      
+
       // Log the update
       await client.query(
         'INSERT INTO user_audit_log (user_id, action, changes) VALUES ($1, $2, $3)',
         [id, 'update', JSON.stringify(updates)]
       );
-      
+
       return userResult.rows[0];
     });
 
     // Invalidate cache
     await this.cache.del(\`user:\${id}\`);
-    
+
     return result;
   }
 }
@@ -315,7 +323,7 @@ export class OrderService {
 
   async getOrdersWithDetails(filters: OrderFilters) {
     const qb = new QueryBuilder();
-    
+
     let query = qb
       .select([
         'o.id',
@@ -325,7 +333,7 @@ export class OrderService {
         'o.created_at',
         'u.email as customer_email',
         'u.name as customer_name',
-        'COUNT(oi.id) as item_count'
+        'COUNT(oi.id) as item_count',
       ])
       .from('orders o')
       .innerJoin('users u', 'o.user_id = u.id')
@@ -336,11 +344,11 @@ export class OrderService {
     if (filters.status) {
       query = query.where('o.status = $?', [filters.status]);
     }
-    
+
     if (filters.dateFrom) {
       query = query.where('o.created_at >= $?', [filters.dateFrom]);
     }
-    
+
     if (filters.dateTo) {
       query = query.where('o.created_at <= $?', [filters.dateTo]);
     }
@@ -352,7 +360,7 @@ export class OrderService {
 
     const builtQuery = query.build();
     const result = await this.db.query(builtQuery.query, builtQuery.params);
-    
+
     return result.rows;
   }
 }
@@ -425,15 +433,15 @@ import { databaseConfig } from '../src/config/database';
 async function runMigrations() {
   const dbManager = new DatabaseManager(databaseConfig);
   await dbManager.initialize();
-  
+
   const migrationRunner = new MigrationRunner(
     dbManager.getConnection(),
     databaseConfig.migrations!
   );
-  
+
   const applied = await migrationRunner.up();
   console.log(\`Applied \${applied.length} migrations\`);
-  
+
   await dbManager.disconnect();
 }
 
@@ -493,25 +501,31 @@ await cache.del(\`user:\${userId}:*\`); // Pattern deletion
 ### Common Issues
 
 1. **Connection Timeout**
+
    ```
    Error: Connection timeout
    ```
+
    - Check database server status
    - Verify network connectivity
    - Increase connectionTimeoutMillis in pool config
 
 2. **Pool Exhaustion**
+
    ```
    Error: Pool connection limit reached
    ```
+
    - Increase pool.max setting
    - Check for connection leaks
    - Ensure connections are properly released
 
 3. **Migration Failures**
+
    ```
    Error: Migration already applied
    ```
+
    - Check migration table status
    - Verify migration file checksums
    - Use `migrate:status` to inspect current state
@@ -531,7 +545,7 @@ Enable debug logging:
 ```typescript
 const config: DatabaseManagerConfig = {
   // ... other config
-  debug: process.env.NODE_ENV === 'development'
+  debug: process.env.NODE_ENV === 'development',
 };
 ```
 

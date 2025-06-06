@@ -1,8 +1,8 @@
-import { CorsOptions } from "cors";
-import { Request } from "express";
+import { CorsOptions } from 'cors';
+import { Request } from 'express';
 
 // Environment types
-export type Environment = "development" | "production" | "test";
+export type Environment = 'development' | 'production' | 'test';
 
 // Base application configuration
 export interface AppConfig {
@@ -50,9 +50,9 @@ export interface HelmetConfig {
 
 // Logging configuration
 export interface LoggingConfig {
-  level?: "error" | "warn" | "info" | "http" | "verbose" | "debug" | "silly";
+  level?: 'error' | 'warn' | 'info' | 'http' | 'verbose' | 'debug' | 'silly';
   dir?: string;
-  format?: "json" | "simple";
+  format?: 'json' | 'simple';
   httpLogging?: boolean;
   maxFiles?: number;
   correlationId?: boolean;
@@ -90,6 +90,6 @@ export interface SessionConfig {
     secure?: boolean;
     httpOnly?: boolean;
     maxAge?: number;
-    sameSite?: "strict" | "lax" | "none";
+    sameSite?: 'strict' | 'lax' | 'none';
   };
 }

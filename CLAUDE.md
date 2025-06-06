@@ -11,7 +11,7 @@ This is an Nx monorepo called "Thrilled" with a multi-application architecture c
 - **apps/be/** - Backend applications
   - **base/** - Main Express.js API server with PostgreSQL, JWT auth, and comprehensive middleware
   - **faithcircle/** - Secondary backend service
-- **apps/fe/** - Frontend applications  
+- **apps/fe/** - Frontend applications
   - **faithcircle-fe/** - React frontend application
 - **packages/** - Shared libraries organized by scope
   - **be/** - Backend-specific packages
@@ -27,6 +27,7 @@ This is an Nx monorepo called "Thrilled" with a multi-application architecture c
 ### Core Backend Architecture
 
 The base backend uses a plugin-based architecture built on `@mono/be-core`:
+
 - **BaseApp** - Core application class with plugin system
 - **Plugins** - Modular functionality (Database, Routes, Swagger, RateLimit)
 - **Middleware** - Security, Error handling, Validation
@@ -35,6 +36,7 @@ The base backend uses a plugin-based architecture built on `@mono/be-core`:
 ## Development Commands
 
 ### Global Commands (run from root)
+
 ```bash
 # Build all projects
 npx nx run-many -t build
@@ -56,6 +58,7 @@ npx nx sync
 ```
 
 ### Backend Development (apps/be/base)
+
 ```bash
 # Development server
 npx nx dev base-be
@@ -93,6 +96,7 @@ npx nx deploy:dev base-be        # Deploy development
 ```
 
 ### Frontend Development (apps/fe/faithcircle-fe)
+
 ```bash
 # Development server
 npx nx dev faithcircle-fe
@@ -111,6 +115,7 @@ npx nx lint faithcircle-fe
 ```
 
 ### Package Development
+
 ```bash
 # Build specific package
 npx nx build core                # Backend core package
@@ -124,6 +129,7 @@ npx nx test databases
 ```
 
 ### Database Package Development (`@thrilled/databases`)
+
 ```bash
 # Build the database package
 npx nx build databases
@@ -142,13 +148,16 @@ npx ts-node packages/be/databases/examples/usage/migration-example.ts
 ## Important Notes
 
 ### Module Boundaries
+
 The project enforces strict module boundaries via ESLint:
+
 - Apps can only depend on libs, utils, and shared packages
 - Libs can depend on other libs, utils, and shared packages
 - Utils can only depend on other utils and shared packages
 - Scope-specific dependencies (be/fe packages can't cross-reference)
 
 ### Backend Configuration
+
 - Uses environment-based configuration with `envalid` validation
 - PostgreSQL database with migrations via `node-pg-migrate`
 - Redis for caching and rate limiting
@@ -157,12 +166,14 @@ The project enforces strict module boundaries via ESLint:
 - Swagger documentation auto-generated
 
 ### Testing Strategy
+
 - Jest for backend unit/integration tests
 - Vitest for frontend and packages
 - Playwright for e2e testing
 - Tests run with dependency graph awareness
 
 ### Build System
+
 - SWC for fast compilation (backend)
 - Vite for frontend bundling
 - TypeScript project references for optimal builds
@@ -171,6 +182,7 @@ The project enforces strict module boundaries via ESLint:
 ## Environment Setup
 
 Backend applications require:
+
 - `.env` file with PostgreSQL connection details
 - Redis server for caching
 - Node.js environment variables for JWT secrets
@@ -180,8 +192,9 @@ Use `npx nx check-env base-be` to verify database configuration.
 ### Database Package (`@thrilled/databases`)
 
 A comprehensive database management package providing:
+
 - **Multi-database Support** - Connect to multiple PostgreSQL databases
-- **Connection Pooling** - Optimized connection management with health monitoring  
+- **Connection Pooling** - Optimized connection management with health monitoring
 - **Transaction Management** - Safe transaction handling with automatic rollback
 - **Query Builder** - Type-safe SQL query construction
 - **Migration System** - Database schema versioning with rollback support
@@ -190,6 +203,7 @@ A comprehensive database management package providing:
 - **Auto Database Creation** - Automatically create databases if they don't exist
 
 **Key Files:**
+
 - `packages/be/databases/` - Main package directory
 - `packages/be/databases/src/managers/DatabaseManager.ts` - Core database manager
 - `packages/be/databases/src/builders/QueryBuilder.ts` - SQL query builder

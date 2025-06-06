@@ -41,4 +41,4 @@ export const ErrorMiddleware = (error: HttpException, req: Request, res: Respons
     logger.error(`Error in ErrorMiddleware: ${err.message}`);
     res.status(500).json({ success: false, message: 'Internal server error', statusCode: 500 });
   }
-}
+};

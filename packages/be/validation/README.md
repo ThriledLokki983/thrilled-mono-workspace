@@ -28,10 +28,13 @@ import Joi from 'joi';
 const validator = new JoiValidator();
 const schema = Joi.object({
   email: Joi.string().email().required(),
-  age: Joi.number().min(18).required()
+  age: Joi.number().min(18).required(),
 });
 
-const result = await validator.validate({ email: 'user@example.com', age: 25 }, schema);
+const result = await validator.validate(
+  { email: 'user@example.com', age: 25 },
+  schema
+);
 if (result.isValid) {
   console.log('Validation passed!');
 } else {
@@ -48,10 +51,13 @@ import { z } from 'zod';
 const validator = new ZodValidator();
 const schema = z.object({
   email: z.string().email(),
-  age: z.number().min(18)
+  age: z.number().min(18),
 });
 
-const result = await validator.validate({ email: 'user@example.com', age: 25 }, schema);
+const result = await validator.validate(
+  { email: 'user@example.com', age: 25 },
+  schema
+);
 if (result.isValid) {
   console.log('Validation passed!');
 } else {
@@ -72,16 +78,13 @@ app.use(express.json());
 const userSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().email().required(),
-  age: Joi.number().min(18).required()
+  age: Joi.number().min(18).required(),
 });
 
-app.post('/users', 
-  ValidationMiddleware.body(userSchema),
-  (req, res) => {
-    // Request body is now validated
-    res.json({ message: 'User created successfully' });
-  }
-);
+app.post('/users', ValidationMiddleware.body(userSchema), (req, res) => {
+  // Request body is now validated
+  res.json({ message: 'User created successfully' });
+});
 ```
 
 ### Input Sanitization
@@ -92,7 +95,7 @@ import { Sanitizer } from '@thrilled/validation';
 const sanitizer = new Sanitizer({
   html: { enabled: true, allowedTags: ['p', 'br'] },
   xss: { enabled: true },
-  sql: { enabled: true }
+  sql: { enabled: true },
 });
 
 const userInput = '<script>alert("xss")</script><p>Hello World</p>';
@@ -120,7 +123,7 @@ const result = await validator.validate(data, schema);
 // Batch validation
 const results = await validator.validateBatch([
   { data: data1, schema: schema1 },
-  { data: data2, schema: schema2 }
+  { data: data2, schema: schema2 },
 ]);
 
 // Conditional validation
@@ -144,15 +147,15 @@ const validator = new ZodValidator();
 // Basic validation
 const schema = z.object({
   name: z.string(),
-  age: z.number()
+  age: z.number(),
 });
 
 const result = await validator.validate(data, schema);
 
 // With transforms
 const transformSchema = z.object({
-  name: z.string().transform(name => name.trim()),
-  age: z.string().transform(age => parseInt(age))
+  name: z.string().transform((name) => name.trim()),
+  age: z.string().transform((age) => parseInt(age)),
 });
 ```
 
@@ -176,7 +179,9 @@ const passwordResult = await CustomValidators.password('SecurePass123!');
 const urlResult = await CustomValidators.url('https://example.com');
 
 // UUID validation
-const uuidResult = await CustomValidators.uuid('123e4567-e89b-12d3-a456-426614174000');
+const uuidResult = await CustomValidators.uuid(
+  '123e4567-e89b-12d3-a456-426614174000'
+);
 
 // Credit card validation
 const cardResult = await CustomValidators.creditCard('4111111111111111');
@@ -202,20 +207,30 @@ const domainResult = await CustomValidators.domain('example.com');
 // File validation
 const fileResult = await CustomValidators.file(buffer, {
   allowedTypes: ['image/jpeg', 'image/png'],
-  maxSize: 1024 * 1024 // 1MB
+  maxSize: 1024 * 1024, // 1MB
 });
 
 // Range validation
 const rangeResult = await CustomValidators.range(25, { min: 18, max: 65 });
 
 // Length validation
-const lengthResult = await CustomValidators.length('hello', { min: 3, max: 10 });
+const lengthResult = await CustomValidators.length('hello', {
+  min: 3,
+  max: 10,
+});
 
 // Pattern validation
-const patternResult = await CustomValidators.pattern('ABC123', /^[A-Z]{3}\d{3}$/);
+const patternResult = await CustomValidators.pattern(
+  'ABC123',
+  /^[A-Z]{3}\d{3}$/
+);
 
 // Enum validation
-const enumResult = await CustomValidators.enum('active', ['active', 'inactive', 'pending']);
+const enumResult = await CustomValidators.enum('active', [
+  'active',
+  'inactive',
+  'pending',
+]);
 ```
 
 ### Middleware
@@ -229,7 +244,7 @@ import { ValidationMiddleware } from '@thrilled/validation';
 import Joi from 'joi';
 
 const schema = Joi.object({
-  name: Joi.string().required()
+  name: Joi.string().required(),
 });
 
 // Validate request body
@@ -245,7 +260,11 @@ app.get('/api/users/:id', ValidationMiddleware.params(schema), handler);
 app.post('/api/data', ValidationMiddleware.headers(schema), handler);
 
 // Soft validation (warnings instead of errors)
-app.post('/api/users', ValidationMiddleware.body(schema, { soft: true }), handler);
+app.post(
+  '/api/users',
+  ValidationMiddleware.body(schema, { soft: true }),
+  handler
+);
 ```
 
 ### Sanitization
@@ -261,16 +280,16 @@ const sanitizer = new Sanitizer({
   html: {
     enabled: true,
     allowedTags: ['p', 'br', 'strong', 'em'],
-    allowedAttributes: { a: ['href'] }
+    allowedAttributes: { a: ['href'] },
   },
   xss: {
     enabled: true,
-    stripTags: true
+    stripTags: true,
   },
   sql: {
     enabled: true,
-    escapeQuotes: true
-  }
+    escapeQuotes: true,
+  },
 });
 
 // Sanitize single value
@@ -279,13 +298,13 @@ const clean = sanitizer.sanitize(userInput);
 // Sanitize object
 const cleanObject = sanitizer.sanitizeObject({
   title: '<script>alert("xss")</script>Safe Title',
-  content: 'SELECT * FROM users; DROP TABLE users;'
+  content: 'SELECT * FROM users; DROP TABLE users;',
 });
 
 // Sanitize array
 const cleanArray = sanitizer.sanitizeArray([
   '<p>Good content</p>',
-  '<script>Bad content</script>'
+  '<script>Bad content</script>',
 ]);
 ```
 
@@ -305,17 +324,19 @@ const clean = XSSProtection.cleanContent('<script>alert("xss")</script>Hello');
 // Generate CSP headers
 const cspHeaders = XSSProtection.generateCSPHeaders({
   'script-src': ["'self'", "'unsafe-inline'"],
-  'style-src': ["'self'", "'unsafe-inline'"]
+  'style-src': ["'self'", "'unsafe-inline'"],
 });
 
 // Express middleware
-app.use(XSSProtection.middleware({
-  enableCSP: true,
-  cspDirectives: {
-    'default-src': ["'self'"],
-    'script-src': ["'self'"]
-  }
-}));
+app.use(
+  XSSProtection.middleware({
+    enableCSP: true,
+    cspDirectives: {
+      'default-src': ["'self'"],
+      'script-src': ["'self'"],
+    },
+  })
+);
 ```
 
 #### SQLInjectionProtection
@@ -360,19 +381,19 @@ const core = new Core();
 const validationPlugin = new ValidationPlugin({
   globalValidation: {
     enabled: true,
-    soft: false
+    soft: false,
   },
   globalSanitization: {
     body: { enabled: true },
     query: { enabled: true },
-    params: { enabled: false }
+    params: { enabled: false },
   },
   customValidators: {
     strongPassword: async (value: string) => {
       // Custom validation logic
       return { isValid: true, errors: [] };
-    }
-  }
+    },
+  },
 });
 
 core.use(validationPlugin);
@@ -384,11 +405,11 @@ core.use(validationPlugin);
 
 ```typescript
 interface ValidationOptions {
-  abortEarly?: boolean;        // Stop on first error
-  allowUnknown?: boolean;      // Allow unknown properties
-  stripUnknown?: boolean;      // Remove unknown properties
-  convert?: boolean;           // Attempt type conversion
-  dateFormat?: string;         // Date format for parsing
+  abortEarly?: boolean; // Stop on first error
+  allowUnknown?: boolean; // Allow unknown properties
+  stripUnknown?: boolean; // Remove unknown properties
+  convert?: boolean; // Attempt type conversion
+  dateFormat?: string; // Date format for parsing
   presence?: 'optional' | 'required';
   context?: Record<string, any>;
 }
@@ -462,13 +483,13 @@ interface ValidationResult {
 const schema = Joi.object({
   email: Joi.string().email().required().messages({
     'string.email': 'Please provide a valid email address',
-    'any.required': 'Email is required'
-  })
+    'any.required': 'Email is required',
+  }),
 });
 
 // Zod custom messages
 const schema = z.object({
-  email: z.string().email('Please provide a valid email address')
+  email: z.string().email('Please provide a valid email address'),
 });
 ```
 
@@ -489,11 +510,11 @@ const schema = z.object({
 
 ```typescript
 import express from 'express';
-import { 
-  ValidationMiddleware, 
-  Sanitizer, 
-  XSSProtection, 
-  SQLInjectionProtection 
+import {
+  ValidationMiddleware,
+  Sanitizer,
+  XSSProtection,
+  SQLInjectionProtection,
 } from '@thrilled/validation';
 import Joi from 'joi';
 
@@ -508,21 +529,25 @@ app.use(SQLInjectionProtection.middleware());
 const registerSchema = Joi.object({
   name: Joi.string().min(2).max(50).required(),
   email: Joi.string().email().required(),
-  password: Joi.string().min(8).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).required(),
-  age: Joi.number().min(18).max(120)
+  password: Joi.string()
+    .min(8)
+    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .required(),
+  age: Joi.number().min(18).max(120),
 });
 
-app.post('/register', 
+app.post(
+  '/register',
   ValidationMiddleware.body(registerSchema),
   async (req, res) => {
     const sanitizer = new Sanitizer({
       html: { enabled: true, stripTags: true },
       xss: { enabled: true },
-      sql: { enabled: true }
+      sql: { enabled: true },
     });
 
     const cleanData = sanitizer.sanitizeObject(req.body);
-    
+
     // Process registration...
     res.json({ message: 'User registered successfully' });
   }
@@ -532,16 +557,13 @@ app.post('/register',
 const searchSchema = Joi.object({
   q: Joi.string().max(100).required(),
   page: Joi.number().min(1).default(1),
-  limit: Joi.number().min(1).max(100).default(10)
+  limit: Joi.number().min(1).max(100).default(10),
 });
 
-app.get('/search',
-  ValidationMiddleware.query(searchSchema),
-  (req, res) => {
-    // Search logic...
-    res.json({ results: [] });
-  }
-);
+app.get('/search', ValidationMiddleware.query(searchSchema), (req, res) => {
+  // Search logic...
+  res.json({ results: [] });
+});
 
 app.listen(3000, () => {
   console.log('Server running on port 3000');

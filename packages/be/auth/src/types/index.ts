@@ -10,7 +10,7 @@ export type {
   RegistrationData,
   PasswordResetRequest,
   PasswordResetData,
-} from "@thrilled/be-types";
+} from '@thrilled/be-types';
 
 // Enhanced authentication types for this package
 export interface JWTConfig {
@@ -36,7 +36,7 @@ export interface TokenPayload {
   sessionId: string;
   roles: string[];
   permissions: string[];
-  userData: Record<string, any>;
+  userData: Record<string, unknown>;
   type: 'access' | 'refresh';
   iat: number;
 }
@@ -46,7 +46,7 @@ export interface AccessTokenPayload {
   sessionId: string;
   roles: string[];
   permissions: string[];
-  userData: Record<string, any>;
+  userData: Record<string, unknown>;
 }
 
 export interface RefreshTokenPayload {
@@ -111,7 +111,7 @@ export interface JWTPayload {
   iss?: string; // issuer
   aud?: string | string[]; // audience
   jti?: string; // JWT ID
-  type: "access" | "refresh";
+  type: 'access' | 'refresh';
   role?: string;
   permissions?: string[];
   sessionId?: string;
@@ -167,7 +167,7 @@ export interface Role {
 }
 
 export interface Permission {
-  id: string;  
+  id: string;
   name: string;
   resource: string;
   action: string;
@@ -223,7 +223,7 @@ export interface CacheManager {
   del(key: string): Promise<void>;
   keys(pattern: string): Promise<string[]>;
   exists(key: string): Promise<boolean>;
-  
+
   // Helper methods for JSON serialization
   getObject<T>(key: string): Promise<T | null>;
   setObject<T>(key: string, value: T, ttl?: number): Promise<void>;

@@ -1,4 +1,4 @@
-import { DatabaseManager, QueryBuilder, CacheManager } from '../../src'; 
+import { DatabaseManager, QueryBuilder, CacheManager } from '../../src';
 import { developmentConfig } from '../config/development';
 import { createLogger } from '../utils/logger';
 
@@ -28,7 +28,7 @@ async function basicUsageExample() {
     // 4. Using the QueryBuilder for type-safe queries
     console.log('\n🔧 Using QueryBuilder...');
     const queryBuilder = dbManager.query_builder();
-    
+
     // Build a SELECT query
     const selectQuery = queryBuilder
       .select(['id', 'email', 'name'])
@@ -48,17 +48,23 @@ async function basicUsageExample() {
 
     // 6. Transaction example
     console.log('\n🔄 Running transaction...');
-    const transactionResult = await dbManager.withTransaction(async (client) => {
-      // Multiple operations in a single transaction
-      await client.query('INSERT INTO users (email, name, first_name, last_name) VALUES ($1, $2, $3, $4)', 
-        ['test@example.com', 'Test User', 'Test', 'User']);
-      
-      const user = await client.query('SELECT * FROM users WHERE email = $1', ['test@example.com']);
-      return user.rows[0];
-    });
+    const transactionResult = await dbManager.withTransaction(
+      async (client) => {
+        // Multiple operations in a single transaction
+        await client.query(
+          'INSERT INTO users (email, name, first_name, last_name) VALUES ($1, $2, $3, $4)',
+          ['test@example.com', 'Test User', 'Test', 'User']
+        );
+
+        const user = await client.query(
+          'SELECT * FROM users WHERE email = $1',
+          ['test@example.com']
+        );
+        return user.rows[0];
+      }
+    );
 
     console.log('Transaction completed:', transactionResult);
-
   } catch (error) {
     console.error('Error:', error);
   } finally {

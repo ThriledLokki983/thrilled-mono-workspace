@@ -29,7 +29,13 @@ export interface ValidationError {
 /**
  * Validator types
  */
-export type ValidatorType = 'joi' | 'zod' | 'custom' | 'combined' | 'conditional' | 'debounced';
+export type ValidatorType =
+  | 'joi'
+  | 'zod'
+  | 'custom'
+  | 'combined'
+  | 'conditional'
+  | 'debounced';
 
 /**
  * Validation options for middleware
@@ -74,7 +80,10 @@ export interface SanitizationOptions {
 /**
  * Custom validator function type
  */
-export type ValidatorFunction<T = any> = (value: T, context?: any) => ValidationResult<T>;
+export type ValidatorFunction<T = any> = (
+  value: T,
+  context?: any
+) => ValidationResult<T>;
 
 /**
  * Schema validation configuration
@@ -135,5 +144,10 @@ export interface ValidationPluginConfig {
   enableXSSProtection?: boolean;
   enableSQLInjectionProtection?: boolean;
   customValidators?: Record<string, ValidatorFunction>;
-  errorHandler?: (errors: ValidationError[], req: Request, res: Response, next: NextFunction) => void;
+  errorHandler?: (
+    errors: ValidationError[],
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => void;
 }

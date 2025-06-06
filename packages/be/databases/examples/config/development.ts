@@ -15,7 +15,7 @@ export const developmentConfig: DatabaseManagerConfig = {
         max: 10,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 2000,
-      }
+      },
     },
     // Example read replica
     readonly: {
@@ -30,8 +30,8 @@ export const developmentConfig: DatabaseManagerConfig = {
         max: 5,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 2000,
-      }
-    }
+      },
+    },
   },
   default: 'primary',
   migrations: {
@@ -42,7 +42,7 @@ export const developmentConfig: DatabaseManagerConfig = {
   healthCheck: {
     enabled: true,
     interval: 30000, // 30 seconds
-    timeout: 5000,   // 5 seconds
+    timeout: 5000, // 5 seconds
   },
   cache: {
     host: process.env.REDIS_HOST || 'localhost',
@@ -53,5 +53,5 @@ export const developmentConfig: DatabaseManagerConfig = {
     ttl: 3600, // 1 hour default
     maxRetries: 3,
     retryDelay: 1000,
-  }
+  },
 };

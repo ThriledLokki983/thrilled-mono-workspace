@@ -41,7 +41,7 @@ export class DatabasePlugin extends BasePlugin {
           this.config.migrations,
           this.logger
         );
-        
+
         await this.migrationRunner.runMigrations();
         this.logger.info('Migrations completed successfully');
       }
@@ -69,14 +69,16 @@ export class DatabasePlugin extends BasePlugin {
         res.json({
           status: health?.status || 'unknown',
           database: health,
-          cache: this.cacheManager ? {
-            status: 'connected' // Could add actual health check
-          } : null
+          cache: this.cacheManager
+            ? {
+                status: 'connected', // Could add actual health check
+              }
+            : null,
         });
       } catch (error) {
         res.status(500).json({
           status: 'error',
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : 'Unknown error',
         });
       }
     });
@@ -115,6 +117,8 @@ export class DatabasePlugin extends BasePlugin {
 }
 
 // Example usage in an application
-export function createDatabasePlugin(config: DatabaseManagerConfig): DatabasePlugin {
+export function createDatabasePlugin(
+  config: DatabaseManagerConfig
+): DatabasePlugin {
   return new DatabasePlugin(config);
 }

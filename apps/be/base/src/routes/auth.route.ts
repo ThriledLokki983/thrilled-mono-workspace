@@ -13,6 +13,9 @@ export class AuthRoute implements Routes {
   public auth = new AuthController();
 
   constructor() {
+    // AuthController gets its dependencies through TypeDI container
+    // AuthPlugin should be initialized before creating routes
+
     this.initializeRoutes();
   }
 

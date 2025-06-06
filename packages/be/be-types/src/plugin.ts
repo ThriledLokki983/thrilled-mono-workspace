@@ -1,14 +1,24 @@
-import { Express } from "express";
+import { Express } from 'express';
 
 // Generic plugin configuration type
-export type PluginConfigValue = string | number | boolean | null | undefined | PluginConfigValue[] | { [key: string]: PluginConfigValue };
+export type PluginConfigValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | PluginConfigValue[]
+  | { [key: string]: PluginConfigValue };
 
 // Plugin interface
 export interface Plugin {
   name: string;
   version: string;
   dependencies?: string[];
-  register(app: Express, config: Record<string, PluginConfigValue>): Promise<void> | void;
+  register(
+    app: Express,
+    config: Record<string, PluginConfigValue>
+  ): Promise<void> | void;
 }
 
 // Plugin metadata

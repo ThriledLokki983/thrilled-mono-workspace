@@ -4,19 +4,20 @@ import { z } from 'zod';
 import { ValidationMiddleware } from '../ValidationMiddleware';
 
 // Mock Express objects
-const createMockRequest = (overrides: Partial<Request> = {}): Request => ({
-  body: {},
-  query: {},
-  params: {},
-  headers: {},
-  ...overrides
-} as Request);
+const createMockRequest = (overrides: Partial<Request> = {}): Request =>
+  ({
+    body: {},
+    query: {},
+    params: {},
+    headers: {},
+    ...overrides,
+  } as Request);
 
 const createMockResponse = (): Response => {
   const res = {
     status: jest.fn().mockReturnThis(),
     json: jest.fn().mockReturnThis(),
-    locals: {}
+    locals: {},
   } as unknown as Response;
   return res;
 };
@@ -28,12 +29,12 @@ describe('ValidationMiddleware', () => {
     it('should validate body with Joi schema', async () => {
       const schema = Joi.object({
         name: Joi.string().required(),
-        age: Joi.number().min(0)
+        age: Joi.number().min(0),
       });
 
       const middleware = ValidationMiddleware.validate({ body: schema });
       const req = createMockRequest({
-        body: { name: 'John', age: 30 }
+        body: { name: 'John', age: 30 },
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -48,12 +49,12 @@ describe('ValidationMiddleware', () => {
     it('should validate body with Zod schema', async () => {
       const schema = z.object({
         name: z.string(),
-        age: z.number().min(0)
+        age: z.number().min(0),
       });
 
       const middleware = ValidationMiddleware.validate({ body: schema });
       const req = createMockRequest({
-        body: { name: 'John', age: 30 }
+        body: { name: 'John', age: 30 },
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -68,12 +69,12 @@ describe('ValidationMiddleware', () => {
     it('should return validation errors for invalid body', async () => {
       const schema = Joi.object({
         name: Joi.string().required(),
-        age: Joi.number().min(0).required()
+        age: Joi.number().min(0).required(),
       });
 
       const middleware = ValidationMiddleware.validate({ body: schema });
       const req = createMockRequest({
-        body: { name: '', age: -5 }
+        body: { name: '', age: -5 },
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -85,8 +86,8 @@ describe('ValidationMiddleware', () => {
         expect.objectContaining({
           error: 'Validation failed',
           details: expect.arrayContaining([
-            expect.objectContaining({ field: expect.stringMatching(/body\./) })
-          ])
+            expect.objectContaining({ field: expect.stringMatching(/body\./) }),
+          ]),
         })
       );
       expect(next).not.toHaveBeenCalled();
@@ -95,12 +96,12 @@ describe('ValidationMiddleware', () => {
     it('should validate query parameters', async () => {
       const schema = Joi.object({
         page: Joi.number().min(1).default(1),
-        limit: Joi.number().min(1).max(100).default(10)
+        limit: Joi.number().min(1).max(100).default(10),
       });
 
       const middleware = ValidationMiddleware.validate({ query: schema });
       const req = createMockRequest({
-        query: { page: '2', limit: '20' }
+        query: { page: '2', limit: '20' },
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -113,12 +114,12 @@ describe('ValidationMiddleware', () => {
 
     it('should validate URL parameters', async () => {
       const schema = Joi.object({
-        id: Joi.string().uuid().required()
+        id: Joi.string().uuid().required(),
       });
 
       const middleware = ValidationMiddleware.validate({ params: schema });
       const req = createMockRequest({
-        params: { id: '123e4567-e89b-12d3-a456-426614174000' }
+        params: { id: '123e4567-e89b-12d3-a456-426614174000' },
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -132,7 +133,7 @@ describe('ValidationMiddleware', () => {
     it('should validate headers', async () => {
       const schema = Joi.object({
         authorization: Joi.string().required(),
-        'content-type': Joi.string().valid('application/json').required()
+        'content-type': Joi.string().valid('application/json').required(),
       }).unknown(true);
 
       const middleware = ValidationMiddleware.validate({ headers: schema });
@@ -140,8 +141,8 @@ describe('ValidationMiddleware', () => {
         headers: {
           authorization: 'Bearer token123',
           'content-type': 'application/json',
-          'user-agent': 'test'
-        }
+          'user-agent': 'test',
+        },
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -153,19 +154,19 @@ describe('ValidationMiddleware', () => {
 
     it('should handle multiple validation errors', async () => {
       const bodySchema = Joi.object({
-        name: Joi.string().required()
+        name: Joi.string().required(),
       });
       const querySchema = Joi.object({
-        page: Joi.number().min(1).required()
+        page: Joi.number().min(1).required(),
       });
 
       const middleware = ValidationMiddleware.validate({
         body: bodySchema,
-        query: querySchema
+        query: querySchema,
       });
       const req = createMockRequest({
         body: {},
-        query: { page: '0' }
+        query: { page: '0' },
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -177,15 +178,17 @@ describe('ValidationMiddleware', () => {
         expect.objectContaining({
           details: expect.arrayContaining([
             expect.objectContaining({ field: expect.stringMatching(/body\./) }),
-            expect.objectContaining({ field: expect.stringMatching(/query\./) })
-          ])
+            expect.objectContaining({
+              field: expect.stringMatching(/query\./),
+            }),
+          ]),
         })
       );
     });
 
     it('should handle validation errors gracefully', async () => {
       const schema = { invalid: 'schema' }; // Invalid schema
-
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const middleware = ValidationMiddleware.validate({ body: schema as any });
       const req = createMockRequest({ body: { test: 'data' } });
       const res = createMockResponse();
@@ -196,7 +199,7 @@ describe('ValidationMiddleware', () => {
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
-          error: 'Internal validation error'
+          error: 'Internal validation error',
         })
       );
     });
@@ -206,7 +209,7 @@ describe('ValidationMiddleware', () => {
     it('should create body validation middleware', async () => {
       const schema = Joi.object({ name: Joi.string().required() });
       const middleware = ValidationMiddleware.body(schema);
-      
+
       const req = createMockRequest({ body: { name: 'John' } });
       const res = createMockResponse();
       const next = createMockNext();
@@ -221,7 +224,7 @@ describe('ValidationMiddleware', () => {
     it('should create query validation middleware', async () => {
       const schema = Joi.object({ page: Joi.number().min(1) });
       const middleware = ValidationMiddleware.query(schema);
-      
+
       const req = createMockRequest({ query: { page: '1' } });
       const res = createMockResponse();
       const next = createMockNext();
@@ -236,7 +239,7 @@ describe('ValidationMiddleware', () => {
     it('should create params validation middleware', async () => {
       const schema = Joi.object({ id: Joi.string().required() });
       const middleware = ValidationMiddleware.params(schema);
-      
+
       const req = createMockRequest({ params: { id: '123' } });
       const res = createMockResponse();
       const next = createMockNext();
@@ -249,11 +252,13 @@ describe('ValidationMiddleware', () => {
 
   describe('headers', () => {
     it('should create headers validation middleware', async () => {
-      const schema = Joi.object({ authorization: Joi.string().required() }).unknown(true);
+      const schema = Joi.object({
+        authorization: Joi.string().required(),
+      }).unknown(true);
       const middleware = ValidationMiddleware.headers(schema);
-      
-      const req = createMockRequest({ 
-        headers: { authorization: 'Bearer token' } 
+
+      const req = createMockRequest({
+        headers: { authorization: 'Bearer token' },
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -267,7 +272,7 @@ describe('ValidationMiddleware', () => {
   describe('validateSoft', () => {
     it('should store validation errors in res.locals without stopping execution', async () => {
       const schema = Joi.object({
-        name: Joi.string().required()
+        name: Joi.string().required(),
       });
 
       const middleware = ValidationMiddleware.validateSoft({ body: schema });
@@ -285,7 +290,7 @@ describe('ValidationMiddleware', () => {
 
     it('should continue execution when validation passes', async () => {
       const schema = Joi.object({
-        name: Joi.string().required()
+        name: Joi.string().required(),
       });
 
       const middleware = ValidationMiddleware.validateSoft({ body: schema });
@@ -306,7 +311,7 @@ describe('ValidationMiddleware', () => {
       const req = createMockRequest();
       const res = createMockResponse();
       res.locals.validationErrors = [
-        { field: 'name', message: 'Required field' }
+        { field: 'name', message: 'Required field' },
       ];
       const next = createMockNext();
 
@@ -316,7 +321,7 @@ describe('ValidationMiddleware', () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           error: 'Validation failed',
-          details: [{ field: 'name', message: 'Required field' }]
+          details: [{ field: 'name', message: 'Required field' }],
         })
       );
       expect(next).not.toHaveBeenCalled();
@@ -328,7 +333,7 @@ describe('ValidationMiddleware', () => {
       const req = createMockRequest();
       const res = createMockResponse();
       res.locals.validationErrors = [
-        { field: 'name', message: 'Required field' }
+        { field: 'name', message: 'Required field' },
       ];
       const next = createMockNext();
 

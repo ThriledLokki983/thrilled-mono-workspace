@@ -43,7 +43,7 @@ export interface PaginationQuery {
   page?: number;
   limit?: number;
   sortBy?: string;
-  sortOrder?: "asc" | "desc";
+  sortOrder?: 'asc' | 'desc';
 }
 
 // Filter query parameters
@@ -57,7 +57,7 @@ export interface FilterQuery {
 
 // API endpoint definition
 export interface ApiEndpoint {
-  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   path: string;
   handler: string;
   middleware?: string[];

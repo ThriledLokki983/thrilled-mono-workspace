@@ -6,14 +6,14 @@ import { Logger } from '@mono/be-core';
 // Mock Redis
 jest.mock('ioredis', () => {
   return {
-    Redis: jest.fn()
+    Redis: jest.fn(),
   };
 });
 
 // Mock Logger
 jest.mock('@mono/be-core', () => {
   return {
-    Logger: jest.fn()
+    Logger: jest.fn(),
   };
 });
 
@@ -21,18 +21,18 @@ describe('JWTProvider', () => {
   let jwtProvider: JWTProvider;
   let mockRedis: jest.Mocked<Redis>;
   let mockLogger: jest.Mocked<Logger>;
-  
+
   const testConfig: JWTConfig = {
     accessToken: {
       secret: 'test-access-secret',
       expiresIn: '15m',
-      algorithm: 'HS256'
+      algorithm: 'HS256',
     },
     refreshToken: {
       secret: 'test-refresh-secret',
       expiresIn: '7d',
-      algorithm: 'HS256'
-    }
+      algorithm: 'HS256',
+    },
   };
 
   beforeEach(() => {
@@ -47,14 +47,14 @@ describe('JWTProvider', () => {
       smembers: jest.fn().mockResolvedValue([]),
       srem: jest.fn().mockResolvedValue(1),
       ttl: jest.fn().mockResolvedValue(3600),
-      exists: jest.fn().mockResolvedValue(0)
+      exists: jest.fn().mockResolvedValue(0),
     } as unknown as jest.Mocked<Redis>;
 
     mockLogger = {
       info: jest.fn(),
       error: jest.fn(),
       warn: jest.fn(),
-      debug: jest.fn()
+      debug: jest.fn(),
     } as unknown as jest.Mocked<Logger>;
 
     jwtProvider = new JWTProvider(mockRedis, testConfig, mockLogger);
@@ -71,7 +71,7 @@ describe('JWTProvider', () => {
         sessionId: 'session123',
         roles: ['user'],
         permissions: ['read'],
-        userData: { email: 'test@example.com' }
+        userData: { email: 'test@example.com' },
       };
 
       const token = await jwtProvider.createAccessToken(payload);
@@ -87,7 +87,7 @@ describe('JWTProvider', () => {
         sessionId: 'session123',
         roles: ['user'],
         permissions: ['read'],
-        userData: { email: 'test@example.com' }
+        userData: { email: 'test@example.com' },
       };
 
       const token = await jwtProvider.createAccessToken(payload);
@@ -97,9 +97,13 @@ describe('JWTProvider', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      const invalidPayload = null as unknown as Parameters<typeof jwtProvider.createAccessToken>[0];
+      const invalidPayload = null as unknown as Parameters<
+        typeof jwtProvider.createAccessToken
+      >[0];
 
-      await expect(jwtProvider.createAccessToken(invalidPayload)).rejects.toThrow();
+      await expect(
+        jwtProvider.createAccessToken(invalidPayload)
+      ).rejects.toThrow();
     });
   });
 
@@ -128,12 +132,12 @@ describe('JWTProvider', () => {
 
   describe('verifyAccessToken', () => {
     it('should verify a valid token', async () => {
-      const payload = { 
-        userId: 'user123', 
-        sessionId: 'session123', 
-        roles: ['user'], 
-        permissions: ['read'], 
-        userData: {} 
+      const payload = {
+        userId: 'user123',
+        sessionId: 'session123',
+        roles: ['user'],
+        permissions: ['read'],
+        userData: {},
       };
       const token = await jwtProvider.createAccessToken(payload);
 
@@ -149,12 +153,12 @@ describe('JWTProvider', () => {
     });
 
     it('should reject blacklisted tokens', async () => {
-      const payload = { 
-        userId: 'user123', 
-        sessionId: 'session123', 
-        roles: ['user'], 
-        permissions: ['read'], 
-        userData: {} 
+      const payload = {
+        userId: 'user123',
+        sessionId: 'session123',
+        roles: ['user'],
+        permissions: ['read'],
+        userData: {},
       };
       const token = await jwtProvider.createAccessToken(payload);
 
@@ -180,21 +184,21 @@ describe('JWTProvider', () => {
       // Create token with very short expiration
       const config = {
         ...testConfig,
-        accessToken: { ...testConfig.accessToken, expiresIn: '1ms' }
+        accessToken: { ...testConfig.accessToken, expiresIn: '1ms' },
       };
       const shortJwtProvider = new JWTProvider(mockRedis, config, mockLogger);
-      
-      const payload = { 
-        userId: 'user123', 
-        sessionId: 'session123', 
-        roles: ['user'], 
-        permissions: ['read'], 
-        userData: {} 
+
+      const payload = {
+        userId: 'user123',
+        sessionId: 'session123',
+        roles: ['user'],
+        permissions: ['read'],
+        userData: {},
       };
       const token = await shortJwtProvider.createAccessToken(payload);
 
       // Wait for token to expire
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       const verified = await shortJwtProvider.verifyAccessToken(token);
 
@@ -242,15 +246,19 @@ describe('JWTProvider', () => {
       const roles = ['user'];
       const permissions = ['read'];
 
-      const oldRefreshToken = await jwtProvider.createRefreshToken(userId, sessionId);
+      const oldRefreshToken = await jwtProvider.createRefreshToken(
+        userId,
+        sessionId
+      );
 
       // Mock Redis to return the same token for verification
       mockRedis.get.mockResolvedValue(oldRefreshToken);
 
-      const result = await jwtProvider.refreshTokens(
-        oldRefreshToken,
-        { userData, roles, permissions }
-      );
+      const result = await jwtProvider.refreshTokens(oldRefreshToken, {
+        userData,
+        roles,
+        permissions,
+      });
 
       expect(result).toBeDefined();
       if (result) {
@@ -263,7 +271,10 @@ describe('JWTProvider', () => {
     it('should not rotate refresh token when disabled', async () => {
       const userId = 'user123';
       const sessionId = 'session123';
-      const oldRefreshToken = await jwtProvider.createRefreshToken(userId, sessionId);
+      const oldRefreshToken = await jwtProvider.createRefreshToken(
+        userId,
+        sessionId
+      );
 
       // Mock Redis to return the same token for verification
       mockRedis.get.mockResolvedValue(oldRefreshToken);
@@ -283,10 +294,11 @@ describe('JWTProvider', () => {
     it('should fail with invalid refresh token', async () => {
       const invalidToken = 'invalid.token.here';
 
-      const result = await jwtProvider.refreshTokens(
-        invalidToken,
-        { userData: {}, roles: [], permissions: [] }
-      );
+      const result = await jwtProvider.refreshTokens(invalidToken, {
+        userData: {},
+        roles: [],
+        permissions: [],
+      });
 
       expect(result).toBeNull();
     });
@@ -294,12 +306,12 @@ describe('JWTProvider', () => {
 
   describe('blacklistToken', () => {
     it('should blacklist a token', async () => {
-      const payload = { 
-        userId: 'user123', 
-        sessionId: 'session123', 
-        roles: ['user'], 
-        permissions: ['read'], 
-        userData: {} 
+      const payload = {
+        userId: 'user123',
+        sessionId: 'session123',
+        roles: ['user'],
+        permissions: ['read'],
+        userData: {},
       };
       const token = await jwtProvider.createAccessToken(payload);
 
@@ -317,12 +329,12 @@ describe('JWTProvider', () => {
 
   describe('isTokenBlacklisted', () => {
     it('should check if token is blacklisted', async () => {
-      const payload = { 
-        userId: 'user123', 
-        sessionId: 'session123', 
-        roles: ['user'], 
-        permissions: ['read'], 
-        userData: {} 
+      const payload = {
+        userId: 'user123',
+        sessionId: 'session123',
+        roles: ['user'],
+        permissions: ['read'],
+        userData: {},
       };
       const token = await jwtProvider.createAccessToken(payload);
 
@@ -336,12 +348,12 @@ describe('JWTProvider', () => {
     });
 
     it('should return false for non-blacklisted tokens', async () => {
-      const payload = { 
-        userId: 'user123', 
-        sessionId: 'session123', 
-        roles: ['user'], 
-        permissions: ['read'], 
-        userData: {} 
+      const payload = {
+        userId: 'user123',
+        sessionId: 'session123',
+        roles: ['user'],
+        permissions: ['read'],
+        userData: {},
       };
       const token = await jwtProvider.createAccessToken(payload);
 
@@ -363,7 +375,9 @@ describe('JWTProvider', () => {
 
       await jwtProvider.blacklistUserTokens(userId);
 
-      expect(mockRedis.smembers).toHaveBeenCalledWith(`blacklisted_tokens:${userId}`);
+      expect(mockRedis.smembers).toHaveBeenCalledWith(
+        `blacklisted_tokens:${userId}`
+      );
     });
   });
 
@@ -378,18 +392,21 @@ describe('JWTProvider', () => {
       const cleaned = await jwtProvider.cleanupExpiredBlacklistedTokens(userId);
 
       expect(cleaned).toBe(1); // One token should be cleaned
-      expect(mockRedis.srem).toHaveBeenCalledWith(`blacklisted_tokens:${userId}`, 'token1');
+      expect(mockRedis.srem).toHaveBeenCalledWith(
+        `blacklisted_tokens:${userId}`,
+        'token1'
+      );
     });
   });
 
   describe('getTokenPayload', () => {
     it('should decode token payload without verification', async () => {
-      const payload = { 
-        userId: 'user123', 
-        sessionId: 'session123', 
-        roles: ['user'], 
-        permissions: ['read'], 
-        userData: {} 
+      const payload = {
+        userId: 'user123',
+        sessionId: 'session123',
+        roles: ['user'],
+        permissions: ['read'],
+        userData: {},
       };
       const token = await jwtProvider.createAccessToken(payload);
 

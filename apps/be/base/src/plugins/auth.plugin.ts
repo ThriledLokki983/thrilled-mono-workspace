@@ -1,87 +1,90 @@
 import { BasePlugin } from '@mono/be-core';
 import type { Express } from 'express';
-import { 
-  JWTProvider, 
-  PasswordManager, 
-  SessionManager, 
-  RBACManager, 
-  AuthMiddleware,
-  RedisCacheAdapter
-} from '@thrilled/be-auth';
-import { 
-  createRedisClient, 
-  createJWTConfig, 
-  createPasswordConfig, 
-  createSessionConfig,
-  createAuthLoggingConfig
-} from '@config/auth.config';
+import { Container } from 'typedi';
+import { createRedisClient, createJWTConfig, createPasswordConfig, createSessionConfig } from '../config/auth.config';
+
+// Function to import ES module from CommonJS context
+const importESModule = async (specifier: string) => {
+  return new Function('specifier', 'return import(specifier)')(specifier);
+};
 
 export class AuthPlugin extends BasePlugin {
   readonly name = 'auth';
   readonly version = '1.0.0';
   override dependencies = ['database']; // Depends on database plugin
 
-  private jwtProvider!: JWTProvider;
-  private passwordManager!: PasswordManager;
-  private sessionManager!: SessionManager;
-  private rbacManager!: RBACManager;
-  private authMiddleware!: AuthMiddleware;
-  private redisClient!: any;
-  private cacheAdapter!: RedisCacheAdapter;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private jwtProvider: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private passwordManager: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private sessionManager: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private rbacManager: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private authMiddleware: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private redisClient: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private cacheAdapter: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private authModule: any;
 
   protected async setup(): Promise<void> {
     this.logger.info('Setting up authentication services');
 
     try {
+      // Dynamically import the ES module using a wrapper function
+      this.authModule = await importESModule('@thrilled/be-auth');
+
       // Create Redis client
       this.redisClient = createRedisClient();
       await this.redisClient.connect();
       this.logger.info('Redis client connected successfully');
 
       // Create cache adapter
-      this.cacheAdapter = new RedisCacheAdapter(this.redisClient);
-
-      // Create auth logging config
-      const authLoggingConfig = createAuthLoggingConfig();
+      this.cacheAdapter = new this.authModule.RedisCacheAdapter(this.redisClient);
 
       // Initialize JWT Provider
-      this.jwtProvider = new JWTProvider(
-        createJWTConfig(),
-        this.redisClient,
-        authLoggingConfig
-      );
+      this.jwtProvider = new this.authModule.JWTProvider(this.redisClient, createJWTConfig(), this.logger);
 
       // Initialize Password Manager
-      this.passwordManager = new PasswordManager(
-        createPasswordConfig(),
-        this.cacheAdapter,
-        authLoggingConfig
-      );
+      this.passwordManager = new this.authModule.PasswordManager(createPasswordConfig(), this.cacheAdapter, this.logger);
 
       // Initialize Session Manager
-      this.sessionManager = new SessionManager(
-        createSessionConfig(),
-        this.cacheAdapter,
-        authLoggingConfig
-      );
+      this.sessionManager = new this.authModule.SessionManager(createSessionConfig(), this.cacheAdapter, this.logger);
 
       // Initialize RBAC Manager
-      this.rbacManager = new RBACManager(
-        this.cacheAdapter,
-        authLoggingConfig
-      );
+      this.rbacManager = new this.authModule.RBACManager(this.cacheAdapter, this.logger);
 
       // Initialize Auth Middleware
-      this.authMiddleware = new AuthMiddleware(
-        this.jwtProvider,
-        this.sessionManager,
-        this.rbacManager,
-        authLoggingConfig
-      );
+      this.authMiddleware = new this.authModule.AuthMiddleware(this.jwtProvider, this.sessionManager, this.rbacManager, this.logger);
 
       this.logger.info('Authentication services initialized successfully');
+
+      // Register auth package instances with TypeDI container for dependency injection
+      this.registerWithContainer();
     } catch (error) {
       this.logger.error(error as Error, { context: 'AuthPlugin.setup' });
+      throw error;
+    }
+  }
+
+  /**
+   * Register auth package instances with TypeDI container
+   * This enables dependency injection of auth services into other services
+   */
+  private registerWithContainer(): void {
+    try {
+      // Register auth package instances with specific tokens
+      Container.set('jwtProvider', this.jwtProvider);
+      Container.set('passwordManager', this.passwordManager);
+      Container.set('sessionManager', this.sessionManager);
+      Container.set('rbacManager', this.rbacManager);
+
+      this.logger.info('Auth package instances registered with TypeDI container');
+    } catch (error) {
+      this.logger.error('Failed to register auth instances with container', { error });
       throw error;
     }
   }
@@ -102,9 +105,9 @@ export class AuthPlugin extends BasePlugin {
     this.logger.info('Authentication routes registered successfully');
   }
 
-  protected override async teardown(): Promise<void> {
+  protected async teardown(): Promise<void> {
     this.logger.info('Tearing down authentication services');
-    
+
     if (this.redisClient) {
       await this.redisClient.disconnect();
       this.logger.info('Redis client disconnected');
@@ -112,23 +115,28 @@ export class AuthPlugin extends BasePlugin {
   }
 
   // Getters for auth services (can be used by other plugins or services)
-  public getJWTProvider(): JWTProvider {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public getJWTProvider(): any {
     return this.jwtProvider;
   }
 
-  public getPasswordManager(): PasswordManager {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public getPasswordManager(): any {
     return this.passwordManager;
   }
 
-  public getSessionManager(): SessionManager {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public getSessionManager(): any {
     return this.sessionManager;
   }
 
-  public getRBACManager(): RBACManager {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public getRBACManager(): any {
     return this.rbacManager;
   }
 
-  public getAuthMiddleware(): AuthMiddleware {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public getAuthMiddleware(): any {
     return this.authMiddleware;
   }
 }

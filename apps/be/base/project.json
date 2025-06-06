@@ -140,5 +140,6 @@
       }
     }
   },
-  "tags": ["type:app", "scope:be"]
+  "tags": ["type:app", "scope:be"],
+  "implicitDependencies": ["validation"]
 }

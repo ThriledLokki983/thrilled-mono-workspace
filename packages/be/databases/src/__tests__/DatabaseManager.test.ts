@@ -1,9 +1,9 @@
-import { DatabaseManager } from "../managers/DatabaseManager.js";
-import { DatabaseManagerConfig } from "@thrilled/be-types";
-import { Logger } from "@mono/be-core";
+import { DatabaseManager } from '../managers/DatabaseManager.js';
+import { DatabaseManagerConfig } from '@thrilled/be-types';
+import { Logger } from '@mono/be-core';
 
 // Mock dependencies
-jest.mock("pg", () => ({
+jest.mock('pg', () => ({
   Pool: jest.fn().mockImplementation(() => ({
     connect: jest.fn().mockResolvedValue({
       query: jest.fn().mockResolvedValue({ rows: [], rowCount: 0 }),
@@ -23,18 +23,18 @@ jest.mock("pg", () => ({
   })),
 }));
 
-jest.mock("ioredis", () => {
+jest.mock('ioredis', () => {
   return jest.fn().mockImplementation(() => ({
-    connect: jest.fn().mockResolvedValue("OK"),
-    ping: jest.fn().mockResolvedValue("PONG"),
-    quit: jest.fn().mockResolvedValue("OK"),
+    connect: jest.fn().mockResolvedValue('OK'),
+    ping: jest.fn().mockResolvedValue('PONG'),
+    quit: jest.fn().mockResolvedValue('OK'),
     disconnect: jest.fn(),
     on: jest.fn(),
-    status: "ready",
+    status: 'ready',
   }));
 });
 
-describe("DatabaseManager", () => {
+describe('DatabaseManager', () => {
   let databaseManager: DatabaseManager;
   let mockLogger: jest.Mocked<Logger>;
   let config: DatabaseManagerConfig;
@@ -50,14 +50,14 @@ describe("DatabaseManager", () => {
     config = {
       connections: {
         primary: {
-          host: "localhost",
+          host: 'localhost',
           port: 5432,
-          database: "test_db",
-          username: "test_user",
-          password: "test_password",
+          database: 'test_db',
+          username: 'test_user',
+          password: 'test_password',
         },
       },
-      default: "primary",
+      default: 'primary',
       autoCreateDatabase: false,
     };
 
@@ -69,62 +69,62 @@ describe("DatabaseManager", () => {
     jest.clearAllMocks();
   });
 
-  describe("initialization", () => {
-    it("should initialize with provided config", () => {
+  describe('initialization', () => {
+    it('should initialize with provided config', () => {
       expect(databaseManager).toBeDefined();
     });
 
-    it("should connect to databases on initialize", async () => {
+    it('should connect to databases on initialize', async () => {
       await databaseManager.initialize();
       expect(mockLogger.info).toHaveBeenCalledWith(
-        "Initializing DatabaseManager..."
+        'Initializing DatabaseManager...'
       );
     });
   });
 
-  describe("connection management", () => {
+  describe('connection management', () => {
     beforeEach(async () => {
       await databaseManager.initialize();
     });
 
-    it("should get default connection", () => {
+    it('should get default connection', () => {
       const connection = databaseManager.getConnection();
       expect(connection).toBeDefined();
     });
 
-    it("should get named connection", () => {
-      const connection = databaseManager.getConnection("primary");
+    it('should get named connection', () => {
+      const connection = databaseManager.getConnection('primary');
       expect(connection).toBeDefined();
     });
 
-    it("should throw error for non-existent connection", () => {
-      expect(() => databaseManager.getConnection("nonexistent")).toThrow();
+    it('should throw error for non-existent connection', () => {
+      expect(() => databaseManager.getConnection('nonexistent')).toThrow();
     });
   });
 
-  describe("health checks", () => {
+  describe('health checks', () => {
     beforeEach(async () => {
       await databaseManager.initialize();
     });
 
-    it("should perform health check", async () => {
+    it('should perform health check', async () => {
       const health = await databaseManager.getHealthCheck();
-      expect(health).toHaveProperty("status");
-      expect(health).toHaveProperty("connections");
-      expect(health).toHaveProperty("uptime");
+      expect(health).toHaveProperty('status');
+      expect(health).toHaveProperty('connections');
+      expect(health).toHaveProperty('uptime');
     });
   });
 
-  describe("transactions", () => {
+  describe('transactions', () => {
     beforeEach(async () => {
       await databaseManager.initialize();
     });
 
-    it("should execute transaction successfully", async () => {
+    it('should execute transaction successfully', async () => {
       const result = await databaseManager.withTransaction(async () => {
-        return "success";
+        return 'success';
       });
-      expect(result).toBe("success");
+      expect(result).toBe('success');
     });
   });
 });

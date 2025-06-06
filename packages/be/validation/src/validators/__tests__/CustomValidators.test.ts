@@ -74,7 +74,9 @@ describe('CustomValidators', () => {
 
   describe('UUID validation', () => {
     it('should validate valid UUIDs', async () => {
-      const result = await CustomValidators.uuid('123e4567-e89b-12d3-a456-426614174000');
+      const result = await CustomValidators.uuid(
+        '123e4567-e89b-12d3-a456-426614174000'
+      );
       expect(result.isValid).toBe(true);
     });
 
@@ -120,7 +122,9 @@ describe('CustomValidators', () => {
     });
 
     it('should validate IPv6 addresses', async () => {
-      const result = await CustomValidators.ipAddress('2001:0db8:85a3:0000:0000:8a2e:0370:7334');
+      const result = await CustomValidators.ipAddress(
+        '2001:0db8:85a3:0000:0000:8a2e:0370:7334'
+      );
       expect(result.isValid).toBe(true);
     });
 
@@ -193,14 +197,14 @@ describe('CustomValidators', () => {
       const mockFile = {
         name: 'document.pdf',
         size: 1024,
-        type: 'application/pdf'
+        type: 'application/pdf',
       };
-      
+
       const result = await CustomValidators.file(mockFile, {
         allowedExtensions: ['.pdf', '.doc'],
-        maxSize: 2048
+        maxSize: 2048,
       });
-      
+
       expect(result.isValid).toBe(true);
     });
 
@@ -208,14 +212,14 @@ describe('CustomValidators', () => {
       const mockFile = {
         name: 'script.exe',
         size: 1024,
-        type: 'application/octet-stream'
+        type: 'application/octet-stream',
       };
-      
+
       const result = await CustomValidators.file(mockFile, {
         allowedExtensions: ['.pdf', '.doc'],
-        maxSize: 2048
+        maxSize: 2048,
       });
-      
+
       expect(result.isValid).toBe(false);
     });
 
@@ -223,14 +227,14 @@ describe('CustomValidators', () => {
       const mockFile = {
         name: 'document.pdf',
         size: 3072,
-        type: 'application/pdf'
+        type: 'application/pdf',
       };
-      
+
       const result = await CustomValidators.file(mockFile, {
         allowedExtensions: ['.pdf', '.doc'],
-        maxSize: 2048
+        maxSize: 2048,
       });
-      
+
       expect(result.isValid).toBe(false);
     });
   });
@@ -249,7 +253,10 @@ describe('CustomValidators', () => {
 
   describe('length validation', () => {
     it('should validate strings within length range', async () => {
-      const result = await CustomValidators.length('hello', { min: 3, max: 10 });
+      const result = await CustomValidators.length('hello', {
+        min: 3,
+        max: 10,
+      });
       expect(result.isValid).toBe(true);
     });
 
@@ -259,7 +266,10 @@ describe('CustomValidators', () => {
     });
 
     it('should validate arrays within length range', async () => {
-      const result = await CustomValidators.length([1, 2, 3], { min: 2, max: 5 });
+      const result = await CustomValidators.length([1, 2, 3], {
+        min: 2,
+        max: 5,
+      });
       expect(result.isValid).toBe(true);
     });
   });
@@ -278,12 +288,20 @@ describe('CustomValidators', () => {
 
   describe('enum validation', () => {
     it('should validate values in enum', async () => {
-      const result = await CustomValidators.enum('red', ['red', 'green', 'blue']);
+      const result = await CustomValidators.enum('red', [
+        'red',
+        'green',
+        'blue',
+      ]);
       expect(result.isValid).toBe(true);
     });
 
     it('should reject values not in enum', async () => {
-      const result = await CustomValidators.enum('yellow', ['red', 'green', 'blue']);
+      const result = await CustomValidators.enum('yellow', [
+        'red',
+        'green',
+        'blue',
+      ]);
       expect(result.isValid).toBe(false);
     });
   });

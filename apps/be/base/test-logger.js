@@ -15,7 +15,7 @@ const testData = {
   password: 'secret123',
   email: 'john@example.com',
   token: 'abc123xyz',
-  normalField: 'this should not be redacted'
+  normalField: 'this should not be redacted',
 };
 
 console.log('Original data:', testData);

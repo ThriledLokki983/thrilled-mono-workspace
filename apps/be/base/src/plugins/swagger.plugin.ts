@@ -25,7 +25,7 @@ export class SwaggerPlugin extends BasePlugin {
       description: 'HuisHelder management API documentation',
       apiPath: '/api/v1',
       docsPath: '/api-docs',
-      ...config
+      ...config,
     };
   }
 
@@ -76,16 +76,19 @@ export class SwaggerPlugin extends BasePlugin {
 
       const specs = swaggerJSDoc(options);
       app.use(this.config.docsPath!, swaggerUi.serve as any);
-      app.get(this.config.docsPath!, swaggerUi.setup(specs, {
-        explorer: true,
-        customCss: '.swagger-ui .topbar { display: none }',
-        swaggerOptions: {
-          docExpansion: 'list',
-          filter: true,
-          showRequestDuration: true,
-          persistAuthorization: true,
-        },
-      }) as any);
+      app.get(
+        this.config.docsPath!,
+        swaggerUi.setup(specs, {
+          explorer: true,
+          customCss: '.swagger-ui .topbar { display: none }',
+          swaggerOptions: {
+            docExpansion: 'list',
+            filter: true,
+            showRequestDuration: true,
+            persistAuthorization: true,
+          },
+        }) as any,
+      );
 
       this.logger.info(`Swagger documentation available at ${this.config.docsPath}`);
     } catch (error) {

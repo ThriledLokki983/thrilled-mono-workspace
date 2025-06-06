@@ -3,7 +3,7 @@ import { ValidationMiddleware } from '../middleware/ValidationMiddleware.js';
 import { XSSProtection } from '../sanitization/XSSProtection.js';
 import { SQLInjectionProtection } from '../sanitization/SQLInjectionProtection.js';
 import { Sanitizer } from '../sanitization/Sanitizer.js';
-import { ValidationPluginConfig } from '../types/index.js';
+import { ValidationPluginConfig, ValidatorFunction } from '../types/index.js';
 
 /**
  * Validation plugin for be-core integration
@@ -16,7 +16,7 @@ export class ValidationPlugin {
     this.config = {
       enableXSSProtection: true,
       enableSQLInjectionProtection: true,
-      ...config
+      ...config,
     };
   }
 
@@ -40,13 +40,13 @@ export class ValidationPlugin {
     this.app.use((req, res, next) => {
       // XSS Protection header
       res.setHeader('X-XSS-Protection', '1; mode=block');
-      
+
       // Content Type Options
       res.setHeader('X-Content-Type-Options', 'nosniff');
-      
+
       // Frame Options
       res.setHeader('X-Frame-Options', 'DENY');
-      
+
       // Content Security Policy
       if (this.config.enableXSSProtection) {
         const csp = XSSProtection.createCSPHeader();
@@ -63,21 +63,34 @@ export class ValidationPlugin {
           // Sanitize request body
           if (req.body && typeof req.body === 'object') {
             if (this.config.globalSanitization?.body) {
-              req.body = Sanitizer.sanitizeObject(req.body, this.config.globalSanitization.body);
+              req.body = Sanitizer.sanitizeObject(
+                req.body,
+                this.config.globalSanitization.body
+              );
             }
           }
 
           // Sanitize query parameters
           if (req.query && typeof req.query === 'object') {
             if (this.config.globalSanitization?.query) {
-              req.query = Sanitizer.sanitizeObject(req.query, this.config.globalSanitization.query);
+              const sanitized = Sanitizer.sanitizeObject(
+                req.query,
+                this.config.globalSanitization.query
+              );
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              req.query = sanitized as any;
             }
           }
 
           // Sanitize URL parameters
           if (req.params && typeof req.params === 'object') {
             if (this.config.globalSanitization?.params) {
-              req.params = Sanitizer.sanitizeObject(req.params, this.config.globalSanitization.params);
+              const sanitized = Sanitizer.sanitizeObject(
+                req.params,
+                this.config.globalSanitization.params
+              );
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              req.params = sanitized as any;
             }
           }
 
@@ -141,17 +154,17 @@ export class ValidationPlugin {
   /**
    * Create route-specific validation
    */
-  createRouteValidation(path: string, schemas: any) {
+  createRouteValidation(path: string, schemas: Record<string, unknown>) {
     return {
       path,
-      middleware: ValidationMiddleware.validate(schemas)
+      middleware: ValidationMiddleware.validate(schemas),
     };
   }
 
   /**
    * Add custom validator
    */
-  addCustomValidator(name: string, validator: any): void {
+  addCustomValidator(name: string, validator: ValidatorFunction): void {
     if (!this.config.customValidators) {
       this.config.customValidators = {};
     }
@@ -161,7 +174,7 @@ export class ValidationPlugin {
   /**
    * Get custom validator
    */
-  getCustomValidator(name: string): any {
+  getCustomValidator(name: string): ValidatorFunction | undefined {
     return this.config.customValidators?.[name];
   }
 
@@ -170,7 +183,7 @@ export class ValidationPlugin {
    */
   updateConfig(newConfig: Partial<ValidationPluginConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    
+
     // Re-setup middleware if app is initialized
     if (this.app) {
       this.setupMiddleware();
@@ -197,11 +210,12 @@ export class ValidationPlugin {
       sqlProtection: this.config.enableSQLInjectionProtection ?? false,
       globalValidation: !!this.config.globalValidation,
       globalSanitization: !!this.config.globalSanitization,
-      customValidators: Object.keys(this.config.customValidators || {}).length > 0
+      customValidators:
+        Object.keys(this.config.customValidators || {}).length > 0,
     };
 
     const enabledChecks = Object.values(checks).filter(Boolean).length;
-    
+
     let status: 'healthy' | 'warning' | 'error' = 'healthy';
     let message = 'Validation system is fully operational';
 
@@ -225,16 +239,19 @@ export class ValidationPlugin {
     customValidatorCount: number;
   } {
     const enabledFeatures: string[] = [];
-    
+
     if (this.config.enableXSSProtection) enabledFeatures.push('XSS Protection');
-    if (this.config.enableSQLInjectionProtection) enabledFeatures.push('SQL Injection Protection');
+    if (this.config.enableSQLInjectionProtection)
+      enabledFeatures.push('SQL Injection Protection');
     if (this.config.globalValidation) enabledFeatures.push('Global Validation');
-    if (this.config.globalSanitization) enabledFeatures.push('Global Sanitization');
+    if (this.config.globalSanitization)
+      enabledFeatures.push('Global Sanitization');
 
     return {
       enabledFeatures,
       middlewareCount: enabledFeatures.length,
-      customValidatorCount: Object.keys(this.config.customValidators || {}).length
+      customValidatorCount: Object.keys(this.config.customValidators || {})
+        .length,
     };
   }
 
@@ -251,7 +268,7 @@ export class ValidationPlugin {
       config: this.getConfig(),
       stats: this.getStats(),
       health: this.healthCheck(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 

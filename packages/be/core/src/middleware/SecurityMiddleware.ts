@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction, RequestHandler } from "express";
-import rateLimit, { RateLimitRequestHandler } from "express-rate-limit";
-import helmet from "helmet";
-import cors from "cors";
-import { RateLimitConfig, CorsConfig, HelmetConfig } from "../types";
+import { Request, Response, NextFunction, RequestHandler } from 'express';
+import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
+import helmet from 'helmet';
+import cors from 'cors';
+import { RateLimitConfig, CorsConfig, HelmetConfig } from '../types';
 
 export class SecurityMiddleware {
   /**
@@ -12,7 +12,7 @@ export class SecurityMiddleware {
     return rateLimit({
       windowMs: config.windowMs || 15 * 60 * 1000, // 15 minutes
       max: config.max || 100, // limit each IP to 100 requests per windowMs
-      message: config.message || "Too many requests from this IP",
+      message: config.message || 'Too many requests from this IP',
       standardHeaders: true,
       legacyHeaders: false,
       ...config,
@@ -39,13 +39,13 @@ export class SecurityMiddleware {
   static requestId(): RequestHandler {
     return (req: Request, res: Response, next: NextFunction) => {
       const requestId =
-        (req.headers["x-request-id"] as string) || this.generateId();
+        (req.headers['x-request-id'] as string) || this.generateId();
 
       // Add to request for access in handlers - extending Request interface
       (req as Request & { requestId: string }).requestId = requestId;
 
       // Add to response headers
-      res.setHeader("X-Request-ID", requestId);
+      res.setHeader('X-Request-ID', requestId);
 
       next();
     };
@@ -60,14 +60,14 @@ export class SecurityMiddleware {
         if (!res.headersSent) {
           res.status(408).json({
             success: false,
-            message: "Request timeout",
+            message: 'Request timeout',
             statusCode: 408,
           });
         }
       }, ms);
 
-      res.on("finish", () => clearTimeout(timeout));
-      res.on("close", () => clearTimeout(timeout));
+      res.on('finish', () => clearTimeout(timeout));
+      res.on('close', () => clearTimeout(timeout));
 
       next();
     };

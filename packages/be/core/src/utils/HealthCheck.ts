@@ -1,7 +1,10 @@
-
 import { Express, Request, Response } from 'express';
 import { Logger } from '../logging/Logger';
-import type { HealthCheckOptions, HealthCheckResult, HealthCheckStatus } from '../types';
+import type {
+  HealthCheckOptions,
+  HealthCheckResult,
+  HealthCheckStatus,
+} from '../types';
 
 export interface HealthCheck {
   name: string;
@@ -53,7 +56,10 @@ export class HealthCheckManager {
       async ([name, check]) => {
         try {
           const timeoutPromise = new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('Health check timeout')), this.config.timeout)
+            setTimeout(
+              () => reject(new Error('Health check timeout')),
+              this.config.timeout
+            )
           );
 
           const result = await Promise.race([check.check(), timeoutPromise]);
@@ -106,7 +112,9 @@ export class HealthCheckManager {
           ...healthResult,
         });
       } catch (error) {
-        this.logger.error(error as Error, { context: 'HealthCheckManager.endpoint' });
+        this.logger.error(error as Error, {
+          context: 'HealthCheckManager.endpoint',
+        });
         res.status(500).json({
           success: false,
           status: 'unhealthy',
@@ -116,6 +124,8 @@ export class HealthCheckManager {
       }
     });
 
-    this.logger.info(`Health check endpoint available at ${this.config.endpoint}`);
+    this.logger.info(
+      `Health check endpoint available at ${this.config.endpoint}`
+    );
   }
 }

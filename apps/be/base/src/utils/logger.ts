@@ -16,7 +16,7 @@ const logger = new CoreLogger({
   level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
   format: 'simple', // Use simple format to match existing behavior
   maxFiles: 30,
-  correlationId: false // Disable correlation ID for now to match existing behavior
+  correlationId: false, // Disable correlation ID for now to match existing behavior
 });
 
 /**

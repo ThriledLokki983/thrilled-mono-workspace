@@ -14,8 +14,8 @@ class MockValidator extends BaseValidator {
         metadata: {
           validator: this.type,
           schema: this._schema,
-          options: this.options
-        }
+          options: this.options,
+        },
       };
     } else {
       return {
@@ -25,8 +25,8 @@ class MockValidator extends BaseValidator {
         metadata: {
           validator: this.type,
           schema: this._schema,
-          options: this.options
-        }
+          options: this.options,
+        },
       };
     }
   }
@@ -40,8 +40,8 @@ class MockValidator extends BaseValidator {
         metadata: {
           validator: this.type,
           schema: this._schema,
-          options: this.options
-        }
+          options: this.options,
+        },
       };
     } else {
       return {
@@ -51,8 +51,8 @@ class MockValidator extends BaseValidator {
         metadata: {
           validator: this.type,
           schema: this._schema,
-          options: this.options
-        }
+          options: this.options,
+        },
       };
     }
   }
@@ -88,12 +88,16 @@ describe('BaseValidator', () => {
       expect(result.errors[0]).toEqual({
         field: 'root',
         message: 'Invalid data',
-        value: 'invalid'
+        value: 'invalid',
       });
     });
 
     it('should handle batch validation', async () => {
-      const results = await validator.validateBatch(['valid', 'invalid', 'valid']);
+      const results = await validator.validateBatch([
+        'valid',
+        'invalid',
+        'valid',
+      ]);
 
       expect(results).toHaveLength(3);
       expect(results[0].isValid).toBe(true);
@@ -120,7 +124,11 @@ describe('BaseValidator', () => {
     });
 
     it('should handle batch validation sync', () => {
-      const results = validator.validateBatchSync(['valid', 'invalid', 'valid']);
+      const results = validator.validateBatchSync([
+        'valid',
+        'invalid',
+        'valid',
+      ]);
 
       expect(results).toHaveLength(3);
       expect(results[0].isValid).toBe(true);

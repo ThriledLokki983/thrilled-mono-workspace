@@ -1,11 +1,11 @@
-import { randomBytes } from "crypto";
-import type { Logger } from "@mono/be-core";
+import { randomBytes } from 'crypto';
+import type { Logger } from '@mono/be-core';
 import type {
   SessionConfig,
   UserSession,
   AuthEvent,
   CacheManager,
-} from "../types/index.js";
+} from '../types/index.js';
 
 export class SessionManager {
   private readonly config: SessionConfig;
@@ -13,17 +13,13 @@ export class SessionManager {
   private readonly logger: Logger;
   private readonly sessionPrefix: string;
   private readonly userSessionPrefix: string;
-  private readonly eventPrefix = "auth:event:";
+  private readonly eventPrefix = 'auth:event:';
 
-  constructor(
-    config: SessionConfig,
-    cache: CacheManager,
-    logger: Logger
-  ) {
+  constructor(config: SessionConfig, cache: CacheManager, logger: Logger) {
     // Set defaults for configuration
     const defaults: SessionConfig = {
-      defaultTTL: "24h",
-      prefix: "session:",
+      defaultTTL: '24h',
+      prefix: 'session:',
       ttl: 86400, // 24 hours in seconds
       rolling: true,
       maxSessionsPerUser: 5,
@@ -32,7 +28,7 @@ export class SessionManager {
       trackDevices: true,
       enableEventLogging: true,
     };
-    
+
     this.config = { ...defaults, ...config };
     this.cache = cache;
     this.logger = logger;
@@ -44,7 +40,7 @@ export class SessionManager {
    * Generate a unique session ID
    */
   private generateSessionId(): string {
-    return randomBytes(32).toString("hex");
+    return randomBytes(32).toString('hex');
   }
 
   /**
@@ -87,7 +83,7 @@ export class SessionManager {
 
       // Track authentication event
       await this.trackAuthEvent({
-        eventType: "login",
+        eventType: 'login',
         success: true,
         userId,
         sessionId,
@@ -97,7 +93,7 @@ export class SessionManager {
         timestamp: now,
       });
 
-      this.logger.info("Session created", {
+      this.logger.info('Session created', {
         sessionId,
         userId,
         deviceId,
@@ -105,7 +101,7 @@ export class SessionManager {
 
       return session;
     } catch (error) {
-      this.logger.error("Failed to create session", {
+      this.logger.error('Failed to create session', {
         error: error instanceof Error ? error.message : String(error),
         userId,
       });
@@ -139,7 +135,7 @@ export class SessionManager {
 
       return session;
     } catch (error) {
-      this.logger.error("Failed to get session", {
+      this.logger.error('Failed to get session', {
         error: error instanceof Error ? error.message : String(error),
         sessionId,
       });
@@ -162,7 +158,7 @@ export class SessionManager {
 
       const now = new Date();
       session.lastActiveAt = now;
-      
+
       // Extend expiration if rolling
       if (this.config.rolling) {
         session.expiresAt = new Date(now.getTime() + this.config.ttl * 1000);
@@ -174,7 +170,7 @@ export class SessionManager {
         this.config.ttl
       );
     } catch (error) {
-      this.logger.error("Failed to touch session", {
+      this.logger.error('Failed to touch session', {
         error: error instanceof Error ? error.message : String(error),
         sessionId,
       });
@@ -196,7 +192,7 @@ export class SessionManager {
 
         // Track logout event
         await this.trackAuthEvent({
-          eventType: "logout",
+          eventType: 'logout',
           success: true,
           userId: session.userId,
           sessionId,
@@ -207,9 +203,9 @@ export class SessionManager {
       // Remove session data
       await this.cache.del(`${this.sessionPrefix}${sessionId}`);
 
-      this.logger.info("Session destroyed", { sessionId });
+      this.logger.info('Session destroyed', { sessionId });
     } catch (error) {
-      this.logger.error("Failed to destroy session", {
+      this.logger.error('Failed to destroy session', {
         error: error instanceof Error ? error.message : String(error),
         sessionId,
       });
@@ -221,9 +217,10 @@ export class SessionManager {
    */
   async getUserSessions(userId: string): Promise<UserSession[]> {
     try {
-      const sessionIds = await this.cache.getObject<string[]>(
-        `${this.userSessionPrefix}${userId}`
-      ) || [];
+      const sessionIds =
+        (await this.cache.getObject<string[]>(
+          `${this.userSessionPrefix}${userId}`
+        )) || [];
 
       const sessions: UserSession[] = [];
 
@@ -236,7 +233,7 @@ export class SessionManager {
 
       return sessions;
     } catch (error) {
-      this.logger.error("Failed to get user sessions", {
+      this.logger.error('Failed to get user sessions', {
         error: error instanceof Error ? error.message : String(error),
         userId,
       });
@@ -252,9 +249,10 @@ export class SessionManager {
     excludeSessionId?: string
   ): Promise<void> {
     try {
-      const sessionIds = await this.cache.getObject<string[]>(
-        `${this.userSessionPrefix}${userId}`
-      ) || [];
+      const sessionIds =
+        (await this.cache.getObject<string[]>(
+          `${this.userSessionPrefix}${userId}`
+        )) || [];
 
       for (const sessionId of sessionIds) {
         if (sessionId !== excludeSessionId) {
@@ -274,12 +272,12 @@ export class SessionManager {
         await this.cache.del(`${this.userSessionPrefix}${userId}`);
       }
 
-      this.logger.info("All user sessions destroyed", {
+      this.logger.info('All user sessions destroyed', {
         userId,
         excludeSessionId,
       });
     } catch (error) {
-      this.logger.error("Failed to destroy user sessions", {
+      this.logger.error('Failed to destroy user sessions', {
         error: error instanceof Error ? error.message : String(error),
         userId,
       });
@@ -294,18 +292,25 @@ export class SessionManager {
     newSessionId: string
   ): Promise<void> {
     try {
-      const sessionIds = await this.cache.getObject<string[]>(
-        `${this.userSessionPrefix}${userId}`
-      ) || [];
+      const sessionIds =
+        (await this.cache.getObject<string[]>(
+          `${this.userSessionPrefix}${userId}`
+        )) || [];
 
       // Add new session
       sessionIds.push(newSessionId);
 
       // Enforce session limit
-      if (this.config.maxSessions && sessionIds.length > this.config.maxSessions) {
+      if (
+        this.config.maxSessions &&
+        sessionIds.length > this.config.maxSessions
+      ) {
         // Remove oldest sessions
-        const sessionsToRemove = sessionIds.slice(0, sessionIds.length - this.config.maxSessions);
-        
+        const sessionsToRemove = sessionIds.slice(
+          0,
+          sessionIds.length - this.config.maxSessions
+        );
+
         for (const sessionId of sessionsToRemove) {
           await this.destroySession(sessionId);
         }
@@ -325,7 +330,7 @@ export class SessionManager {
         );
       }
     } catch (error) {
-      this.logger.error("Failed to manage session limit", {
+      this.logger.error('Failed to manage session limit', {
         error: error instanceof Error ? error.message : String(error),
         userId,
       });
@@ -340,11 +345,14 @@ export class SessionManager {
     sessionId: string
   ): Promise<void> {
     try {
-      const sessionIds = await this.cache.getObject<string[]>(
-        `${this.userSessionPrefix}${userId}`
-      ) || [];
+      const sessionIds =
+        (await this.cache.getObject<string[]>(
+          `${this.userSessionPrefix}${userId}`
+        )) || [];
 
-      const updatedSessions = sessionIds.filter((id: string) => id !== sessionId);
+      const updatedSessions = sessionIds.filter(
+        (id: string) => id !== sessionId
+      );
 
       if (updatedSessions.length > 0) {
         await this.cache.setObject(
@@ -356,7 +364,7 @@ export class SessionManager {
         await this.cache.del(`${this.userSessionPrefix}${userId}`);
       }
     } catch (error) {
-      this.logger.error("Failed to remove session from user list", {
+      this.logger.error('Failed to remove session from user list', {
         error: error instanceof Error ? error.message : String(error),
         userId,
         sessionId,
@@ -370,20 +378,20 @@ export class SessionManager {
   private async trackAuthEvent(event: AuthEvent): Promise<void> {
     try {
       const eventKey = `${this.eventPrefix}${event.userId}:${Date.now()}`;
-      
+
       await this.cache.setObject(
         eventKey,
         event,
         86400 // Keep events for 24 hours
       );
 
-      this.logger.debug("Auth event tracked", {
+      this.logger.debug('Auth event tracked', {
         eventType: event.eventType,
         userId: event.userId,
         sessionId: event.sessionId,
       });
     } catch (error) {
-      this.logger.error("Failed to track auth event", {
+      this.logger.error('Failed to track auth event', {
         error: error instanceof Error ? error.message : String(error),
         eventType: event.eventType,
       });
@@ -393,17 +401,14 @@ export class SessionManager {
   /**
    * Get authentication events for a user
    */
-  async getUserAuthEvents(
-    userId: string,
-    limit = 50
-  ): Promise<AuthEvent[]> {
+  async getUserAuthEvents(userId: string, limit = 50): Promise<AuthEvent[]> {
     try {
       const pattern = `${this.eventPrefix}${userId}:*`;
       const keys = await this.cache.keys(pattern);
-      
+
       // Sort by timestamp (newest first)
       keys.sort().reverse();
-      
+
       const events: AuthEvent[] = [];
       const keysToProcess = keys.slice(0, limit);
 
@@ -416,7 +421,7 @@ export class SessionManager {
 
       return events;
     } catch (error) {
-      this.logger.error("Failed to get user auth events", {
+      this.logger.error('Failed to get user auth events', {
         error: error instanceof Error ? error.message : String(error),
         userId,
       });
@@ -436,16 +441,16 @@ export class SessionManager {
       for (const key of keys) {
         const session = await this.cache.getObject<UserSession>(key);
         if (session && new Date() > new Date(session.expiresAt)) {
-          const sessionId = key.replace(this.sessionPrefix, "");
+          const sessionId = key.replace(this.sessionPrefix, '');
           await this.destroySession(sessionId);
           cleaned++;
         }
       }
 
-      this.logger.debug("Session cleanup completed", { cleaned });
+      this.logger.debug('Session cleanup completed', { cleaned });
       return cleaned;
     } catch (error) {
-      this.logger.error("Session cleanup failed", {
+      this.logger.error('Session cleanup failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       return 0;
@@ -464,7 +469,7 @@ export class SessionManager {
       const pattern = `${this.sessionPrefix}*`;
       const keys = await this.cache.keys(pattern);
       const now = new Date();
-      
+
       let totalSessions = 0;
       let activeSessions = 0;
       let expiredSessions = 0;
@@ -487,7 +492,7 @@ export class SessionManager {
         expiredSessions,
       };
     } catch (error) {
-      this.logger.error("Failed to get session stats", {
+      this.logger.error('Failed to get session stats', {
         error: error instanceof Error ? error.message : String(error),
       });
       return {
@@ -503,7 +508,7 @@ export class SessionManager {
    */
   updateConfig(newConfig: Partial<SessionConfig>): void {
     Object.assign(this.config, newConfig);
-    this.logger.info("Session configuration updated", { newConfig });
+    this.logger.info('Session configuration updated', { newConfig });
   }
 
   /**

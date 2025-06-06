@@ -24,7 +24,7 @@ async function queryBuilderExamples() {
         'u.email',
         'u.name',
         'up.preference_key',
-        'up.preference_value'
+        'up.preference_value',
       ])
       .from('users u')
       .leftJoin('user_preferences up', 'u.id = up.user_id')
@@ -47,7 +47,7 @@ async function queryBuilderExamples() {
         name: 'New User',
         first_name: 'New',
         last_name: 'User',
-        role: 'user'
+        role: 'user',
       })
       .returning(['id', 'email', 'created_at'])
       .execute();
@@ -63,11 +63,14 @@ async function queryBuilderExamples() {
       .values([
         { user_id: 1, preference_key: 'theme', preference_value: 'dark' },
         { user_id: 1, preference_key: 'language', preference_value: 'en' },
-        { user_id: 2, preference_key: 'theme', preference_value: 'light' }
+        { user_id: 2, preference_key: 'theme', preference_value: 'light' },
       ])
       .execute();
 
-    console.log('Batch insert executed successfully, rows:', batchInsertResult.rowCount);
+    console.log(
+      'Batch insert executed successfully, rows:',
+      batchInsertResult.rowCount
+    );
     console.log();
 
     // 4. UPDATE with conditions
@@ -77,7 +80,7 @@ async function queryBuilderExamples() {
       .table('users')
       .set({
         last_name: 'Updated',
-        updated_at: new Date()
+        updated_at: new Date(),
       })
       .where('id = $1', 123)
       .execute();
@@ -106,7 +109,6 @@ async function queryBuilderExamples() {
 
     console.log('Raw query executed successfully, rows:', rawResult.rowCount);
     console.log();
-
   } catch (error) {
     console.error('Query builder error:', error);
   } finally {

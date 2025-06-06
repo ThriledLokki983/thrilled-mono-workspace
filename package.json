@@ -91,7 +91,8 @@
     "apps/*",
     "apps/be/*",
     "packages/be/core",
-    "packages/be/*"
+    "packages/be/*",
+    "validation"
   ],
   "nx": {
     "includedScripts": [],

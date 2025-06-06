@@ -33,18 +33,20 @@ export class ValidationUtils {
       metadata: {
         validator: 'combined',
         schema: 'multiple',
-        options: {}
-      }
+        options: {},
+      },
     };
   }
 
   /**
    * Create validation chain for multiple validators
    */
-  static createChain(validators: Array<{
-    validator: JoiValidator | ZodValidator;
-    stopOnError?: boolean;
-  }>): {
+  static createChain(
+    validators: Array<{
+      validator: JoiValidator | ZodValidator;
+      stopOnError?: boolean;
+    }>
+  ): {
     validate: (data: any) => Promise<ValidationResult>;
   } {
     return {
@@ -64,7 +66,7 @@ export class ValidationUtils {
         }
 
         return this.combineResults(results);
-      }
+      },
     };
   }
 
@@ -91,10 +93,10 @@ export class ValidationUtils {
           metadata: {
             validator: 'conditional',
             schema: 'skipped',
-            options: {}
-          }
+            options: {},
+          },
         };
-      }
+      },
     };
   }
 
@@ -112,29 +114,34 @@ export class ValidationUtils {
     const opts = {
       includeFieldPath: true,
       groupByField: false,
-      ...options
+      ...options,
     };
 
     if (opts.groupByField) {
       const grouped: Record<string, string[]> = {};
-      
+
       for (const error of errors) {
-        const field = opts.includeFieldPath ? error.field : error.field.split('.').pop() || error.field;
-        const message = opts.customMessages?.[error.code || ''] || error.message;
-        
+        const field = opts.includeFieldPath
+          ? error.field
+          : error.field.split('.').pop() || error.field;
+        const message =
+          opts.customMessages?.[error.code || ''] || error.message;
+
         if (!grouped[field]) {
           grouped[field] = [];
         }
         grouped[field].push(message);
       }
-      
+
       return grouped;
     }
 
-    return errors.map(error => ({
-      field: opts.includeFieldPath ? error.field : error.field.split('.').pop() || error.field,
+    return errors.map((error) => ({
+      field: opts.includeFieldPath
+        ? error.field
+        : error.field.split('.').pop() || error.field,
       message: opts.customMessages?.[error.code || ''] || error.message,
-      code: error.code
+      code: error.code,
     }));
   }
 
@@ -148,14 +155,14 @@ export class ValidationUtils {
     severity: 'none' | 'low' | 'medium' | 'high';
   } {
     const fieldErrors: Record<string, number> = {};
-    
+
     for (const error of result.errors) {
       const field = error.field.split('.')[0];
       fieldErrors[field] = (fieldErrors[field] || 0) + 1;
     }
 
     let severity: 'none' | 'low' | 'medium' | 'high' = 'none';
-    
+
     if (result.errors.length > 0) {
       if (result.errors.length > 10) {
         severity = 'high';
@@ -170,7 +177,7 @@ export class ValidationUtils {
       isValid: result.isValid,
       errorCount: result.errors.length,
       fieldErrors,
-      severity
+      severity,
     };
   }
 
@@ -186,26 +193,34 @@ export class ValidationUtils {
     /**
      * Validate password
      */
-    password: (value: string, options?: Parameters<typeof CustomValidators.password>[1]) => 
-      CustomValidators.password(value, options),
+    password: (
+      value: string,
+      options?: Parameters<typeof CustomValidators.password>[1]
+    ) => CustomValidators.password(value, options),
 
     /**
      * Validate phone
      */
-    phone: (value: string, locale?: Parameters<typeof CustomValidators.phone>[1]) => 
-      CustomValidators.phone(value, locale),
+    phone: (
+      value: string,
+      locale?: Parameters<typeof CustomValidators.phone>[1]
+    ) => CustomValidators.phone(value, locale),
 
     /**
      * Validate URL
      */
-    url: (value: string, options?: Parameters<typeof CustomValidators.url>[1]) => 
-      CustomValidators.url(value, options),
+    url: (
+      value: string,
+      options?: Parameters<typeof CustomValidators.url>[1]
+    ) => CustomValidators.url(value, options),
 
     /**
      * Validate UUID
      */
-    uuid: (value: string, version?: Parameters<typeof CustomValidators.uuid>[1]) => 
-      CustomValidators.uuid(value, version),
+    uuid: (
+      value: string,
+      version?: Parameters<typeof CustomValidators.uuid>[1]
+    ) => CustomValidators.uuid(value, version),
 
     /**
      * Validate required field
@@ -215,17 +230,19 @@ export class ValidationUtils {
         return {
           isValid: false,
           data: null,
-          errors: [{
-            field: fieldName,
-            message: `${fieldName} is required`,
-            code: 'REQUIRED',
-            value
-          }],
+          errors: [
+            {
+              field: fieldName,
+              message: `${fieldName} is required`,
+              code: 'REQUIRED',
+              value,
+            },
+          ],
           metadata: {
             validator: 'custom',
             schema: 'required',
-            options: {}
-          }
+            options: {},
+          },
         };
       }
 
@@ -236,10 +253,10 @@ export class ValidationUtils {
         metadata: {
           validator: 'custom',
           schema: 'required',
-          options: {}
-        }
+          options: {},
+        },
       };
-    }
+    },
   };
 
   /**
@@ -250,51 +267,62 @@ export class ValidationUtils {
      * Create Joi schema for common object patterns
      */
     joi: {
-      user: () => Joi.object({
-        email: Joi.string().email().required(),
-        password: Joi.string().min(8).required(),
-        firstName: Joi.string().min(2).max(50).required(),
-        lastName: Joi.string().min(2).max(50).required(),
-        age: Joi.number().integer().min(13).max(120).optional(),
-        phone: Joi.string().pattern(/^\+?[\d\s\-\(\)]+$/).optional()
-      }),
+      user: () =>
+        Joi.object({
+          email: Joi.string().email().required(),
+          password: Joi.string().min(8).required(),
+          firstName: Joi.string().min(2).max(50).required(),
+          lastName: Joi.string().min(2).max(50).required(),
+          age: Joi.number().integer().min(13).max(120).optional(),
+          phone: Joi.string()
+            .pattern(/^\+?[\d\s\-()]+$/)
+            .optional(),
+        }),
 
-      pagination: () => Joi.object({
-        page: Joi.number().integer().min(1).default(1),
-        limit: Joi.number().integer().min(1).max(100).default(10),
-        sortBy: Joi.string().optional(),
-        sortOrder: Joi.string().valid('asc', 'desc').default('asc')
-      }),
+      pagination: () =>
+        Joi.object({
+          page: Joi.number().integer().min(1).default(1),
+          limit: Joi.number().integer().min(1).max(100).default(10),
+          sortBy: Joi.string().optional(),
+          sortOrder: Joi.string().valid('asc', 'desc').default('asc'),
+        }),
 
-      id: () => Joi.object({
-        id: Joi.string().guid({ version: 'uuidv4' }).required()
-      })
+      id: () =>
+        Joi.object({
+          id: Joi.string().guid({ version: 'uuidv4' }).required(),
+        }),
     },
 
     /**
      * Create Zod schema for common object patterns
      */
     zod: {
-      user: () => z.object({
-        email: z.string().email(),
-        password: z.string().min(8),
-        firstName: z.string().min(2).max(50),
-        lastName: z.string().min(2).max(50),
-        age: z.number().int().min(13).max(120).optional(),
-        phone: z.string().regex(/^\+?[\d\s\-\(\)]+$/).optional()
-      }),
+      user: () =>
+        z.object({
+          email: z.string().email(),
+          password: z.string().min(8),
+          firstName: z.string().min(2).max(50),
+          lastName: z.string().min(2).max(50),
+          age: z.number().int().min(13).max(120).optional(),
+          phone: z
+            .string()
+            .regex(/^\+?[\d\s\-()]+$/)
+            .optional(),
+        }),
 
-      pagination: () => z.object({
-        page: z.number().int().min(1).default(1),
-        limit: z.number().int().min(1).max(100).default(10),
-        sortBy: z.string().optional(),
-        sortOrder: z.enum(['asc', 'desc']).default('asc')
-      }),
+      pagination: () =>
+        z.object({
+          page: z.number().int().min(1).default(1),
+          limit: z.number().int().min(1).max(100).default(10),
+          sortBy: z.string().optional(),
+          sortOrder: z.enum(['asc', 'desc']).default('asc'),
+        }),
 
-      id: () => z.object({
-        id: z.string().uuid()
-      })
-    }
+      id: () =>
+        z.object({
+          id: z.string().uuid(),
+        }),
+    },
   };
 
   /**
@@ -309,15 +337,15 @@ export class ValidationUtils {
     for (const [key, schema] of Object.entries(schemas)) {
       if (data[key] !== undefined) {
         const result = await schema.validate(data[key]);
-        
+
         // Prefix field names with the key
         if (!result.isValid) {
-          result.errors = result.errors.map(error => ({
+          result.errors = result.errors.map((error) => ({
             ...error,
-            field: `${key}.${error.field}`
+            field: `${key}.${error.field}`,
           }));
         }
-        
+
         results.push(result);
       }
     }
@@ -335,12 +363,12 @@ export class ValidationUtils {
     return async (req: any, res: any, next: any) => {
       try {
         const result = await validator.validate(req[target]);
-        
+
         if (!result.isValid) {
           return res.status(400).json({
             error: 'Validation failed',
             details: this.formatErrors(result.errors),
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
         }
 
@@ -378,16 +406,19 @@ export class ValidationUtils {
             callback({
               isValid: false,
               data: null,
-              errors: [{
-                field: 'unknown',
-                message: error instanceof Error ? error.message : 'Validation error',
-                code: 'VALIDATION_ERROR'
-              }],
+              errors: [
+                {
+                  field: 'unknown',
+                  message:
+                    error instanceof Error ? error.message : 'Validation error',
+                  code: 'VALIDATION_ERROR',
+                },
+              ],
               metadata: {
                 validator: 'debounced',
                 schema: 'unknown',
-                options: {}
-              }
+                options: {},
+              },
             });
           }
         }, delay);
@@ -398,7 +429,7 @@ export class ValidationUtils {
           clearTimeout(timeoutId);
           timeoutId = null;
         }
-      }
+      },
     };
   }
 
@@ -415,7 +446,7 @@ export class ValidationUtils {
       field,
       message,
       value,
-      code: code || 'CUSTOM_ERROR'
+      code: code || 'CUSTOM_ERROR',
     };
   }
 
@@ -432,7 +463,7 @@ export class ValidationUtils {
       field: error.field,
       message: error.message,
       code: error.code,
-      value: error.value
+      value: error.value,
     };
   }
 }

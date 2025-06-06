@@ -4,7 +4,7 @@ import { join } from 'path';
 
 describe('Logger', () => {
   const testLogDir = './test-logs';
-  
+
   afterEach(() => {
     // Clean up test logs
     if (existsSync(testLogDir)) {
@@ -18,7 +18,7 @@ describe('Logger', () => {
         dir: testLogDir,
       };
       const logger = new Logger(config);
-      
+
       expect(logger).toBeInstanceOf(Logger);
     });
 
@@ -29,7 +29,7 @@ describe('Logger', () => {
         format: 'json',
       };
       const logger = Logger.create(config);
-      
+
       expect(logger).toBeInstanceOf(Logger);
     });
 
@@ -38,7 +38,7 @@ describe('Logger', () => {
         dir: testLogDir,
       };
       const logger = new Logger(config);
-      
+
       // This should not throw
       expect(() => {
         logger.info('Test info message');
@@ -51,9 +51,9 @@ describe('Logger', () => {
         dir: testLogDir,
       };
       const logger = new Logger(config);
-      
+
       const error = new Error('Test error');
-      
+
       // This should not throw
       expect(() => {
         logger.error('Test error message');
@@ -67,7 +67,7 @@ describe('Logger', () => {
         dir: testLogDir,
       };
       const logger = new Logger(config);
-      
+
       // This should not throw
       expect(() => {
         logger.warn('Test warning message');
@@ -81,7 +81,7 @@ describe('Logger', () => {
         level: 'debug',
       };
       const logger = new Logger(config);
-      
+
       // This should not throw
       expect(() => {
         logger.debug('Test debug message');
@@ -93,14 +93,14 @@ describe('Logger', () => {
       const config: LoggingConfig = {
         dir: testLogDir,
       };
-      
+
       // Ensure directory doesn't exist
       if (existsSync(testLogDir)) {
         rmSync(testLogDir, { recursive: true, force: true });
       }
-      
+
       new Logger(config);
-      
+
       // Directory should be created
       expect(existsSync(testLogDir)).toBe(true);
       expect(existsSync(join(testLogDir, 'combined'))).toBe(true);
@@ -113,7 +113,7 @@ describe('Logger', () => {
         format: 'json',
       };
       const logger = new Logger(config);
-      
+
       // This should not throw
       expect(() => {
         logger.info('Test json format message');
@@ -126,7 +126,7 @@ describe('Logger', () => {
         correlationId: false,
       };
       const logger = new Logger(config);
-      
+
       // This should not throw
       expect(() => {
         logger.info('Test without correlation ID');
@@ -142,7 +142,7 @@ describe('Logger', () => {
         format: 'json',
         maxFiles: 10,
       };
-      
+
       const logger = createLogger(config);
       expect(logger).toBeInstanceOf(Logger);
     });
@@ -183,7 +183,10 @@ describe('Logger', () => {
 
       configs.forEach((config, index) => {
         expect(() => {
-          const logger = new Logger({ ...config, dir: `${testLogDir}-${index}` });
+          const logger = new Logger({
+            ...config,
+            dir: `${testLogDir}-${index}`,
+          });
           logger.info(`Test config ${index}`);
         }).not.toThrow();
       });

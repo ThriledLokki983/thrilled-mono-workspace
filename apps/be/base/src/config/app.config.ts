@@ -1,13 +1,25 @@
 import { AppConfig, Environment } from '@mono/be-core';
 import { NODE_ENV, PORT, LOG_FORMAT, LOG_DIR, ORIGIN } from './index';
 
+const ALLOWED_HOST: string[] = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:3002',
+  'http://localhost:3003',
+  'http://localhost:3004',
+  'http://localhost:3005',
+];
+
+/**
+ * Application configuration for the Base API.
+ * This configuration is used to set up various aspects of the application,
+ * including logging, CORS, rate limiting, health checks, and graceful shutdown.
+ */
 export const createAppConfig = (): AppConfig => {
   const isDev = NODE_ENV === 'development';
 
   // Ensure NODE_ENV matches the Environment type
-  const environment: Environment = (NODE_ENV === 'production' || NODE_ENV === 'test')
-    ? NODE_ENV as Environment
-    : 'development';
+  const environment: Environment = NODE_ENV === 'production' || NODE_ENV === 'test' ? (NODE_ENV as Environment) : 'development';
 
   return {
     name: 'Base API',
@@ -17,16 +29,14 @@ export const createAppConfig = (): AppConfig => {
     logging: {
       level: NODE_ENV === 'production' ? 'info' : 'debug',
       dir: LOG_DIR || 'logs',
-      format: LOG_FORMAT as 'json' | 'simple' || 'simple',
+      format: (LOG_FORMAT as 'json' | 'simple') || 'simple',
       httpLogging: true,
       maxFiles: 30,
-      correlationId: false
+      correlationId: false,
     },
 
     cors: {
-      origin: ORIGIN === '*'
-        ? ['http://localhost:3000']
-        : ORIGIN?.split(',') || ['http://localhost:3000'],
+      origin: ORIGIN === '*' ? ALLOWED_HOST : ORIGIN?.split(',') || ALLOWED_HOST,
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -42,13 +52,13 @@ export const createAppConfig = (): AppConfig => {
 
     health: {
       enabled: true,
-      endpoint: '/health'
+      endpoint: '/health',
     },
 
     gracefulShutdown: {
       enabled: true,
       timeout: 10000,
-      signals: ['SIGINT', 'SIGTERM']
-    }
+      signals: ['SIGINT', 'SIGTERM'],
+    },
   };
 };

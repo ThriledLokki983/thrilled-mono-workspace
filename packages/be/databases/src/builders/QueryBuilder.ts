@@ -1,18 +1,15 @@
-import { Pool } from "pg";
+import { Pool } from 'pg';
 import {
   QueryResult,
   SelectQuery,
   InsertQuery,
   UpdateQuery,
   DeleteQuery,
-} from "@thrilled/be-types";
-import { Logger } from "@mono/be-core";
+} from '@thrilled/be-types';
+import { Logger } from '@mono/be-core';
 
 export class QueryBuilder {
-  constructor(
-    private pool: Pool,
-    private logger: Logger
-  ) {}
+  constructor(private pool: Pool, private logger: Logger) {}
 
   /**
    * Create a SELECT query builder
@@ -50,7 +47,7 @@ export class QueryBuilder {
     params: any[] = []
   ): Promise<QueryResult<T>> {
     try {
-      this.logger.debug("Executing raw query:", { text, params });
+      this.logger.debug('Executing raw query:', { text, params });
       const result = await this.pool.query(text, params);
       return {
         rows: result.rows,
@@ -58,14 +55,14 @@ export class QueryBuilder {
         command: result.command,
       };
     } catch (error) {
-      this.logger.error("Raw query failed:", { text, params, error });
+      this.logger.error('Raw query failed:', { text, params, error });
       throw error;
     }
   }
 }
 
 class SelectQueryBuilder implements SelectQuery {
-  private selectedColumns: string[] = ["*"];
+  private selectedColumns: string[] = ['*'];
   private fromTable?: string;
   private whereClauses: Array<{ condition: string; params: any[] }> = [];
   private joinClauses: string[] = [];
@@ -117,7 +114,7 @@ class SelectQueryBuilder implements SelectQuery {
     return this;
   }
 
-  orderBy(column: string, direction: "ASC" | "DESC" = "ASC"): SelectQuery {
+  orderBy(column: string, direction: 'ASC' | 'DESC' = 'ASC'): SelectQuery {
     this.orderByClauses.push(`${column} ${direction}`);
     return this;
   }
@@ -145,16 +142,18 @@ class SelectQueryBuilder implements SelectQuery {
 
   toSQL(): { text: string; values: any[] } {
     if (!this.fromTable) {
-      throw new Error("FROM clause is required");
+      throw new Error('FROM clause is required');
     }
 
-    let query = `SELECT ${this.selectedColumns.join(", ")} FROM ${this.fromTable}`;
+    let query = `SELECT ${this.selectedColumns.join(', ')} FROM ${
+      this.fromTable
+    }`;
     let paramIndex = 1;
     const values: any[] = [];
 
     // Add JOINs
     if (this.joinClauses.length > 0) {
-      query += " " + this.joinClauses.join(" ");
+      query += ' ' + this.joinClauses.join(' ');
     }
 
     // Add WHERE clauses
@@ -164,15 +163,15 @@ class SelectQueryBuilder implements SelectQuery {
         values.push(...clause.params);
         return clause.condition.replace(
           /\?/g,
-          () => placeholders.shift() || ""
+          () => placeholders.shift() || ''
         );
       });
-      query += ` WHERE ${whereConditions.join(" AND ")}`;
+      query += ` WHERE ${whereConditions.join(' AND ')}`;
     }
 
     // Add GROUP BY
     if (this.groupByColumns.length > 0) {
-      query += ` GROUP BY ${this.groupByColumns.join(", ")}`;
+      query += ` GROUP BY ${this.groupByColumns.join(', ')}`;
     }
 
     // Add HAVING
@@ -182,15 +181,15 @@ class SelectQueryBuilder implements SelectQuery {
         values.push(...clause.params);
         return clause.condition.replace(
           /\?/g,
-          () => placeholders.shift() || ""
+          () => placeholders.shift() || ''
         );
       });
-      query += ` HAVING ${havingConditions.join(" AND ")}`;
+      query += ` HAVING ${havingConditions.join(' AND ')}`;
     }
 
     // Add ORDER BY
     if (this.orderByClauses.length > 0) {
-      query += ` ORDER BY ${this.orderByClauses.join(", ")}`;
+      query += ` ORDER BY ${this.orderByClauses.join(', ')}`;
     }
 
     // Add LIMIT
@@ -210,7 +209,7 @@ class SelectQueryBuilder implements SelectQuery {
     const { text, values } = this.toSQL();
 
     try {
-      this.logger.debug("Executing SELECT query:", { text, values });
+      this.logger.debug('Executing SELECT query:', { text, values });
       const result = await this.pool.query(text, values);
       return {
         rows: result.rows,
@@ -218,7 +217,7 @@ class SelectQueryBuilder implements SelectQuery {
         command: result.command,
       };
     } catch (error) {
-      this.logger.error("SELECT query failed:", { text, values, error });
+      this.logger.error('SELECT query failed:', { text, values, error });
       throw error;
     }
   }
@@ -231,10 +230,7 @@ class InsertQueryBuilder implements InsertQuery {
   private onConflictColumn?: string;
   private onConflictAction?: string;
 
-  constructor(
-    private pool: Pool,
-    private logger: Logger
-  ) {}
+  constructor(private pool: Pool, private logger: Logger) {}
 
   into(table: string): InsertQuery {
     this.table = table;
@@ -250,14 +246,14 @@ class InsertQueryBuilder implements InsertQuery {
     if (columns) {
       this.returningColumns = Array.isArray(columns) ? columns : [columns];
     } else {
-      this.returningColumns = ["*"];
+      this.returningColumns = ['*'];
     }
     return this;
   }
 
   onConflict(
     column: string,
-    action: "DO NOTHING" | "DO UPDATE" = "DO NOTHING"
+    action: 'DO NOTHING' | 'DO UPDATE' = 'DO NOTHING'
   ): InsertQuery {
     this.onConflictColumn = column;
     this.onConflictAction = action;
@@ -266,7 +262,7 @@ class InsertQueryBuilder implements InsertQuery {
 
   toSQL(): { text: string; values: any[] } {
     if (!this.table || this.insertData.length === 0) {
-      throw new Error("Table name and values are required");
+      throw new Error('Table name and values are required');
     }
 
     const firstRow = this.insertData[0];
@@ -279,10 +275,12 @@ class InsertQueryBuilder implements InsertQuery {
         values.push(row[col]);
         return `$${paramIndex++}`;
       });
-      return `(${rowValues.join(", ")})`;
+      return `(${rowValues.join(', ')})`;
     });
 
-    let query = `INSERT INTO ${this.table} (${columns.join(", ")}) VALUES ${valuePlaceholders.join(", ")}`;
+    let query = `INSERT INTO ${this.table} (${columns.join(
+      ', '
+    )}) VALUES ${valuePlaceholders.join(', ')}`;
 
     // Add ON CONFLICT clause
     if (this.onConflictColumn) {
@@ -291,7 +289,7 @@ class InsertQueryBuilder implements InsertQuery {
 
     // Add RETURNING clause
     if (this.returningColumns.length > 0) {
-      query += ` RETURNING ${this.returningColumns.join(", ")}`;
+      query += ` RETURNING ${this.returningColumns.join(', ')}`;
     }
 
     return { text: query, values };
@@ -301,7 +299,7 @@ class InsertQueryBuilder implements InsertQuery {
     const { text, values } = this.toSQL();
 
     try {
-      this.logger.debug("Executing INSERT query:", { text, values });
+      this.logger.debug('Executing INSERT query:', { text, values });
       const result = await this.pool.query(text, values);
       return {
         rows: result.rows,
@@ -309,7 +307,7 @@ class InsertQueryBuilder implements InsertQuery {
         command: result.command,
       };
     } catch (error) {
-      this.logger.error("INSERT query failed:", { text, values, error });
+      this.logger.error('INSERT query failed:', { text, values, error });
       throw error;
     }
   }
@@ -321,10 +319,7 @@ class UpdateQueryBuilder implements UpdateQuery {
   private whereClauses: Array<{ condition: string; params: any[] }> = [];
   private returningColumns: string[] = [];
 
-  constructor(
-    private pool: Pool,
-    private logger: Logger
-  ) {}
+  constructor(private pool: Pool, private logger: Logger) {}
 
   table(name: string): UpdateQuery {
     this.tableName = name;
@@ -345,14 +340,14 @@ class UpdateQueryBuilder implements UpdateQuery {
     if (columns) {
       this.returningColumns = Array.isArray(columns) ? columns : [columns];
     } else {
-      this.returningColumns = ["*"];
+      this.returningColumns = ['*'];
     }
     return this;
   }
 
   toSQL(): { text: string; values: any[] } {
     if (!this.tableName || Object.keys(this.updateData).length === 0) {
-      throw new Error("Table name and SET data are required");
+      throw new Error('Table name and SET data are required');
     }
 
     const values: any[] = [];
@@ -364,7 +359,7 @@ class UpdateQueryBuilder implements UpdateQuery {
       return `${key} = $${paramIndex++}`;
     });
 
-    let query = `UPDATE ${this.tableName} SET ${setClause.join(", ")}`;
+    let query = `UPDATE ${this.tableName} SET ${setClause.join(', ')}`;
 
     // Add WHERE clauses
     if (this.whereClauses.length > 0) {
@@ -373,15 +368,15 @@ class UpdateQueryBuilder implements UpdateQuery {
         values.push(...clause.params);
         return clause.condition.replace(
           /\?/g,
-          () => placeholders.shift() || ""
+          () => placeholders.shift() || ''
         );
       });
-      query += ` WHERE ${whereConditions.join(" AND ")}`;
+      query += ` WHERE ${whereConditions.join(' AND ')}`;
     }
 
     // Add RETURNING clause
     if (this.returningColumns.length > 0) {
-      query += ` RETURNING ${this.returningColumns.join(", ")}`;
+      query += ` RETURNING ${this.returningColumns.join(', ')}`;
     }
 
     return { text: query, values };
@@ -391,7 +386,7 @@ class UpdateQueryBuilder implements UpdateQuery {
     const { text, values } = this.toSQL();
 
     try {
-      this.logger.debug("Executing UPDATE query:", { text, values });
+      this.logger.debug('Executing UPDATE query:', { text, values });
       const result = await this.pool.query(text, values);
       return {
         rows: result.rows,
@@ -399,7 +394,7 @@ class UpdateQueryBuilder implements UpdateQuery {
         command: result.command,
       };
     } catch (error) {
-      this.logger.error("UPDATE query failed:", { text, values, error });
+      this.logger.error('UPDATE query failed:', { text, values, error });
       throw error;
     }
   }
@@ -410,10 +405,7 @@ class DeleteQueryBuilder implements DeleteQuery {
   private whereClauses: Array<{ condition: string; params: any[] }> = [];
   private returningColumns: string[] = [];
 
-  constructor(
-    private pool: Pool,
-    private logger: Logger
-  ) {}
+  constructor(private pool: Pool, private logger: Logger) {}
 
   from(table: string): DeleteQuery {
     this.tableName = table;
@@ -429,14 +421,14 @@ class DeleteQueryBuilder implements DeleteQuery {
     if (columns) {
       this.returningColumns = Array.isArray(columns) ? columns : [columns];
     } else {
-      this.returningColumns = ["*"];
+      this.returningColumns = ['*'];
     }
     return this;
   }
 
   toSQL(): { text: string; values: any[] } {
     if (!this.tableName) {
-      throw new Error("Table name is required");
+      throw new Error('Table name is required');
     }
 
     const values: any[] = [];
@@ -450,15 +442,15 @@ class DeleteQueryBuilder implements DeleteQuery {
         values.push(...clause.params);
         return clause.condition.replace(
           /\?/g,
-          () => placeholders.shift() || ""
+          () => placeholders.shift() || ''
         );
       });
-      query += ` WHERE ${whereConditions.join(" AND ")}`;
+      query += ` WHERE ${whereConditions.join(' AND ')}`;
     }
 
     // Add RETURNING clause
     if (this.returningColumns.length > 0) {
-      query += ` RETURNING ${this.returningColumns.join(", ")}`;
+      query += ` RETURNING ${this.returningColumns.join(', ')}`;
     }
 
     return { text: query, values };
@@ -468,7 +460,7 @@ class DeleteQueryBuilder implements DeleteQuery {
     const { text, values } = this.toSQL();
 
     try {
-      this.logger.debug("Executing DELETE query:", { text, values });
+      this.logger.debug('Executing DELETE query:', { text, values });
       const result = await this.pool.query(text, values);
       return {
         rows: result.rows,
@@ -476,7 +468,7 @@ class DeleteQueryBuilder implements DeleteQuery {
         command: result.command,
       };
     } catch (error) {
-      this.logger.error("DELETE query failed:", { text, values, error });
+      this.logger.error('DELETE query failed:', { text, values, error });
       throw error;
     }
   }

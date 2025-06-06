@@ -39,16 +39,19 @@ export class CryptoUtils {
   /**
    * Hash a password with salt using PBKDF2 or scrypt
    */
-  static async hashPassword(password: string, options: HashOptions = {}): Promise<string> {
+  static async hashPassword(
+    password: string,
+    options: HashOptions = {}
+  ): Promise<string> {
     const {
       algorithm = 'pbkdf2',
       iterations = 100000,
       keyLength = 64,
-      saltLength = 16
+      saltLength = 16,
     } = options;
 
     const salt = this.generateSalt(saltLength);
-    
+
     let hash: Buffer;
     if (algorithm === 'pbkdf2') {
       hash = await pbkdf2Async(password, salt, iterations, keyLength, 'sha512');
@@ -62,7 +65,10 @@ export class CryptoUtils {
   /**
    * Verify a password against a hash
    */
-  static async verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
+  static async verifyPassword(
+    password: string,
+    hashedPassword: string
+  ): Promise<boolean> {
     try {
       const parts = hashedPassword.split('$');
       if (parts.length !== 4) {
@@ -75,7 +81,13 @@ export class CryptoUtils {
 
       let computedHash: Buffer;
       if (algorithm === 'pbkdf2') {
-        computedHash = await pbkdf2Async(password, salt, iterationsNum, keyLength, 'sha512');
+        computedHash = await pbkdf2Async(
+          password,
+          salt,
+          iterationsNum,
+          keyLength,
+          'sha512'
+        );
       } else if (algorithm === 'scrypt') {
         computedHash = await scryptAsync(password, salt, keyLength);
       } else {
@@ -127,7 +139,10 @@ export class CryptoUtils {
    */
   static verifyHMAC(data: string, signature: string, secret: string): boolean {
     const expected = this.generateHMAC(data, secret);
-    return timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expected, 'hex'));
+    return timingSafeEqual(
+      Buffer.from(signature, 'hex'),
+      Buffer.from(expected, 'hex')
+    );
   }
 }
 
@@ -201,7 +216,7 @@ export class ValidationUtils {
     return {
       isValid: score >= 4 && feedback.length === 0,
       score: Math.max(0, Math.min(6, score)),
-      feedback
+      feedback,
     };
   }
 
@@ -237,8 +252,13 @@ export class ValidationUtils {
   /**
    * Check if string contains only allowed characters
    */
-  static containsOnlyAllowedChars(input: string, allowedChars: string): boolean {
-    const regex = new RegExp(`^[${allowedChars.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}]+$`);
+  static containsOnlyAllowedChars(
+    input: string,
+    allowedChars: string
+  ): boolean {
+    const regex = new RegExp(
+      `^[${allowedChars.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}]+$`
+    );
     return regex.test(input);
   }
 }
@@ -270,16 +290,18 @@ export class TimeUtils {
    */
   static parseDuration(duration: string): number {
     const units: { [key: string]: number } = {
-      's': 1000,
-      'm': 60 * 1000,
-      'h': 60 * 60 * 1000,
-      'd': 24 * 60 * 60 * 1000,
-      'w': 7 * 24 * 60 * 60 * 1000
+      s: 1000,
+      m: 60 * 1000,
+      h: 60 * 60 * 1000,
+      d: 24 * 60 * 60 * 1000,
+      w: 7 * 24 * 60 * 60 * 1000,
     };
 
     const match = duration.match(/^(\d+)([smhdw])$/);
     if (!match) {
-      throw new Error('Invalid duration format. Use format like "5m", "1h", "7d"');
+      throw new Error(
+        'Invalid duration format. Use format like "5m", "1h", "7d"'
+      );
     }
 
     const [, value, unit] = match;
@@ -312,7 +334,8 @@ export class IPUtils {
    * Validate IPv4 address
    */
   static isValidIPv4(ip: string): boolean {
-    const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    const ipv4Regex =
+      /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
     return ipv4Regex.test(ip);
   }
 
@@ -327,13 +350,13 @@ export class IPUtils {
 
     // 10.0.0.0/8
     if (a === 10) return true;
-    
+
     // 172.16.0.0/12
     if (a === 172 && b >= 16 && b <= 31) return true;
-    
+
     // 192.168.0.0/16
     if (a === 192 && b === 168) return true;
-    
+
     // 127.0.0.0/8 (loopback)
     if (a === 127) return true;
 
@@ -343,11 +366,15 @@ export class IPUtils {
   /**
    * Get IP geolocation info (basic)
    */
-  static getIPInfo(ip: string): { isPrivate: boolean; isLoopback: boolean; version: string } {
+  static getIPInfo(ip: string): {
+    isPrivate: boolean;
+    isLoopback: boolean;
+    version: string;
+  } {
     return {
       isPrivate: this.isPrivateIP(ip),
       isLoopback: ip.startsWith('127.'),
-      version: this.isValidIPv4(ip) ? 'IPv4' : 'IPv6'
+      version: this.isValidIPv4(ip) ? 'IPv4' : 'IPv6',
     };
   }
 }
@@ -356,14 +383,21 @@ export class DeviceUtils {
   /**
    * Generate device fingerprint from user agent and other headers
    */
-  static generateDeviceFingerprint(userAgent: string, acceptLanguage?: string, acceptEncoding?: string): string {
+  static generateDeviceFingerprint(
+    userAgent: string,
+    acceptLanguage?: string,
+    acceptEncoding?: string
+  ): string {
     const components = [
       userAgent || 'unknown',
       acceptLanguage || 'unknown',
-      acceptEncoding || 'unknown'
+      acceptEncoding || 'unknown',
     ];
 
-    return CryptoUtils.generateHMAC(components.join('|'), 'device-fingerprint-salt');
+    return CryptoUtils.generateHMAC(
+      components.join('|'),
+      'device-fingerprint-salt'
+    );
   }
 
   /**
@@ -383,17 +417,17 @@ export class DeviceUtils {
       os: 'unknown',
       osVersion: 'unknown',
       device: 'unknown',
-      isMobile: false
+      isMobile: false,
     };
 
     if (!userAgent) return defaultInfo;
 
     const ua = userAgent.toLowerCase();
-    
+
     // Basic browser detection
     let browser = 'unknown';
     let browserVersion = 'unknown';
-    
+
     if (ua.includes('chrome/')) {
       browser = 'Chrome';
       const match = ua.match(/chrome\/([0-9.]+)/);
@@ -415,7 +449,7 @@ export class DeviceUtils {
     // Basic OS detection
     let os = 'unknown';
     let osVersion = 'unknown';
-    
+
     if (ua.includes('windows nt')) {
       os = 'Windows';
       const match = ua.match(/windows nt ([0-9.]+)/);
@@ -439,7 +473,7 @@ export class DeviceUtils {
     // Device type detection
     const isMobile = /mobile|android|iphone|ipad|phone|tablet/i.test(userAgent);
     let device = 'desktop';
-    
+
     if (ua.includes('iphone')) {
       device = 'iPhone';
     } else if (ua.includes('ipad')) {
@@ -456,7 +490,7 @@ export class DeviceUtils {
       os,
       osVersion,
       device,
-      isMobile
+      isMobile,
     };
   }
 }
@@ -472,10 +506,13 @@ export class RateLimitUtils {
     currentTime: number = Date.now()
   ): { allowed: boolean; resetTime: number; remaining: number } {
     const windowStart = currentTime - windowMs;
-    const validTimestamps = timestamps.filter(ts => ts > windowStart);
-    
+    const validTimestamps = timestamps.filter((ts) => ts > windowStart);
+
     const allowed = validTimestamps.length < maxRequests;
-    const resetTime = validTimestamps.length > 0 ? validTimestamps[0] + windowMs : currentTime + windowMs;
+    const resetTime =
+      validTimestamps.length > 0
+        ? validTimestamps[0] + windowMs
+        : currentTime + windowMs;
     const remaining = Math.max(0, maxRequests - validTimestamps.length);
 
     return { allowed, resetTime, remaining };

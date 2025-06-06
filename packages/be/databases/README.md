@@ -26,17 +26,17 @@ yarn add @mono/database
 ### Basic Setup
 
 ```typescript
-import { DatabaseManager } from "@thrilled/databases";
-import { DatabaseManagerConfig } from "@thrilled/be-types";
+import { DatabaseManager } from '@thrilled/databases';
+import { DatabaseManagerConfig } from '@thrilled/be-types';
 
 const config: DatabaseManagerConfig = {
   connections: {
     primary: {
-      host: "localhost",
+      host: 'localhost',
       port: 5432,
-      database: "myapp",
-      username: "postgres",
-      password: "password",
+      database: 'myapp',
+      username: 'postgres',
+      password: 'password',
     },
   },
   default: 'primary',
@@ -46,9 +46,9 @@ const config: DatabaseManagerConfig = {
     interval: 30000,
   },
   cache: {
-    host: "localhost",
+    host: 'localhost',
     port: 6379,
-    keyPrefix: "myapp:",
+    keyPrefix: 'myapp:',
   },
 };
 
@@ -67,38 +67,38 @@ const qb = dbManager.query_builder();
 
 // SELECT query
 const users = await qb
-  .select(["id", "name", "email"])
-  .from("users")
-  .where("active = ?", true)
-  .orderBy("created_at", "DESC")
+  .select(['id', 'name', 'email'])
+  .from('users')
+  .where('active = ?', true)
+  .orderBy('created_at', 'DESC')
   .limit(10)
   .execute();
 
 // INSERT query
 const newUser = await qb
   .insert()
-  .into("users")
+  .into('users')
   .values({
-    name: "John Doe",
-    email: "john@example.com",
+    name: 'John Doe',
+    email: 'john@example.com',
     active: true,
   })
-  .returning(["id", "created_at"])
+  .returning(['id', 'created_at'])
   .execute();
 
 // UPDATE query
 await qb
   .update()
-  .table("users")
+  .table('users')
   .set({ last_login: new Date() })
-  .where("id = ?", userId)
+  .where('id = ?', userId)
   .execute();
 
 // DELETE query
 await qb
   .delete()
-  .from("users")
-  .where("active = ? AND last_login < ?", false, thirtyDaysAgo)
+  .from('users')
+  .where('active = ? AND last_login < ?', false, thirtyDaysAgo)
   .execute();
 ```
 
@@ -109,12 +109,12 @@ await qb
 const result = await dbManager.withTransaction(async (client) => {
   // All operations here are in the same transaction
   const user = await client.query(
-    "INSERT INTO users (name) VALUES ($1) RETURNING id",
-    ["John"]
+    'INSERT INTO users (name) VALUES ($1) RETURNING id',
+    ['John']
   );
   const profile = await client.query(
-    "INSERT INTO profiles (user_id, bio) VALUES ($1, $2)",
-    [user.rows[0].id, "Bio"]
+    'INSERT INTO profiles (user_id, bio) VALUES ($1, $2)',
+    [user.rows[0].id, 'Bio']
   );
 
   return { user: user.rows[0], profile: profile.rows[0] };
@@ -129,11 +129,11 @@ await dbManager.runMigrations();
 
 // Check migration status
 const status = await dbManager.migrationRunner.getStatus();
-console.log("Applied:", status.applied.length);
-console.log("Pending:", status.pending.length);
+console.log('Applied:', status.applied.length);
+console.log('Pending:', status.pending.length);
 
 // Create new migration
-await dbManager.migrationRunner.createMigration("create_users_table", {
+await dbManager.migrationRunner.createMigration('create_users_table', {
   up: `
     CREATE TABLE users (
       id SERIAL PRIMARY KEY,
@@ -152,26 +152,26 @@ await dbManager.migrationRunner.createMigration("create_users_table", {
 const cache = dbManager.getCache();
 
 // Basic cache operations
-await cache.set("user:123", { name: "John", email: "john@example.com" }, 3600);
-const user = await cache.get("user:123");
-await cache.del("user:123");
+await cache.set('user:123', { name: 'John', email: 'john@example.com' }, 3600);
+const user = await cache.get('user:123');
+await cache.del('user:123');
 
 // Multiple operations
 await cache.mset(
   {
-    "user:1": { name: "John" },
-    "user:2": { name: "Jane" },
+    'user:1': { name: 'John' },
+    'user:2': { name: 'Jane' },
   },
   3600
 );
 
-const users = await cache.mget(["user:1", "user:2"]);
+const users = await cache.mget(['user:1', 'user:2']);
 
 // Pattern matching
-const userKeys = await cache.keys("user:*");
+const userKeys = await cache.keys('user:*');
 
 // Counters
-const visits = await cache.incr("page:visits");
+const visits = await cache.incr('page:visits');
 ```
 
 ### Health Monitoring
@@ -179,14 +179,14 @@ const visits = await cache.incr("page:visits");
 ```typescript
 // Get overall health status
 const health = await dbManager.getHealthCheck();
-console.log("Status:", health.status); // 'healthy', 'degraded', or 'unhealthy'
-console.log("Connections:", health.connections);
-console.log("Cache:", health.cache);
+console.log('Status:', health.status); // 'healthy', 'degraded', or 'unhealthy'
+console.log('Connections:', health.connections);
+console.log('Cache:', health.cache);
 
 // Get specific connection status
-const connStatus = await dbManager.getConnectionStatus("default");
-console.log("Connected:", connStatus.connected);
-console.log("Pool stats:", connStatus.poolStats);
+const connStatus = await dbManager.getConnectionStatus('default');
+console.log('Connected:', connStatus.connected);
+console.log('Pool stats:', connStatus.poolStats);
 ```
 
 ## Configuration
@@ -283,12 +283,14 @@ DROP TABLE users;
 The package includes comprehensive examples in the `examples/` directory:
 
 - **Configuration Examples**
+
   - `examples/config/development.ts` - Development environment setup
   - `examples/config/production.ts` - Production environment setup
   - `examples/config/test.ts` - Test environment setup
   - `examples/.env.template` - Environment variables template
 
 - **Migration Examples**
+
   - `examples/migrations/2024-01-15-120000_create_users_table.sql` - User table creation
   - `examples/migrations/2024-01-16-103000_add_user_preferences.sql` - Adding user preferences
 
@@ -371,8 +373,8 @@ npx ts-node examples/usage/basic-usage.ts
 ## Example App Integration
 
 ```typescript
-import { BaseApp } from "@mono/be-core";
-import { DatabaseManager } from "@mono/database";
+import { BaseApp } from '@mono/be-core';
+import { DatabaseManager } from '@mono/database';
 
 class MyApp extends BaseApp {
   private dbManager: DatabaseManager;

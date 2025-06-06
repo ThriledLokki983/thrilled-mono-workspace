@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from "express";
-import { Logger } from "../logging/Logger";
-import { HttpStatusCodes } from "../types";
-import { apiResponse } from "../plugins/responseFormatter";
+import { Request, Response, NextFunction } from 'express';
+import { Logger } from '../logging/Logger';
+import { HttpStatusCodes } from '../types';
+import { apiResponse } from '../plugins/responseFormatter';
 
 export interface HttpException extends Error {
   status?: number;
@@ -24,11 +24,14 @@ export class ErrorMiddleware {
       req: Request,
       res: Response,
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      _next: NextFunction,
+      _next: NextFunction
     ) => {
       try {
-        const status: number = error.status || error.statusCode || HttpStatusCodes.INTERNAL_SERVER_ERROR;
-        const message: string = error.message || "Something went wrong";
+        const status: number =
+          error.status ||
+          error.statusCode ||
+          HttpStatusCodes.INTERNAL_SERVER_ERROR;
+        const message: string = error.message || 'Something went wrong';
         const requestId = (req as Request & { requestId?: string }).requestId;
 
         // Log the error with request context
@@ -36,32 +39,46 @@ export class ErrorMiddleware {
           method: req.method,
           url: req.url,
           requestId,
-          userAgent: req.get("User-Agent"),
+          userAgent: req.get('User-Agent'),
           ip: req.ip,
         });
 
         // Don't expose internal errors in production
         const responseMessage =
-          status === HttpStatusCodes.INTERNAL_SERVER_ERROR && process.env.NODE_ENV === "production"
-            ? "Internal server error"
+          status === HttpStatusCodes.INTERNAL_SERVER_ERROR &&
+          process.env.NODE_ENV === 'production'
+            ? 'Internal server error'
             : message;
 
         // Create meta data for development debugging
         const meta = {
           ...(requestId && { requestId }),
-          ...(process.env.NODE_ENV === "development" && {
+          ...(process.env.NODE_ENV === 'development' && {
             stack: error.stack,
           }),
         };
 
         // Create error objects for validation errors
-        const errors = requestId || (process.env.NODE_ENV === "development" && error.stack) 
-          ? [{ message: responseMessage, ...(requestId && { field: 'requestId' }) }] 
-          : undefined;
+        const errors =
+          requestId || (process.env.NODE_ENV === 'development' && error.stack)
+            ? [
+                {
+                  message: responseMessage,
+                  ...(requestId && { field: 'requestId' }),
+                },
+              ]
+            : undefined;
 
         switch (status) {
           case HttpStatusCodes.BAD_REQUEST:
-            apiResponse.custom(res, status, responseMessage, undefined, meta, errors);
+            apiResponse.custom(
+              res,
+              status,
+              responseMessage,
+              undefined,
+              meta,
+              errors
+            );
             break;
           case HttpStatusCodes.UNAUTHORIZED:
             apiResponse.custom(res, status, responseMessage, undefined, meta);
@@ -76,18 +93,24 @@ export class ErrorMiddleware {
             apiResponse.custom(res, status, responseMessage, undefined, meta);
             break;
           case HttpStatusCodes.UNPROCESSABLE_ENTITY:
-            apiResponse.custom(res, status, responseMessage, undefined, meta, errors);
+            apiResponse.custom(
+              res,
+              status,
+              responseMessage,
+              undefined,
+              meta,
+              errors
+            );
             break;
           default:
             apiResponse.custom(res, status, responseMessage, undefined, meta);
         }
-
       } catch (err) {
         // Fallback error handling
-        this.logger.error(err as Error, { context: "ErrorMiddleware.handle" });
+        this.logger.error(err as Error, { context: 'ErrorMiddleware.handle' });
         res.status(500).json({
           success: false,
-          message: "Internal server error",
+          message: 'Internal server error',
           statusCode: 500,
         });
       }

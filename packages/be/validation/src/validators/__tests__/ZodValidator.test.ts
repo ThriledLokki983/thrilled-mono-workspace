@@ -39,14 +39,14 @@ describe('ZodValidator', () => {
       const schema = z.object({
         name: z.string(),
         age: z.number().min(0).max(120),
-        email: z.string().email()
+        email: z.string().email(),
       });
       const validator = new ZodValidator(schema);
 
       const validData = {
         name: 'John Doe',
         age: 30,
-        email: 'john@example.com'
+        email: 'john@example.com',
       };
 
       const result = await validator.validate(validData);
@@ -58,21 +58,21 @@ describe('ZodValidator', () => {
       const schema = z.object({
         name: z.string().min(1),
         age: z.number().min(0).max(120),
-        email: z.string().email()
+        email: z.string().email(),
       });
       const validator = new ZodValidator(schema);
 
       const invalidData = {
         name: '',
         age: -5,
-        email: 'invalid-email'
+        email: 'invalid-email',
       };
 
       const result = await validator.validate(invalidData);
       expect(result.isValid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
-      
-      const fields = result.errors.map(err => err.field);
+
+      const fields = result.errors.map((err) => err.field);
       expect(fields).toContain('name');
       expect(fields).toContain('age');
       expect(fields).toContain('email');
@@ -123,7 +123,7 @@ describe('ZodValidator', () => {
     it('should handle optional fields', async () => {
       const schema = z.object({
         name: z.string(),
-        age: z.number().optional()
+        age: z.number().optional(),
       });
       const validator = new ZodValidator(schema);
 
@@ -135,11 +135,14 @@ describe('ZodValidator', () => {
     it('should handle nullable fields', async () => {
       const schema = z.object({
         name: z.string(),
-        middleName: z.string().nullable()
+        middleName: z.string().nullable(),
       });
       const validator = new ZodValidator(schema);
 
-      const result = await validator.validate({ name: 'John', middleName: null });
+      const result = await validator.validate({
+        name: 'John',
+        middleName: null,
+      });
       expect(result.isValid).toBe(true);
       expect(result.data).toEqual({ name: 'John', middleName: null });
     });
@@ -148,7 +151,7 @@ describe('ZodValidator', () => {
   describe('custom validation', () => {
     it('should handle refine validation', async () => {
       const schema = z.string().refine((val) => val.includes('special'), {
-        message: 'Must contain "special"'
+        message: 'Must contain "special"',
       });
       const validator = new ZodValidator(schema);
 
@@ -188,14 +191,23 @@ describe('ZodValidator', () => {
     it('should validate discriminated unions', async () => {
       const schema = z.discriminatedUnion('type', [
         z.object({ type: z.literal('user'), name: z.string() }),
-        z.object({ type: z.literal('admin'), permissions: z.array(z.string()) })
+        z.object({
+          type: z.literal('admin'),
+          permissions: z.array(z.string()),
+        }),
       ]);
       const validator = new ZodValidator(schema);
 
-      const userResult = await validator.validate({ type: 'user', name: 'John' });
+      const userResult = await validator.validate({
+        type: 'user',
+        name: 'John',
+      });
       expect(userResult.isValid).toBe(true);
 
-      const adminResult = await validator.validate({ type: 'admin', permissions: ['read', 'write'] });
+      const adminResult = await validator.validate({
+        type: 'admin',
+        permissions: ['read', 'write'],
+      });
       expect(adminResult.isValid).toBe(true);
     });
   });
@@ -215,7 +227,7 @@ describe('ZodValidator', () => {
       const validator = new ZodValidator(schema);
 
       const results = await validator.validateBatch(['hello', 'world', 123]);
-      
+
       expect(results).toHaveLength(3);
       expect(results[0].isValid).toBe(true);
       expect(results[1].isValid).toBe(true);
@@ -226,10 +238,12 @@ describe('ZodValidator', () => {
   describe('error handling', () => {
     it('should handle complex nested errors', async () => {
       const schema = z.object({
-        users: z.array(z.object({
-          name: z.string().min(1),
-          email: z.string().email()
-        }))
+        users: z.array(
+          z.object({
+            name: z.string().min(1),
+            email: z.string().email(),
+          })
+        ),
       });
       const validator = new ZodValidator(schema);
 
@@ -237,8 +251,8 @@ describe('ZodValidator', () => {
         users: [
           { name: '', email: 'invalid' },
           { name: 'John', email: 'john@example.com' },
-          { name: 'Jane', email: 'invalid-email' }
-        ]
+          { name: 'Jane', email: 'invalid-email' },
+        ],
       };
 
       const result = await validator.validate(invalidData);

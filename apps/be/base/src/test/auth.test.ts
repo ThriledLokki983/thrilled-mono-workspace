@@ -155,7 +155,7 @@ describe('Testing Auth', () => {
         password: logoutUser.password,
       };
 
-      const loginResponse = await request(app.getServer()).post('/api/v1/auth/login').send(loginCreds);      // Extract the auth cookie
+      const loginResponse = await request(app.getServer()).post('/api/v1/auth/login').send(loginCreds); // Extract the auth cookie
       const cookies = loginResponse.headers['set-cookie'];
 
       // Handle both string and array cases
@@ -167,10 +167,7 @@ describe('Testing Auth', () => {
       }
 
       // Use the full cookie string as supertest expects it
-      const response = await request(app.getServer())
-        .post('/api/v1/auth/logout')
-        .set('Cookie', authCookie)
-        .expect(200);
+      const response = await request(app.getServer()).post('/api/v1/auth/logout').set('Cookie', authCookie).expect(200);
 
       // Check if the response has the Set-Cookie header
       expect(response.headers['set-cookie']).toBeDefined();

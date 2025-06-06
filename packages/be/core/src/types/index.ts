@@ -6,7 +6,7 @@ import type {
   SecurityConfig,
   JWTConfig,
   BcryptConfig,
-  SessionConfig
+  SessionConfig,
 } from '@thrilled/be-types';
 
 // Re-export some utility types that don't conflict
@@ -15,7 +15,7 @@ export type { Environment } from '@thrilled/be-types';
 export interface AppLoggingConfig {
   level?: string;
   dir?: string;
-  format?: "json" | "simple";
+  format?: 'json' | 'simple';
   httpLogging?: boolean;
   maxFiles?: number;
   correlationId?: boolean;
@@ -29,7 +29,11 @@ export interface RateLimitConfig {
   legacyHeaders?: boolean;
   skip?: (req: unknown) => boolean;
   keyGenerator?: (req: unknown) => string;
-  onLimitReached?: (req: unknown, res: unknown, options: RateLimitConfig) => void;
+  onLimitReached?: (
+    req: unknown,
+    res: unknown,
+    options: RateLimitConfig
+  ) => void;
 }
 
 export interface CorsConfig extends CorsOptions {

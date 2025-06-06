@@ -20,7 +20,7 @@ export const productionConfig: DatabaseManagerConfig = {
         max: 30,
         idleTimeoutMillis: 10000,
         connectionTimeoutMillis: 3000,
-      }
+      },
     },
     readonly: {
       host: process.env.POSTGRES_READ_HOST!,
@@ -39,8 +39,8 @@ export const productionConfig: DatabaseManagerConfig = {
         max: 15,
         idleTimeoutMillis: 10000,
         connectionTimeoutMillis: 3000,
-      }
-    }
+      },
+    },
   },
   default: 'primary',
   migrations: {
@@ -51,7 +51,7 @@ export const productionConfig: DatabaseManagerConfig = {
   healthCheck: {
     enabled: true,
     interval: 60000, // 1 minute
-    timeout: 10000,  // 10 seconds
+    timeout: 10000, // 10 seconds
   },
   cache: {
     host: process.env.REDIS_HOST!,
@@ -62,5 +62,5 @@ export const productionConfig: DatabaseManagerConfig = {
     ttl: 7200, // 2 hours default
     maxRetries: 5,
     retryDelay: 2000,
-  }
+  },
 };

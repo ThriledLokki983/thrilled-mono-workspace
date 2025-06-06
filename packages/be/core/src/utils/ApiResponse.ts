@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { Response } from 'express';
 
 export interface ApiSuccessResponse<T = unknown> {
   success: true;
@@ -22,9 +22,9 @@ export class ApiResponse {
    */
   static success<T>(
     res: Response,
-    message = "Success",
+    message = 'Success',
     data?: T,
-    meta?: Record<string, unknown>,
+    meta?: Record<string, unknown>
   ): Response<ApiSuccessResponse<T>> {
     const response: ApiSuccessResponse<T> = {
       success: true,
@@ -42,8 +42,8 @@ export class ApiResponse {
    */
   static created<T>(
     res: Response,
-    message = "Created successfully",
-    data?: T,
+    message = 'Created successfully',
+    data?: T
   ): Response<ApiSuccessResponse<T>> {
     const response: ApiSuccessResponse<T> = {
       success: true,
@@ -67,8 +67,8 @@ export class ApiResponse {
    */
   static badRequest(
     res: Response,
-    message = "Bad request",
-    errors?: Array<Record<string, unknown>>,
+    message = 'Bad request',
+    errors?: Array<Record<string, unknown>>
   ): Response<ApiErrorResponse> {
     const response: ApiErrorResponse = {
       success: false,
@@ -85,7 +85,7 @@ export class ApiResponse {
    */
   static unauthorized(
     res: Response,
-    message = "Unauthorized",
+    message = 'Unauthorized'
   ): Response<ApiErrorResponse> {
     const response: ApiErrorResponse = {
       success: false,
@@ -101,7 +101,7 @@ export class ApiResponse {
    */
   static forbidden(
     res: Response,
-    message = "Forbidden",
+    message = 'Forbidden'
   ): Response<ApiErrorResponse> {
     const response: ApiErrorResponse = {
       success: false,
@@ -117,7 +117,7 @@ export class ApiResponse {
    */
   static notFound(
     res: Response,
-    message = "Not found",
+    message = 'Not found'
   ): Response<ApiErrorResponse> {
     const response: ApiErrorResponse = {
       success: false,
@@ -133,7 +133,7 @@ export class ApiResponse {
    */
   static conflict(
     res: Response,
-    message = "Conflict",
+    message = 'Conflict'
   ): Response<ApiErrorResponse> {
     const response: ApiErrorResponse = {
       success: false,
@@ -149,7 +149,7 @@ export class ApiResponse {
    */
   static serverError(
     res: Response,
-    message = "Internal server error",
+    message = 'Internal server error'
   ): Response<ApiErrorResponse> {
     const response: ApiErrorResponse = {
       success: false,
@@ -167,7 +167,7 @@ export class ApiResponse {
     res: Response,
     statusCode: number,
     message: string,
-    errors?: Array<Record<string, unknown>>,
+    errors?: Array<Record<string, unknown>>
   ): Response<ApiErrorResponse> {
     const response: ApiErrorResponse = {
       success: false,

@@ -8,7 +8,7 @@ import { SanitizationOptions } from '../types/index.js';
 export class SQLInjectionProtection {
   private static defaultOptions: SanitizationOptions['sql'] = {
     escapeQuotes: true,
-    removeSqlKeywords: false // Be conservative by default
+    removeSqlKeywords: false, // Be conservative by default
   };
 
   /**
@@ -47,7 +47,7 @@ export class SQLInjectionProtection {
    */
   private static sanitizeObject(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    obj: Record<string, any>, 
+    obj: Record<string, any>,
     options: SanitizationOptions['sql']
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Record<string, any> {
@@ -58,7 +58,7 @@ export class SQLInjectionProtection {
       if (typeof value === 'string') {
         sanitized[key] = Sanitizer.sanitizeSQL(value, options);
       } else if (Array.isArray(value)) {
-        sanitized[key] = value.map(item => 
+        sanitized[key] = value.map((item) =>
           typeof item === 'string' ? Sanitizer.sanitizeSQL(item, options) : item
         );
       } else if (typeof value === 'object' && value !== null) {
@@ -81,34 +81,88 @@ export class SQLInjectionProtection {
     risk: string[];
   } {
     if (!input || typeof input !== 'string') {
-      return { hasSQLInjection: false, patterns: [], severity: 'low', risk: [] };
+      return {
+        hasSQLInjection: false,
+        patterns: [],
+        severity: 'low',
+        risk: [],
+      };
     }
 
     const sqlPatterns = [
       // Union-based injection
-      { pattern: /\bunion\s+select\b/gi, severity: 'high' as const, risk: 'Union-based injection' },
+      {
+        pattern: /\bunion\s+select\b/gi,
+        severity: 'high' as const,
+        risk: 'Union-based injection',
+      },
       // Boolean-based blind injection
-      { pattern: /\b(and|or)\s+\d+\s*=\s*\d+/gi, severity: 'high' as const, risk: 'Boolean-based blind' },
+      {
+        pattern: /\b(and|or)\s+\d+\s*=\s*\d+/gi,
+        severity: 'high' as const,
+        risk: 'Boolean-based blind',
+      },
       // Time-based blind injection
-      { pattern: /\b(sleep\s*\(|waitfor\s+delay|delay\s*\()/gi, severity: 'high' as const, risk: 'Time-based blind' },
+      {
+        pattern: /\b(sleep\s*\(|waitfor\s+delay|delay\s*\()/gi,
+        severity: 'high' as const,
+        risk: 'Time-based blind',
+      },
       // Stacked queries
-      { pattern: /;\s*(select|insert|update|delete|drop|create|alter)/gi, severity: 'high' as const, risk: 'Stacked queries' },
+      {
+        pattern: /;\s*(select|insert|update|delete|drop|create|alter)/gi,
+        severity: 'high' as const,
+        risk: 'Stacked queries',
+      },
       // Comment-based injection
-      { pattern: /(\/\*|\*\/|--|#)/g, severity: 'medium' as const, risk: 'Comment injection' },
+      {
+        pattern: /(\/\*|\*\/|--|#)/g,
+        severity: 'medium' as const,
+        risk: 'Comment injection',
+      },
       // Quote escaping attempts
-      { pattern: /['"]\s*;\s*['"]/g, severity: 'high' as const, risk: 'Quote escaping' },
+      {
+        pattern: /['"]\s*;\s*['"]/g,
+        severity: 'high' as const,
+        risk: 'Quote escaping',
+      },
       // Common SQL functions
-      { pattern: /\b(concat|substring|ascii|char|hex|unhex|md5|sha1)\s*\(/gi, severity: 'medium' as const, risk: 'SQL functions' },
+      {
+        pattern: /\b(concat|substring|ascii|char|hex|unhex|md5|sha1)\s*\(/gi,
+        severity: 'medium' as const,
+        risk: 'SQL functions',
+      },
       // Information schema access
-      { pattern: /\binformation_schema\b/gi, severity: 'high' as const, risk: 'Information schema access' },
+      {
+        pattern: /\binformation_schema\b/gi,
+        severity: 'high' as const,
+        risk: 'Information schema access',
+      },
       // System tables
-      { pattern: /\b(sys\.|sysobjects|syscolumns|sysusers)\b/gi, severity: 'high' as const, risk: 'System tables access' },
+      {
+        pattern: /\b(sys\.|sysobjects|syscolumns|sysusers)\b/gi,
+        severity: 'high' as const,
+        risk: 'System tables access',
+      },
       // SQL keywords in unexpected contexts
-      { pattern: /\b(select|insert|update|delete|drop|create|alter|exec|execute|declare|cast|convert)\b/gi, severity: 'medium' as const, risk: 'SQL keywords' },
+      {
+        pattern:
+          /\b(select|insert|update|delete|drop|create|alter|exec|execute|declare|cast|convert)\b/gi,
+        severity: 'medium' as const,
+        risk: 'SQL keywords',
+      },
       // Hexadecimal values
-      { pattern: /0x[0-9a-f]+/gi, severity: 'low' as const, risk: 'Hexadecimal values' },
+      {
+        pattern: /0x[0-9a-f]+/gi,
+        severity: 'low' as const,
+        risk: 'Hexadecimal values',
+      },
       // Multiple single quotes
-      { pattern: /'{2,}/g, severity: 'medium' as const, risk: 'Quote manipulation' }
+      {
+        pattern: /'{2,}/g,
+        severity: 'medium' as const,
+        risk: 'Quote manipulation',
+      },
     ];
 
     const foundPatterns: string[] = [];
@@ -120,7 +174,10 @@ export class SQLInjectionProtection {
       if (matches) {
         foundPatterns.push(...matches);
         riskTypes.push(risk);
-        if (severity === 'high' || (severity === 'medium' && maxSeverity === 'low')) {
+        if (
+          severity === 'high' ||
+          (severity === 'medium' && maxSeverity === 'low')
+        ) {
           maxSeverity = severity;
         }
       }
@@ -130,7 +187,7 @@ export class SQLInjectionProtection {
       hasSQLInjection: foundPatterns.length > 0,
       patterns: [...new Set(foundPatterns)], // Remove duplicates
       severity: foundPatterns.length > 0 ? maxSeverity : 'low',
-      risk: [...new Set(riskTypes)] // Remove duplicates
+      risk: [...new Set(riskTypes)], // Remove duplicates
     };
   }
 
@@ -152,7 +209,7 @@ export class SQLInjectionProtection {
 
     // Create control character for \x1a (ASCII 26)
     const ctrlZ = String.fromCharCode(26);
-    
+
     return input
       .replace(/\\/g, '\\\\')
       .replace(/'/g, "''")
@@ -174,18 +231,51 @@ export class SQLInjectionProtection {
     // SQL identifiers should only contain letters, numbers, and underscores
     // and should not start with a number
     const identifierRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
-    
+
     // Check if it's a reserved keyword
     const reservedKeywords = [
-      'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'DROP', 'CREATE', 'ALTER',
-      'TABLE', 'DATABASE', 'INDEX', 'VIEW', 'PROCEDURE', 'FUNCTION',
-      'TRIGGER', 'UNION', 'WHERE', 'ORDER', 'GROUP', 'HAVING', 'JOIN',
-      'INNER', 'LEFT', 'RIGHT', 'OUTER', 'ON', 'AS', 'FROM', 'INTO',
-      'VALUES', 'SET', 'AND', 'OR', 'NOT', 'NULL', 'TRUE', 'FALSE'
+      'SELECT',
+      'INSERT',
+      'UPDATE',
+      'DELETE',
+      'DROP',
+      'CREATE',
+      'ALTER',
+      'TABLE',
+      'DATABASE',
+      'INDEX',
+      'VIEW',
+      'PROCEDURE',
+      'FUNCTION',
+      'TRIGGER',
+      'UNION',
+      'WHERE',
+      'ORDER',
+      'GROUP',
+      'HAVING',
+      'JOIN',
+      'INNER',
+      'LEFT',
+      'RIGHT',
+      'OUTER',
+      'ON',
+      'AS',
+      'FROM',
+      'INTO',
+      'VALUES',
+      'SET',
+      'AND',
+      'OR',
+      'NOT',
+      'NULL',
+      'TRUE',
+      'FALSE',
     ];
 
-    return identifierRegex.test(identifier) && 
-           !reservedKeywords.includes(identifier.toUpperCase());
+    return (
+      identifierRegex.test(identifier) &&
+      !reservedKeywords.includes(identifier.toUpperCase())
+    );
   }
 
   /**
@@ -213,7 +303,7 @@ export class SQLInjectionProtection {
     }
 
     if (Array.isArray(value)) {
-      return value.map(item => this.prepareValue(item));
+      return value.map((item) => this.prepareValue(item));
     }
 
     if (typeof value === 'object') {
@@ -233,14 +323,14 @@ export class SQLInjectionProtection {
    * Generate safe ORDER BY clause
    */
   static sanitizeOrderBy(
-    orderBy: string, 
+    orderBy: string,
     allowedColumns: string[] = []
   ): string {
     if (!orderBy || typeof orderBy !== 'string') {
       return '';
     }
 
-    const parts = orderBy.split(',').map(part => part.trim());
+    const parts = orderBy.split(',').map((part) => part.trim());
     const safeParts: string[] = [];
 
     for (const part of parts) {
@@ -249,8 +339,10 @@ export class SQLInjectionProtection {
         const column = match[1];
         const direction = match[2]?.toUpperCase() || 'ASC';
 
-        if (this.validateIdentifier(column) && 
-            (allowedColumns.length === 0 || allowedColumns.includes(column))) {
+        if (
+          this.validateIdentifier(column) &&
+          (allowedColumns.length === 0 || allowedColumns.includes(column))
+        ) {
           safeParts.push(`${column} ${direction}`);
         }
       }
@@ -270,7 +362,10 @@ export class SQLInjectionProtection {
   /**
    * Create parameterized query placeholder
    */
-  static createPlaceholder(index: number, dbType: 'mysql' | 'postgresql' | 'sqlite' = 'mysql'): string {
+  static createPlaceholder(
+    index: number,
+    dbType: 'mysql' | 'postgresql' | 'sqlite' = 'mysql'
+  ): string {
     switch (dbType) {
       case 'mysql':
       case 'sqlite':
@@ -286,7 +381,7 @@ export class SQLInjectionProtection {
    * Build safe WHERE clause from object
    */
   static buildWhereClause(
-    conditions: Record<string, unknown>, 
+    conditions: Record<string, unknown>,
     dbType: 'mysql' | 'postgresql' | 'sqlite' = 'mysql'
   ): { clause: string; values: unknown[] } {
     const whereConditions: string[] = [];
@@ -301,42 +396,54 @@ export class SQLInjectionProtection {
       if (value === null || value === undefined) {
         whereConditions.push(`${key} IS NULL`);
       } else if (Array.isArray(value)) {
-        const placeholders = value.map(() => this.createPlaceholder(paramIndex++, dbType));
+        const placeholders = value.map(() =>
+          this.createPlaceholder(paramIndex++, dbType)
+        );
         whereConditions.push(`${key} IN (${placeholders.join(', ')})`);
-        values.push(...value.map(v => this.prepareValue(v)));
+        values.push(...value.map((v) => this.prepareValue(v)));
       } else {
-        whereConditions.push(`${key} = ${this.createPlaceholder(paramIndex++, dbType)}`);
+        whereConditions.push(
+          `${key} = ${this.createPlaceholder(paramIndex++, dbType)}`
+        );
         values.push(this.prepareValue(value));
       }
     }
 
     return {
-      clause: whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '',
-      values
+      clause:
+        whereConditions.length > 0
+          ? `WHERE ${whereConditions.join(' AND ')}`
+          : '',
+      values,
     };
   }
 
   /**
    * Create a safe parameterized query
    */
-  static createSafeQuery(query: string, parameters: unknown[] = []): { query: string; params: unknown[] } {
+  static createSafeQuery(
+    query: string,
+    parameters: unknown[] = []
+  ): { query: string; params: unknown[] } {
     if (!query || typeof query !== 'string') {
       throw new Error('Query must be a non-empty string');
     }
 
     // Count placeholders in query
     const placeholderCount = (query.match(/\?/g) || []).length;
-    
+
     if (placeholderCount !== parameters.length) {
-      throw new Error(`Parameter count mismatch: query has ${placeholderCount} placeholders but ${parameters.length} parameters provided`);
+      throw new Error(
+        `Parameter count mismatch: query has ${placeholderCount} placeholders but ${parameters.length} parameters provided`
+      );
     }
 
     // Sanitize parameters
-    const safeParameters = parameters.map(param => this.prepareValue(param));
+    const safeParameters = parameters.map((param) => this.prepareValue(param));
 
     return {
       query: query.trim(),
-      params: safeParameters
+      params: safeParameters,
     };
   }
 }

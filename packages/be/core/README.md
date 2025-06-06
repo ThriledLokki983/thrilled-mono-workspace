@@ -35,7 +35,7 @@ defaultLogger.error('Something went wrong', { error: 'details' });
 const logger = createLogger({
   level: 'debug',
   dir: './logs',
-  format: 'json'
+  format: 'json',
 });
 
 logger.info('Custom logger message');
@@ -45,11 +45,11 @@ logger.info('Custom logger message');
 
 ```typescript
 interface LoggingConfig {
-  level?: string;           // Log level (default: 'info')
-  dir?: string;            // Directory for log files (default: './logs')
-  format?: "json" | "simple"; // Log format (default: 'simple')
-  httpLogging?: boolean;   // Enable HTTP logging (default: true)
-  maxFiles?: number;       // Max files to keep (default: 30)
+  level?: string; // Log level (default: 'info')
+  dir?: string; // Directory for log files (default: './logs')
+  format?: 'json' | 'simple'; // Log format (default: 'simple')
+  httpLogging?: boolean; // Enable HTTP logging (default: true)
+  maxFiles?: number; // Max files to keep (default: 30)
   correlationId?: boolean; // Add correlation IDs (default: true)
 }
 ```
@@ -79,7 +79,7 @@ import { Logger } from '@mono/be-core';
 const logger = Logger.create({
   level: 'debug',
   dir: './custom-logs',
-  format: 'json'
+  format: 'json',
 });
 ```
 
@@ -91,7 +91,7 @@ import { createLogger } from '@mono/be-core';
 const logger = createLogger({
   level: process.env.LOG_LEVEL || 'info',
   dir: process.env.LOG_DIR || './logs',
-  format: process.env.NODE_ENV === 'production' ? 'json' : 'simple'
+  format: process.env.NODE_ENV === 'production' ? 'json' : 'simple',
 });
 ```
 
@@ -125,7 +125,7 @@ app.use((req, res, next) => {
   logger.info('Request received', {
     method: req.method,
     url: req.url,
-    ip: req.ip
+    ip: req.ip,
   });
   next();
 });

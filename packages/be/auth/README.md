@@ -44,7 +44,7 @@ import {
   SessionManager,
   AuthMiddleware,
   RBACManager,
-  AuthConfig
+  AuthConfig,
 } from '@thrilled/be-auth';
 
 const app = express();
@@ -56,13 +56,13 @@ const config: AuthConfig = {
     accessToken: {
       secret: process.env.JWT_ACCESS_SECRET,
       expiresIn: '15m',
-      algorithm: 'HS256'
+      algorithm: 'HS256',
     },
     refreshToken: {
       secret: process.env.JWT_REFRESH_SECRET,
       expiresIn: '7d',
-      algorithm: 'HS256'
-    }
+      algorithm: 'HS256',
+    },
   },
   password: {
     saltRounds: 12,
@@ -70,17 +70,17 @@ const config: AuthConfig = {
     requireUppercase: true,
     requireLowercase: true,
     requireNumbers: true,
-    requireSpecialChars: true
+    requireSpecialChars: true,
   },
   session: {
     defaultTTL: '24h',
     maxSessionsPerUser: 5,
-    enableRollingSession: true
+    enableRollingSession: true,
   },
   rbac: {
     enableRoleHierarchy: true,
-    defaultRole: 'user'
-  }
+    defaultRole: 'user',
+  },
 };
 
 // Initialize components
@@ -101,7 +101,8 @@ app.use('/api/protected', authMiddleware.requireAuth());
 app.use('/api/admin', authMiddleware.requireAdmin());
 
 // Role-based protection
-app.get('/api/moderator', 
+app.get(
+  '/api/moderator',
   authMiddleware.requireRoles(['admin', 'moderator']),
   (req, res) => {
     res.json({ message: 'Moderator content' });
@@ -109,7 +110,8 @@ app.get('/api/moderator',
 );
 
 // Permission-based protection
-app.post('/api/content', 
+app.post(
+  '/api/content',
   authMiddleware.requirePermissions(['content.write']),
   (req, res) => {
     res.json({ message: 'Content created' });
@@ -117,11 +119,14 @@ app.post('/api/content',
 );
 
 // Custom authorization
-app.get('/api/users/:userId/data',
+app.get(
+  '/api/users/:userId/data',
   authMiddleware.requireAuth(),
   authMiddleware.authorize(async (authContext, req) => {
-    return authContext.userId === req.params.userId || 
-           authContext.roles.includes('admin');
+    return (
+      authContext.userId === req.params.userId ||
+      authContext.roles.includes('admin')
+    );
   }),
   (req, res) => {
     res.json({ data: 'User data' });
@@ -129,7 +134,8 @@ app.get('/api/users/:userId/data',
 );
 
 // Rate limiting
-app.post('/api/auth/login',
+app.post(
+  '/api/auth/login',
   authMiddleware.rateLimit(5, 15 * 60 * 1000), // 5 attempts per 15 minutes
   async (req, res) => {
     // Login logic
@@ -150,11 +156,14 @@ const accessToken = await jwtProvider.createAccessToken({
   sessionId: 'session456',
   roles: ['user'],
   permissions: ['read', 'write'],
-  userData: { email: 'user@example.com' }
+  userData: { email: 'user@example.com' },
 });
 
 // Create refresh token
-const refreshToken = await jwtProvider.createRefreshToken('user123', 'session456');
+const refreshToken = await jwtProvider.createRefreshToken(
+  'user123',
+  'session456'
+);
 
 // Verify tokens
 const payload = await jwtProvider.verifyAccessToken(accessToken);
@@ -164,7 +173,7 @@ const refreshData = await jwtProvider.verifyRefreshToken(refreshToken);
 const newTokens = await jwtProvider.refreshTokens(refreshToken, {
   userData: { email: 'user@example.com' },
   roles: ['user'],
-  permissions: ['read', 'write']
+  permissions: ['read', 'write'],
 });
 
 // Blacklist tokens

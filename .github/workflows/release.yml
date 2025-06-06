@@ -1,0 +1,217 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+      dry_run:
+        description: 'Dry run (do not actually create release)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Setup NX
+        uses: nrwl/nx-set-shas@v4
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Build all projects
+        run: yarn nx run-many -t build --parallel=3
+
+      - name: Run tests
+        run: yarn nx run-many -t test --parallel=3 --ci
+
+      - name: Generate changelog and version bump
+        id: version
+        run: |
+          # Get current version
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Current version: $CURRENT_VERSION"
+
+          # Calculate new version based on input
+          case "${{ github.event.inputs.version_type }}" in
+            "major")
+              NEW_VERSION=$(npm version major --no-git-tag-version --workspaces=false | sed 's/v//')
+              ;;
+            "minor")
+              NEW_VERSION=$(npm version minor --no-git-tag-version --workspaces=false | sed 's/v//')
+              ;;
+            "patch")
+              NEW_VERSION=$(npm version patch --no-git-tag-version --workspaces=false | sed 's/v//')
+              ;;
+            "prerelease")
+              NEW_VERSION=$(npm version prerelease --preid=beta --no-git-tag-version --workspaces=false | sed 's/v//')
+              ;;
+          esac
+
+          echo "New version: $NEW_VERSION"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+          # Generate changelog
+          echo "## Release v$NEW_VERSION" > CHANGELOG_TEMP.md
+          echo "" >> CHANGELOG_TEMP.md
+          echo "### Changes" >> CHANGELOG_TEMP.md
+
+          # Get commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%h)" >> CHANGELOG_TEMP.md
+          else
+            git log --pretty=format:"- %s (%h)" >> CHANGELOG_TEMP.md
+          fi
+
+          echo "" >> CHANGELOG_TEMP.md
+          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${LAST_TAG}...v$NEW_VERSION" >> CHANGELOG_TEMP.md
+
+      - name: Update package versions
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.version }}"
+
+          # Update package.json files with the new version
+          # Main package.json
+          npm version $NEW_VERSION --no-git-tag-version --workspaces=false
+
+          # Update workspace package.json files
+          find packages apps -name "package.json" -type f | while read file; do
+            if [ -f "$file" ]; then
+              echo "Updating version in $file"
+              # Use jq if available, otherwise use sed
+              if command -v jq >/dev/null 2>&1; then
+                jq --arg v "$NEW_VERSION" '.version = $v' "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+              else
+                sed -i.bak "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" "$file" && rm "${file}.bak"
+              fi
+            fi
+          done
+
+      - name: Commit and tag version
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.version }}"
+
+          # Add all changed files
+          git add -A
+
+          # Commit version bump
+          git commit -m "chore(release): bump version to v$NEW_VERSION"
+
+          # Create and push tag
+          git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
+          git push origin main --tags
+
+      - name: Create GitHub Release
+        if: github.event.inputs.dry_run != 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          release_name: Release v${{ steps.version.outputs.version }}
+          body_path: CHANGELOG_TEMP.md
+          draft: false
+          prerelease: ${{ github.event.inputs.version_type == 'prerelease' }}
+
+      - name: Build and package applications
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          # Build all applications for release
+          yarn nx run-many -t build --configuration=production --parallel=3
+
+          # Create release artifacts
+          mkdir -p release-artifacts
+
+          # Package backend applications
+          if [ -d "dist/apps/be/base" ]; then
+            cd dist/apps/be/base
+            tar -czf ../../../../release-artifacts/base-backend-v${{ steps.version.outputs.version }}.tar.gz .
+            cd ../../../../
+          fi
+
+          if [ -d "dist/apps/be/faithcircle" ]; then
+            cd dist/apps/be/faithcircle
+            tar -czf ../../../../release-artifacts/faithcircle-backend-v${{ steps.version.outputs.version }}.tar.gz .
+            cd ../../../../
+          fi
+
+          # Package frontend applications
+          if [ -d "dist/apps/fe/faithcircle-fe" ]; then
+            cd dist/apps/fe/faithcircle-fe
+            tar -czf ../../../../release-artifacts/faithcircle-frontend-v${{ steps.version.outputs.version }}.tar.gz .
+            cd ../../../../
+          fi
+
+      - name: Upload release artifacts
+        if: github.event.inputs.dry_run != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts-v${{ steps.version.outputs.version }}
+          path: release-artifacts/
+          retention-days: 90
+
+      - name: Trigger CD pipeline
+        if: github.event.inputs.dry_run != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'cd.yml',
+              ref: 'v${{ steps.version.outputs.version }}',
+              inputs: {
+                environment: 'production',
+                force_deploy: 'true'
+              }
+            });
+
+      - name: Dry run summary
+        if: github.event.inputs.dry_run == 'true'
+        run: |
+          echo "🔍 **DRY RUN SUMMARY**"
+          echo "Would create version: v${{ steps.version.outputs.version }}"
+          echo "Version bump type: ${{ github.event.inputs.version_type }}"
+          echo ""
+          echo "📋 **Changelog preview:**"
+          cat CHANGELOG_TEMP.md
+          echo ""
+          echo "ℹ️ No actual changes were made. Re-run without dry_run to create the release."

@@ -12,32 +12,52 @@ export class Sanitizer {
   static {
     // Initialize DOMPurify with JSDOM for server-side usage
     const window = new JSDOM('').window;
-    this.domPurify = DOMPurify(window as any);
+    this.domPurify = DOMPurify(window as unknown as Window & typeof globalThis);
   }
 
   /**
    * Sanitize HTML content
    */
-  static sanitizeHTML(input: string, options?: SanitizationOptions['html']): string {
+  static sanitizeHTML(
+    input: string,
+    options?: SanitizationOptions['html']
+  ): string {
     if (!input || typeof input !== 'string') {
       return '';
     }
 
     if (options?.stripTags) {
       let sanitized = input;
-      
+
       // First remove script tags and their content (security critical)
-      sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-      
+      sanitized = sanitized.replace(
+        /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+        ''
+      );
+
       // Then strip all remaining HTML tags but keep content
       sanitized = sanitized.replace(/<[^>]*>/g, '');
-      
+
       return sanitized;
     }
 
-    const config: any = {
-      ALLOWED_TAGS: options?.allowedTags || ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li'],
-      ALLOWED_ATTR: options?.allowedAttributes || ['class', 'id']
+    const allowedTags = options?.allowedTags || [
+      'p',
+      'br',
+      'strong',
+      'em',
+      'ul',
+      'ol',
+      'li',
+    ];
+    const allowedAttributes = options?.allowedAttributes || ['class', 'id'];
+
+    const config: {
+      ALLOWED_TAGS: string[];
+      ALLOWED_ATTR: string[];
+    } = {
+      ALLOWED_TAGS: Array.isArray(allowedTags) ? allowedTags : [],
+      ALLOWED_ATTR: Array.isArray(allowedAttributes) ? allowedAttributes : [],
     };
 
     return this.domPurify.sanitize(input, config) as unknown as string;
@@ -46,7 +66,10 @@ export class Sanitizer {
   /**
    * Remove XSS vectors from input
    */
-  static sanitizeXSS(input: string, options?: SanitizationOptions['xss']): string {
+  static sanitizeXSS(
+    input: string,
+    options?: SanitizationOptions['xss']
+  ): string {
     if (!input || typeof input !== 'string') {
       return '';
     }
@@ -55,7 +78,10 @@ export class Sanitizer {
 
     // Remove script tags
     if (options?.removeScriptTags !== false) {
-      sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+      sanitized = sanitized.replace(
+        /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+        ''
+      );
     }
 
     // Encode HTML entities
@@ -64,16 +90,23 @@ export class Sanitizer {
     }
 
     // Remove dangerous attributes
-    const dangerousAttrs = ['onload', 'onerror', 'onclick', 'onmouseover', 'onfocus', 'onblur'];
+    const dangerousAttrs = [
+      'onload',
+      'onerror',
+      'onclick',
+      'onmouseover',
+      'onfocus',
+      'onblur',
+    ];
     if (options?.allowSafeAttributes) {
       // If allowSafeAttributes is specified, remove dangerous attributes but keep safe ones
-      dangerousAttrs.forEach(attr => {
+      dangerousAttrs.forEach((attr) => {
         const regex = new RegExp(`\\s*${attr}\\s*=\\s*[^\\s>]*`, 'gi');
         sanitized = sanitized.replace(regex, '');
       });
     } else {
       // Remove all event attributes
-      dangerousAttrs.forEach(attr => {
+      dangerousAttrs.forEach((attr) => {
         const regex = new RegExp(`\\s*${attr}\\s*=\\s*[^\\s>]*`, 'gi');
         sanitized = sanitized.replace(regex, '');
       });
@@ -85,7 +118,10 @@ export class Sanitizer {
   /**
    * Sanitize SQL injection attempts
    */
-  static sanitizeSQL(input: string, options?: SanitizationOptions['sql']): string {
+  static sanitizeSQL(
+    input: string,
+    options?: SanitizationOptions['sql']
+  ): string {
     if (!input || typeof input !== 'string') {
       return '';
     }
@@ -100,12 +136,30 @@ export class Sanitizer {
     // Remove SQL keywords
     if (options?.removeSqlKeywords) {
       const sqlKeywords = [
-        'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'DROP', 'CREATE', 'ALTER', 
-        'EXEC', 'EXECUTE', 'UNION', 'SCRIPT', 'DECLARE', 'CAST', 'CONVERT',
-        'TABLE', 'DATABASE', 'SCHEMA', 'INDEX', 'VIEW', 'PROCEDURE', 'FUNCTION'
+        'SELECT',
+        'INSERT',
+        'UPDATE',
+        'DELETE',
+        'DROP',
+        'CREATE',
+        'ALTER',
+        'EXEC',
+        'EXECUTE',
+        'UNION',
+        'SCRIPT',
+        'DECLARE',
+        'CAST',
+        'CONVERT',
+        'TABLE',
+        'DATABASE',
+        'SCHEMA',
+        'INDEX',
+        'VIEW',
+        'PROCEDURE',
+        'FUNCTION',
       ];
-      
-      sqlKeywords.forEach(keyword => {
+
+      sqlKeywords.forEach((keyword) => {
         const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
         sanitized = sanitized.replace(regex, '');
       });
@@ -117,7 +171,10 @@ export class Sanitizer {
   /**
    * General sanitization for common input cleaning
    */
-  static sanitizeGeneral(input: string, options?: SanitizationOptions['general']): string {
+  static sanitizeGeneral(
+    input: string,
+    options?: SanitizationOptions['general']
+  ): string {
     if (!input || typeof input !== 'string') {
       return '';
     }
@@ -180,7 +237,7 @@ export class Sanitizer {
 
     try {
       const url = new URL(input.trim());
-      
+
       // Only allow http and https protocols
       if (!['http:', 'https:'].includes(url.protocol)) {
         return '';
@@ -201,27 +258,41 @@ export class Sanitizer {
     }
 
     // Remove path traversal attempts and dangerous characters
-    return input
-      .replace(/[<>:"/\\|?*\x00-\x1f]/g, '')
+    // First remove control characters (0x00-0x1F) using String.fromCharCode
+    const controlChars = Array.from({ length: 32 }, (_, i) =>
+      String.fromCharCode(i)
+    ).join('');
+    const controlCharRegex = new RegExp(
+      `[${controlChars.replace(/[[\]\\-]/g, '\\$&')}]`,
+      'g'
+    );
+
+    let sanitized = input.replace(controlCharRegex, '');
+
+    // Then remove other dangerous filename characters
+    sanitized = sanitized
+      .replace(/[<>:"/\\|?*]/g, '')
       .replace(/^\.+/, '')
       .replace(/\.+$/, '')
       .replace(/\s+/g, '_')
       .substring(0, 255)
       .trim();
+
+    return sanitized;
   }
 
   /**
    * Comprehensive sanitization using all methods
    */
   static sanitizeComprehensive(
-    input: any, 
+    input: unknown,
     options?: SanitizationOptions
   ): string {
     // Convert to string if not already (this handles null and undefined correctly)
     const stringInput = typeof input === 'string' ? input : String(input);
 
     // Handle empty strings and null strings
-    if (stringInput === '' || stringInput === 'null' && input === null) {
+    if (stringInput === '' || (stringInput === 'null' && input === null)) {
       return stringInput;
     }
 
@@ -260,21 +331,21 @@ export class Sanitizer {
    * Sanitize object recursively
    */
   static sanitizeObject(
-    obj: Record<string, any>, 
+    obj: Record<string, unknown>,
     options?: SanitizationOptions
-  ): Record<string, any> {
+  ): Record<string, unknown> {
     if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
       return {};
     }
 
-    const sanitized: Record<string, any> = {};
+    const sanitized: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(obj)) {
-      const sanitizedKey = this.sanitizeGeneral(key, { 
-        removeNullChars: true, 
-        trim: true 
+      const sanitizedKey = this.sanitizeGeneral(key, {
+        removeNullChars: true,
+        trim: true,
       });
-      
+
       if (sanitizedKey) {
         if (value === null) {
           sanitized[sanitizedKey] = null;
@@ -282,7 +353,10 @@ export class Sanitizer {
           sanitized[sanitizedKey] = undefined;
         } else if (typeof value === 'object' && !Array.isArray(value)) {
           // Recursively sanitize nested objects
-          sanitized[sanitizedKey] = this.sanitizeObject(value, options);
+          sanitized[sanitizedKey] = this.sanitizeObject(
+            value as Record<string, unknown>,
+            options
+          );
         } else if (Array.isArray(value)) {
           // Sanitize arrays
           sanitized[sanitizedKey] = this.sanitizeArray(value, options);
@@ -290,7 +364,7 @@ export class Sanitizer {
           // Sanitize string values
           sanitized[sanitizedKey] = this.sanitizeComprehensive(value, options);
         } else {
-          // Preserve non-string primitives (numbers, booleans)
+          // Preserve primitive types (numbers, booleans) as-is
           sanitized[sanitizedKey] = value;
         }
       }
@@ -303,13 +377,13 @@ export class Sanitizer {
    * Sanitize array of values
    */
   static sanitizeArray(
-    arr: any[], 
+    arr: unknown[],
     options?: SanitizationOptions
   ): string[] {
     if (!Array.isArray(arr)) {
       return [];
     }
 
-    return arr.map(item => this.sanitizeComprehensive(item, options));
+    return arr.map((item) => this.sanitizeComprehensive(item, options));
   }
 }

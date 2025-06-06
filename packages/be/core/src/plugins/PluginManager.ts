@@ -1,8 +1,7 @@
-
-import { Express } from "express";
-import { Logger } from "../logging/Logger";
-import { Plugin } from "./Plugin";
-import { PluginConfig } from "../types";
+import { Express } from 'express';
+import { Logger } from '../logging/Logger';
+import { Plugin } from './Plugin';
+import { PluginConfig } from '../types';
 
 export interface PluginRegistration {
   plugin: Plugin;
@@ -24,7 +23,9 @@ export class PluginManager {
    */
   register(plugin: Plugin, config?: PluginConfig, enabled = true): this {
     if (this.plugins.has(plugin.name)) {
-      this.logger.warn(`Plugin ${plugin.name} is already registered. Skipping.`);
+      this.logger.warn(
+        `Plugin ${plugin.name} is already registered. Skipping.`
+      );
       return this;
     }
 
@@ -104,7 +105,9 @@ export class PluginManager {
     const visit = (pluginName: string): void => {
       if (visited.has(pluginName)) return;
       if (visiting.has(pluginName)) {
-        throw new Error(`Circular dependency detected involving plugin: ${pluginName}`);
+        throw new Error(
+          `Circular dependency detected involving plugin: ${pluginName}`
+        );
       }
 
       const registration = this.plugins.get(pluginName);
@@ -116,7 +119,9 @@ export class PluginManager {
       const dependencies = registration.plugin.dependencies || [];
       for (const dep of dependencies) {
         if (!this.plugins.has(dep)) {
-          throw new Error(`Plugin ${pluginName} depends on ${dep}, but ${dep} is not registered`);
+          throw new Error(
+            `Plugin ${pluginName} depends on ${dep}, but ${dep} is not registered`
+          );
         }
         visit(dep);
       }
@@ -142,16 +147,22 @@ export class PluginManager {
   async initializeAll(app: Express): Promise<void> {
     try {
       this.loadOrder = this.calculateLoadOrder();
-      this.logger.info(`Initializing ${this.loadOrder.length} plugins in order: ${this.loadOrder.join(', ')}`);
+      this.logger.info(
+        `Initializing ${
+          this.loadOrder.length
+        } plugins in order: ${this.loadOrder.join(', ')}`
+      );
 
       for (const pluginName of this.loadOrder) {
         const registration = this.plugins.get(pluginName);
         if (!registration?.enabled) continue;
 
         const { plugin, config } = registration;
-        
+
         try {
-          this.logger.info(`Initializing plugin: ${plugin.name}@${plugin.version}`);
+          this.logger.info(
+            `Initializing plugin: ${plugin.name}@${plugin.version}`
+          );
           await plugin.register(app, config || {});
           this.logger.info(`Plugin initialized successfully: ${plugin.name}`);
         } catch (error) {
@@ -160,16 +171,22 @@ export class PluginManager {
             plugin: plugin.name,
             version: plugin.version,
           });
-          
+
           // Decide whether to continue or fail fast based on plugin criticality
           // For now, we'll continue with other plugins but log the failure
-          this.logger.warn(`Continuing with remaining plugins after ${plugin.name} failed to initialize`);
+          this.logger.warn(
+            `Continuing with remaining plugins after ${plugin.name} failed to initialize`
+          );
         }
       }
 
-      this.logger.info(`Plugin initialization completed. ${this.loadOrder.length} plugins processed.`);
+      this.logger.info(
+        `Plugin initialization completed. ${this.loadOrder.length} plugins processed.`
+      );
     } catch (error) {
-      this.logger.error(error as Error, { context: 'PluginManager.initializeAll' });
+      this.logger.error(error as Error, {
+        context: 'PluginManager.initializeAll',
+      });
       throw error;
     }
   }

@@ -21,7 +21,7 @@ export type {
   ValidationOptions,
   SanitizationOptions,
   ValidatorFunction,
-  SchemaValidationConfig
+  SchemaValidationConfig,
 } from './types/index.js';
 
 // Plugin

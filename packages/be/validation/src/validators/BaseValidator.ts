@@ -1,4 +1,8 @@
-import { ValidationResult, ValidationOptions, ValidatorType } from '../types/index.js';
+import {
+  ValidationResult,
+  ValidationOptions,
+  ValidatorType,
+} from '../types/index.js';
 
 /**
  * Abstract base class for all validators
@@ -6,7 +10,7 @@ import { ValidationResult, ValidationOptions, ValidatorType } from '../types/ind
 export abstract class BaseValidator<TSchema = any> {
   protected _schema: TSchema | null;
   protected options: ValidationOptions;
-  
+
   abstract readonly type: ValidatorType;
 
   constructor(schema?: TSchema, options?: ValidationOptions) {
@@ -18,7 +22,7 @@ export abstract class BaseValidator<TSchema = any> {
       stripUnknown: false,
       coerceTypes: true,
       abortEarly: false, // Default to collecting all errors for better UX
-      ...options
+      ...options,
     };
   }
 
@@ -45,7 +49,7 @@ export abstract class BaseValidator<TSchema = any> {
   }
 
   /**
-   * Update validation options  
+   * Update validation options
    */
   setOptions(options: Partial<ValidationOptions>): void {
     this.options = { ...this.options, ...options };
@@ -69,9 +73,7 @@ export abstract class BaseValidator<TSchema = any> {
    * Validate multiple items in batch
    */
   async validateBatch(items: any[]): Promise<ValidationResult[]> {
-    const results = await Promise.all(
-      items.map(item => this.validate(item))
-    );
+    const results = await Promise.all(items.map((item) => this.validate(item)));
     return results;
   }
 
@@ -82,18 +84,21 @@ export abstract class BaseValidator<TSchema = any> {
     if (!this.validateSync) {
       throw new Error('Synchronous validation not supported by this validator');
     }
-    return items.map(item => this.validateSync!(item));
+    return items.map((item) => this.validateSync!(item));
   }
 
   /**
    * Conditional validation - only validate if condition is true
    */
-  async validateIf(data: any, condition: () => boolean): Promise<ValidationResult> {
+  async validateIf(
+    data: any,
+    condition: () => boolean
+  ): Promise<ValidationResult> {
     if (!condition()) {
       return {
         isValid: true,
         data,
-        errors: []
+        errors: [],
       };
     }
     return this.validate(data);
@@ -114,7 +119,10 @@ export abstract class BaseValidator<TSchema = any> {
   /**
    * Validate with additional context
    */
-  async validateWithContext(data: any, context: any): Promise<ValidationResult> {
+  async validateWithContext(
+    data: any,
+    context: any
+  ): Promise<ValidationResult> {
     // Default implementation - can be overridden in subclasses
     return this.validate(data);
   }

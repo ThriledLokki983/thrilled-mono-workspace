@@ -10,7 +10,7 @@
     "emitDecoratorMetadata": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
-    "module": "commonjs",
+    "module": "esnext",
     "pretty": true,
     "sourceMap": true,
     "declaration": true,
@@ -39,16 +39,19 @@
   "exclude": ["node_modules", "src/http", "src/logs"],
   "references": [
     {
-      "path": "../../../packages/be/be-types"
-    },
-    {
-      "path": "../../../packages/be/core"
+      "path": "../../../packages/be/validation"
     },
     {
       "path": "../../../packages/be/auth"
     },
     {
+      "path": "../../../packages/be/be-types"
+    },
+    {
       "path": "../../../packages/be/databases"
+    },
+    {
+      "path": "../../../packages/be/core"
     }
   ]
 }

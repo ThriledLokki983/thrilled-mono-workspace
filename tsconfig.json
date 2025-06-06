@@ -41,6 +41,9 @@
     },
     {
       "path": "./packages/be/auth"
+    },
+    {
+      "path": "./packages/be/validation"
     }
   ]
 }

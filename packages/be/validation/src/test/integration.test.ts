@@ -7,7 +7,7 @@ import {
   XSSProtection,
   SQLInjectionProtection,
   ValidationUtils,
-  ValidationPlugin
+  ValidationPlugin,
 } from '../index';
 
 import Joi from 'joi';
@@ -33,23 +33,30 @@ describe('Integration Tests', () => {
     });
 
     test('should create JoiValidator instance and validate data', async () => {
-      const joiValidator = new JoiValidator(Joi.object({
-        name: Joi.string().required(),
-        age: Joi.number().min(0)
-      }));
-      
+      const joiValidator = new JoiValidator(
+        Joi.object({
+          name: Joi.string().required(),
+          age: Joi.number().min(0),
+        })
+      );
+
       const result = await joiValidator.validate({ name: 'Test', age: 25 });
       expect(result.isValid).toBe(true);
       expect(result.data).toEqual({ name: 'Test', age: 25 });
     });
 
     test('should create ZodValidator instance and validate data', async () => {
-      const zodValidator = new ZodValidator(z.object({
-        email: z.string().email(),
-        count: z.number()
-      }));
-      
-      const result = await zodValidator.validate({ email: 'test@example.com', count: 10 });
+      const zodValidator = new ZodValidator(
+        z.object({
+          email: z.string().email(),
+          count: z.number(),
+        })
+      );
+
+      const result = await zodValidator.validate({
+        email: 'test@example.com',
+        count: 10,
+      });
       expect(result.isValid).toBe(true);
       expect(result.data).toEqual({ email: 'test@example.com', count: 10 });
     });
@@ -58,7 +65,7 @@ describe('Integration Tests', () => {
       const emailResult = await CustomValidators.email('test@example.com');
       const phoneResult = await CustomValidators.phone('+1234567890');
       const urlResult = await CustomValidators.url('https://example.com');
-      
+
       expect(emailResult.isValid).toBe(true);
       expect(phoneResult.isValid).toBe(true);
       expect(urlResult.isValid).toBe(true);
@@ -66,25 +73,34 @@ describe('Integration Tests', () => {
 
     test('should sanitize content with Sanitizer', () => {
       const maliciousInput = '<script>alert("xss")</script>Hello World';
-      const sanitized = Sanitizer.sanitizeHTML(maliciousInput, { stripTags: true });
-      
+      const sanitized = Sanitizer.sanitizeHTML(maliciousInput, {
+        stripTags: true,
+      });
+
       expect(sanitized).not.toContain('<script>');
       expect(sanitized).toContain('Hello World');
     });
 
     test('should detect XSS with XSSProtection', () => {
       const hasXSS = XSSProtection.detectXSS('<script>alert("hack")</script>');
-      const cleanContent = XSSProtection.cleanContent('<script>bad</script>Good content');
-      
+      const cleanContent = XSSProtection.cleanContent(
+        '<script>bad</script>Good content'
+      );
+
       expect(hasXSS).toBe(true);
       expect(cleanContent).not.toContain('<script>');
       expect(cleanContent).toContain('Good content');
     });
 
     test('should detect SQL injection with SQLInjectionProtection', () => {
-      const hasSQLInjection = SQLInjectionProtection.detectSQLInjection("'; DROP TABLE users; --");
-      const safeQuery = SQLInjectionProtection.createSafeQuery('SELECT * FROM users WHERE id = ?', [123]);
-      
+      const hasSQLInjection = SQLInjectionProtection.detectSQLInjection(
+        "'; DROP TABLE users; --"
+      );
+      const safeQuery = SQLInjectionProtection.createSafeQuery(
+        'SELECT * FROM users WHERE id = ?',
+        [123]
+      );
+
       expect(hasSQLInjection).toBe(true);
       expect(safeQuery.query).toBeDefined();
       expect(safeQuery.params).toEqual([123]);
@@ -93,7 +109,7 @@ describe('Integration Tests', () => {
     test('should create validation middleware', () => {
       const schema = Joi.object({ name: Joi.string().required() });
       const middleware = ValidationMiddleware.body(schema);
-      
+
       expect(typeof middleware).toBe('function');
     });
 
@@ -101,17 +117,22 @@ describe('Integration Tests', () => {
       const plugin = new ValidationPlugin({
         globalValidation: { enabled: true },
         globalSanitization: {
-          body: { html: { enabled: true } }
-        }
+          body: { html: { enabled: true } },
+        },
       });
-      
+
       expect(plugin.getName()).toBe('validation');
     });
 
     test('should create and format validation errors', () => {
-      const error = ValidationUtils.createCustomError('test', 'Test error', 'value', 'custom');
+      const error = ValidationUtils.createCustomError(
+        'test',
+        'Test error',
+        'value',
+        'custom'
+      );
       const formatted = ValidationUtils.formatError(error);
-      
+
       expect(error.field).toBe('test');
       expect(error.message).toBe('Test error');
       expect(formatted.field).toBe('test');

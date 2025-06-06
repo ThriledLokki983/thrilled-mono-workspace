@@ -56,7 +56,7 @@ export class RedisCacheAdapter implements CacheManager {
     if (value === null) {
       return null;
     }
-    
+
     try {
       return JSON.parse(value) as T;
     } catch {
@@ -70,7 +70,7 @@ export class RedisCacheAdapter implements CacheManager {
    */
   async setObject<T>(key: string, value: T, ttl?: number): Promise<void> {
     const serialized = JSON.stringify(value);
-    
+
     if (ttl) {
       await this.redis.setex(key, ttl, serialized);
     } else {

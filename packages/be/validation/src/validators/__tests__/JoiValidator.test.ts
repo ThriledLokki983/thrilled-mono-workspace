@@ -40,14 +40,14 @@ describe('JoiValidator', () => {
       const schema = Joi.object({
         name: Joi.string().required(),
         age: Joi.number().min(0).max(120),
-        email: Joi.string().email()
+        email: Joi.string().email(),
       });
       const validator = new JoiValidator(schema);
 
       const validData = {
         name: 'John Doe',
         age: 30,
-        email: 'john@example.com'
+        email: 'john@example.com',
       };
 
       const result = await validator.validate(validData);
@@ -59,21 +59,21 @@ describe('JoiValidator', () => {
       const schema = Joi.object({
         name: Joi.string().required(),
         age: Joi.number().min(0).max(120).required(),
-        email: Joi.string().email().required()
+        email: Joi.string().email().required(),
       });
       const validator = new JoiValidator(schema);
 
       const invalidData = {
         name: '',
         age: -5,
-        email: 'invalid-email'
+        email: 'invalid-email',
       };
 
       const result = await validator.validate(invalidData);
       expect(result.isValid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
-      
-      const fields = result.errors.map(err => err.field);
+
+      const fields = result.errors.map((err) => err.field);
       expect(fields).toContain('name');
       expect(fields).toContain('age');
       expect(fields).toContain('email');
@@ -123,26 +123,26 @@ describe('JoiValidator', () => {
   describe('validation options', () => {
     it('should respect allowUnknown option', async () => {
       const schema = Joi.object({
-        name: Joi.string().required()
+        name: Joi.string().required(),
       });
       const validator = new JoiValidator(schema, { allowUnknown: true });
 
       const data = { name: 'John', extra: 'field' };
       const result = await validator.validate(data);
-      
+
       expect(result.isValid).toBe(true);
       expect(result.data).toEqual(data);
     });
 
     it('should strip unknown fields when stripUnknown is true', async () => {
       const schema = Joi.object({
-        name: Joi.string().required()
+        name: Joi.string().required(),
       });
       const validator = new JoiValidator(schema, { stripUnknown: true });
 
       const data = { name: 'John', extra: 'field' };
       const result = await validator.validate(data);
-      
+
       expect(result.isValid).toBe(true);
       expect(result.data).toEqual({ name: 'John' });
     });
@@ -151,12 +151,12 @@ describe('JoiValidator', () => {
       const schema = Joi.object({
         name: Joi.string().required(),
         age: Joi.number().required(),
-        email: Joi.string().email().required()
+        email: Joi.string().email().required(),
       });
       const validator = new JoiValidator(schema, { abortEarly: false });
 
       const result = await validator.validate({});
-      
+
       expect(result.isValid).toBe(false);
       expect(result.errors.length).toBeGreaterThanOrEqual(3);
     });
@@ -195,7 +195,7 @@ describe('JoiValidator', () => {
       const validator = new JoiValidator(schema);
 
       const results = await validator.validateBatch(['hello', 'world', 123]);
-      
+
       expect(results).toHaveLength(3);
       expect(results[0].isValid).toBe(true);
       expect(results[1].isValid).toBe(true);

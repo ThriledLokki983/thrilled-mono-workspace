@@ -15,8 +15,8 @@ export const testConfig: DatabaseManagerConfig = {
         max: 5,
         idleTimeoutMillis: 10000,
         connectionTimeoutMillis: 1000,
-      }
-    }
+      },
+    },
   },
   default: 'primary',
   migrations: {
@@ -36,5 +36,5 @@ export const testConfig: DatabaseManagerConfig = {
     ttl: 300, // 5 minutes
     maxRetries: 1,
     retryDelay: 500,
-  }
+  },
 };

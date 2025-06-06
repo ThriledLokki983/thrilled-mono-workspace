@@ -1,20 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
 import { XSSProtection } from '../XSSProtection.js';
 
-const createMockRequest = (overrides: Partial<Request> = {}): Request => ({
-  body: {},
-  query: {},
-  params: {},
-  headers: {},
-  ...overrides
-} as Request);
+const createMockRequest = (overrides: Partial<Request> = {}): Request =>
+  ({
+    body: {},
+    query: {},
+    params: {},
+    headers: {},
+    ...overrides,
+  } as Request);
 
 const createMockResponse = (): Response => {
   const res = {
     status: jest.fn().mockReturnThis(),
     json: jest.fn().mockReturnThis(),
     setHeader: jest.fn().mockReturnThis(),
-    locals: {}
+    locals: {},
   } as unknown as Response;
   return res;
 };
@@ -31,19 +32,25 @@ describe('XSSProtection', () => {
     });
 
     test('should detect event handlers', () => {
-      const result = XSSProtection.scanForXSS('<img onerror="alert(1)" src="x">');
+      const result = XSSProtection.scanForXSS(
+        '<img onerror="alert(1)" src="x">'
+      );
       expect(result.hasXSS).toBe(true);
       expect(result.severity).toBe('high');
     });
 
     test('should detect javascript protocol', () => {
-      const result = XSSProtection.scanForXSS('<a href="javascript:alert(1)">click</a>');
+      const result = XSSProtection.scanForXSS(
+        '<a href="javascript:alert(1)">click</a>'
+      );
       expect(result.hasXSS).toBe(true);
       expect(result.severity).toBe('high');
     });
 
     test('should detect data URIs with scripts', () => {
-      const result = XSSProtection.scanForXSS('data:text/html,<script>alert()</script>');
+      const result = XSSProtection.scanForXSS(
+        'data:text/html,<script>alert()</script>'
+      );
       expect(result.hasXSS).toBe(true);
       expect(result.severity).toBe('high');
     });
@@ -75,20 +82,24 @@ describe('XSSProtection', () => {
 
   describe('cleanHTML', () => {
     test('should clean HTML content', () => {
-      const result = XSSProtection.cleanHTML('<p>Hello</p><script>alert("xss")</script>');
+      const result = XSSProtection.cleanHTML(
+        '<p>Hello</p><script>alert("xss")</script>'
+      );
       expect(result).not.toContain('<script>');
       expect(result).toContain('Hello');
     });
 
     test('should preserve allowed tags', () => {
-      const result = XSSProtection.cleanHTML('<p>This is <strong>safe</strong> content</p>');
+      const result = XSSProtection.cleanHTML(
+        '<p>This is <strong>safe</strong> content</p>'
+      );
       expect(result).toContain('<p>');
       expect(result).toContain('<strong>');
     });
 
     test('should handle custom options', () => {
       const result = XSSProtection.cleanHTML('<div><p>Hello</p></div>', {
-        allowedTags: ['div', 'p']
+        allowedTags: ['div', 'p'],
       });
       expect(result).toContain('<p>');
     });
@@ -110,7 +121,7 @@ describe('XSSProtection', () => {
     test('should accept custom options', () => {
       const csp = XSSProtection.createCSPHeader({
         scriptSrc: ["'self'", "'unsafe-inline'"],
-        styleSrc: ["'self'", 'https://fonts.googleapis.com']
+        styleSrc: ["'self'", 'https://fonts.googleapis.com'],
       });
       expect(csp).toContain("script-src 'self' 'unsafe-inline'");
       expect(csp).toContain("style-src 'self' https://fonts.googleapis.com");
@@ -149,7 +160,9 @@ describe('XSSProtection', () => {
   describe('encode', () => {
     test('should encode HTML entities', () => {
       const result = XSSProtection.encode('<script>alert("test")</script>');
-      expect(result).toBe('&lt;script&gt;alert(&quot;test&quot;)&lt;&#x2F;script&gt;');
+      expect(result).toBe(
+        '&lt;script&gt;alert(&quot;test&quot;)&lt;&#x2F;script&gt;'
+      );
     });
 
     test('should handle special characters', () => {
@@ -165,12 +178,16 @@ describe('XSSProtection', () => {
 
   describe('decode', () => {
     test('should decode HTML entities', () => {
-      const result = XSSProtection.decode('&lt;script&gt;alert(&quot;test&quot;)&lt;&#x2F;script&gt;');
+      const result = XSSProtection.decode(
+        '&lt;script&gt;alert(&quot;test&quot;)&lt;&#x2F;script&gt;'
+      );
       expect(result).toBe('<script>alert("test")</script>');
     });
 
     test('should handle ampersands', () => {
-      const result = XSSProtection.decode('&amp; &lt; &gt; &quot; &#x27; &#x2F;');
+      const result = XSSProtection.decode(
+        '&amp; &lt; &gt; &quot; &#x27; &#x2F;'
+      );
       expect(result).toBe('& < > " \' /');
     });
 
@@ -184,7 +201,7 @@ describe('XSSProtection', () => {
     test('should sanitize request body', () => {
       const middleware = XSSProtection.middleware();
       const req = createMockRequest({
-        body: { content: '<script>alert("xss")</script>Hello' }
+        body: { content: '<script>alert("xss")</script>Hello' },
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -199,7 +216,7 @@ describe('XSSProtection', () => {
     test('should sanitize query parameters', () => {
       const middleware = XSSProtection.middleware();
       const req = createMockRequest({
-        query: { search: '<script>alert("xss")</script>test' }
+        query: { search: '<script>alert("xss")</script>test' },
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -213,7 +230,7 @@ describe('XSSProtection', () => {
     test('should sanitize URL parameters', () => {
       const middleware = XSSProtection.middleware();
       const req = createMockRequest({
-        params: { id: '<script>alert("xss")</script>123' }
+        params: { id: '<script>alert("xss")</script>123' },
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -230,10 +247,10 @@ describe('XSSProtection', () => {
         body: {
           user: {
             profile: {
-              bio: '<script>alert("xss")</script>Bio content'
-            }
-          }
-        }
+              bio: '<script>alert("xss")</script>Bio content',
+            },
+          },
+        },
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -249,8 +266,8 @@ describe('XSSProtection', () => {
       const middleware = XSSProtection.middleware();
       const req = createMockRequest({
         body: {
-          tags: ['safe', '<script>alert("xss")</script>tag', 'also safe']
-        }
+          tags: ['safe', '<script>alert("xss")</script>tag', 'also safe'],
+        },
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -265,7 +282,7 @@ describe('XSSProtection', () => {
     test('should handle errors gracefully', () => {
       const middleware = XSSProtection.middleware();
       const req = createMockRequest({
-        body: null // This might cause an error
+        body: null, // This might cause an error
       });
       const res = createMockResponse();
       const next = createMockNext();
@@ -278,10 +295,10 @@ describe('XSSProtection', () => {
     test('should work with custom options', () => {
       const middleware = XSSProtection.middleware({
         removeScriptTags: true,
-        encodeHtml: false
+        encodeHtml: false,
       });
       const req = createMockRequest({
-        body: { content: '<script>alert("xss")</script><p>Hello</p>' }
+        body: { content: '<script>alert("xss")</script><p>Hello</p>' },
       });
       const res = createMockResponse();
       const next = createMockNext();

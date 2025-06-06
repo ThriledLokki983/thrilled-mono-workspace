@@ -1,6 +1,6 @@
-import { Redis } from "ioredis";
-import type { CacheConfig, CacheOperations } from "@thrilled/be-types";
-import type { Logger } from "@mono/be-core";
+import { Redis } from 'ioredis';
+import type { CacheConfig, CacheOperations } from '@thrilled/be-types';
+import type { Logger } from '@mono/be-core';
 
 export class CacheManager implements CacheOperations {
   private client: Redis | null = null;
@@ -8,11 +8,8 @@ export class CacheManager implements CacheOperations {
   private keyPrefix: string;
   private defaultTTL: number;
 
-  constructor(
-    private config: CacheConfig,
-    private logger: Logger
-  ) {
-    this.keyPrefix = config.keyPrefix || "";
+  constructor(private config: CacheConfig, private logger: Logger) {
+    this.keyPrefix = config.keyPrefix || '';
     this.defaultTTL = config.ttl || 3600; // 1 hour default
   }
 
@@ -21,10 +18,10 @@ export class CacheManager implements CacheOperations {
    */
   async initialize(): Promise<void> {
     try {
-      this.logger.info("Initializing Redis connection...");
+      this.logger.info('Initializing Redis connection...');
 
       this.client = new Redis({
-        host: this.config.host || "localhost",
+        host: this.config.host || 'localhost',
         port: this.config.port || 6379,
         password: this.config.password,
         db: this.config.db || 0,
@@ -44,10 +41,10 @@ export class CacheManager implements CacheOperations {
         await this.client.connect();
         await this.ping();
         this.isConnected = true;
-        this.logger.info("Redis connection established successfully");
+        this.logger.info('Redis connection established successfully');
       }
     } catch (error: unknown) {
-      this.logger.error("Failed to initialize Redis connection:", {
+      this.logger.error('Failed to initialize Redis connection:', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -60,27 +57,27 @@ export class CacheManager implements CacheOperations {
   private setupEventHandlers(): void {
     if (!this.client) return;
 
-    this.client.on("connect", () => {
-      this.logger.info("Redis client connected");
+    this.client.on('connect', () => {
+      this.logger.info('Redis client connected');
     });
 
-    this.client.on("ready", () => {
-      this.logger.info("Redis client ready");
+    this.client.on('ready', () => {
+      this.logger.info('Redis client ready');
       this.isConnected = true;
     });
 
-    this.client.on("error", (error: Error) => {
-      this.logger.error("Redis client error:", { error: error.message });
+    this.client.on('error', (error: Error) => {
+      this.logger.error('Redis client error:', { error: error.message });
       this.isConnected = false;
     });
 
-    this.client.on("close", () => {
-      this.logger.warn("Redis connection closed");
+    this.client.on('close', () => {
+      this.logger.warn('Redis connection closed');
       this.isConnected = false;
     });
 
-    this.client.on("reconnecting", () => {
-      this.logger.info("Redis client reconnecting...");
+    this.client.on('reconnecting', () => {
+      this.logger.info('Redis client reconnecting...');
     });
   }
 
@@ -89,7 +86,7 @@ export class CacheManager implements CacheOperations {
    */
   async ping(): Promise<string> {
     if (!this.client) {
-      throw new Error("Redis client not initialized");
+      throw new Error('Redis client not initialized');
     }
     return await this.client.ping();
   }
@@ -99,14 +96,14 @@ export class CacheManager implements CacheOperations {
    */
   async get<T = string>(key: string): Promise<T | null> {
     if (!this.isConnected || !this.client) {
-      this.logger.warn("Cache not connected, returning null for key:", { key });
+      this.logger.warn('Cache not connected, returning null for key:', { key });
       return null;
     }
 
     try {
       const fullKey = this.getFullKey(key);
       const value = await this.client.get(fullKey);
-      
+
       if (value === null) {
         return null;
       }
@@ -118,7 +115,7 @@ export class CacheManager implements CacheOperations {
         return value as T;
       }
     } catch (error: unknown) {
-      this.logger.error("Cache get error:", {
+      this.logger.error('Cache get error:', {
         key,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -131,18 +128,19 @@ export class CacheManager implements CacheOperations {
    */
   async set<T>(key: string, value: T, ttl?: number): Promise<void> {
     if (!this.isConnected || !this.client) {
-      this.logger.warn("Cache not connected, skipping set for key:", { key });
+      this.logger.warn('Cache not connected, skipping set for key:', { key });
       return;
     }
 
     try {
       const fullKey = this.getFullKey(key);
-      const serializedValue = typeof value === "string" ? value : JSON.stringify(value);
+      const serializedValue =
+        typeof value === 'string' ? value : JSON.stringify(value);
       const cacheTTL = ttl || this.defaultTTL;
 
       await this.client.setex(fullKey, cacheTTL, serializedValue);
     } catch (error: unknown) {
-      this.logger.error("Cache set error:", {
+      this.logger.error('Cache set error:', {
         key,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -155,7 +153,9 @@ export class CacheManager implements CacheOperations {
    */
   async del(key: string): Promise<void> {
     if (!this.isConnected || !this.client) {
-      this.logger.warn("Cache not connected, skipping delete for key:", { key });
+      this.logger.warn('Cache not connected, skipping delete for key:', {
+        key,
+      });
       return;
     }
 
@@ -163,7 +163,7 @@ export class CacheManager implements CacheOperations {
       const fullKey = this.getFullKey(key);
       await this.client.del(fullKey);
     } catch (error: unknown) {
-      this.logger.error("Cache delete error:", {
+      this.logger.error('Cache delete error:', {
         key,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -184,7 +184,7 @@ export class CacheManager implements CacheOperations {
       const result = await this.client.exists(fullKey);
       return result > 0;
     } catch (error: unknown) {
-      this.logger.error("Cache exists error:", {
+      this.logger.error('Cache exists error:', {
         key,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -197,23 +197,28 @@ export class CacheManager implements CacheOperations {
    */
   async keys(pattern: string): Promise<string[]> {
     if (!this.isConnected || !this.client) {
-      this.logger.warn("Cache not connected, returning empty array for pattern:", { pattern });
+      this.logger.warn(
+        'Cache not connected, returning empty array for pattern:',
+        { pattern }
+      );
       return [];
     }
 
     try {
-      const fullPattern = this.keyPrefix ? `${this.keyPrefix}:${pattern}` : pattern;
+      const fullPattern = this.keyPrefix
+        ? `${this.keyPrefix}:${pattern}`
+        : pattern;
       const keys = await this.client.keys(fullPattern);
-      
+
       // Remove prefix from returned keys if present
       if (this.keyPrefix) {
         const prefixLength = this.keyPrefix.length + 1; // +1 for the colon
         return keys.map((key: string) => key.substring(prefixLength));
       }
-      
+
       return keys;
     } catch (error: unknown) {
-      this.logger.error("Cache keys error:", {
+      this.logger.error('Cache keys error:', {
         pattern,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -226,15 +231,15 @@ export class CacheManager implements CacheOperations {
    */
   async flushAll(): Promise<void> {
     if (!this.isConnected || !this.client) {
-      this.logger.warn("Cache not connected, skipping flushAll");
+      this.logger.warn('Cache not connected, skipping flushAll');
       return;
     }
 
     try {
       await this.client.flushall();
-      this.logger.info("Flushed all keys from cache");
+      this.logger.info('Flushed all keys from cache');
     } catch (error: unknown) {
-      this.logger.error("Cache flushAll error:", {
+      this.logger.error('Cache flushAll error:', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -246,22 +251,22 @@ export class CacheManager implements CacheOperations {
    */
   async clear(): Promise<boolean> {
     if (!this.isConnected || !this.client) {
-      this.logger.warn("Cache not connected, skipping clear");
+      this.logger.warn('Cache not connected, skipping clear');
       return false;
     }
 
     try {
-      const pattern = this.keyPrefix ? `${this.keyPrefix}*` : "*";
+      const pattern = this.keyPrefix ? `${this.keyPrefix}*` : '*';
       const keys = await this.client.keys(pattern);
-      
+
       if (keys.length > 0) {
         await this.client.del(...keys);
         this.logger.info(`Cleared ${keys.length} keys from cache`);
       }
-      
+
       return true;
     } catch (error: unknown) {
-      this.logger.error("Cache clear error:", {
+      this.logger.error('Cache clear error:', {
         error: error instanceof Error ? error.message : String(error),
       });
       return false;
@@ -277,15 +282,15 @@ export class CacheManager implements CacheOperations {
     }
 
     try {
-      const pattern = this.keyPrefix ? `${this.keyPrefix}*` : "*";
+      const pattern = this.keyPrefix ? `${this.keyPrefix}*` : '*';
       const keys = await this.client.keys(pattern);
-      
+
       return {
         connected: this.isConnected,
         keyCount: keys.length,
       };
     } catch (error: unknown) {
-      this.logger.error("Cache stats error:", {
+      this.logger.error('Cache stats error:', {
         error: error instanceof Error ? error.message : String(error),
       });
       return { connected: false, keyCount: 0 };
@@ -297,7 +302,7 @@ export class CacheManager implements CacheOperations {
    */
   async disconnect(): Promise<void> {
     if (this.client) {
-      this.logger.info("Disconnecting from Redis...");
+      this.logger.info('Disconnecting from Redis...');
       await this.client.quit();
       this.client = null;
       this.isConnected = false;

@@ -1,8 +1,8 @@
-import { Pool } from "pg";
-import { readdir, readFile } from "fs/promises";
-import { join, extname } from "path";
-import { MigrationConfig, MigrationStatus } from "@thrilled/be-types";
-import { Logger } from "@mono/be-core";
+import { Pool } from 'pg';
+import { readdir, readFile } from 'fs/promises';
+import { join, extname } from 'path';
+import { MigrationConfig, MigrationStatus } from '@thrilled/be-types';
+import { Logger } from '@mono/be-core';
 
 export interface Migration {
   id: string;
@@ -21,8 +21,8 @@ export class MigrationRunner {
     config: MigrationConfig = {},
     private logger: Logger
   ) {
-    this.migrationsTable = config.tableName || "migrations";
-    this.migrationsDirectory = config.directory || "migrations";
+    this.migrationsTable = config.tableName || 'migrations';
+    this.migrationsDirectory = config.directory || 'migrations';
     // Logger from be-core doesn't have child method
   }
 
@@ -47,7 +47,7 @@ export class MigrationRunner {
         `Migrations table '${this.migrationsTable}' initialized`
       );
     } catch (error) {
-      this.logger.error("Failed to initialize migrations table:", {
+      this.logger.error('Failed to initialize migrations table:', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -61,14 +61,14 @@ export class MigrationRunner {
     try {
       const files = await readdir(this.migrationsDirectory);
       const migrationFiles = files
-        .filter((file) => extname(file) === ".sql")
+        .filter((file) => extname(file) === '.sql')
         .sort(); // Ensure alphabetical order
 
       const migrations: Migration[] = [];
 
       for (const file of migrationFiles) {
         const filePath = join(this.migrationsDirectory, file);
-        const content = await readFile(filePath, "utf-8");
+        const content = await readFile(filePath, 'utf-8');
 
         // Split content by special comments to separate up/down migrations
         const sections = this.parseMigrationContent(content);
@@ -86,7 +86,7 @@ export class MigrationRunner {
 
       return migrations;
     } catch (error) {
-      this.logger.error("Failed to load migration files:", {
+      this.logger.error('Failed to load migration files:', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -115,7 +115,7 @@ export class MigrationRunner {
   private extractMigrationId(filename: string): string {
     // Extract timestamp/version from filename (e.g., 20240101120000_create_users.sql -> 20240101120000)
     const match = filename.match(/^(\d+)/);
-    return match ? match[1] : filename.replace(".sql", "");
+    return match ? match[1] : filename.replace('.sql', '');
   }
 
   /**
@@ -147,7 +147,7 @@ export class MigrationRunner {
         version: row.id,
       }));
     } catch (error) {
-      this.logger.error("Failed to get applied migrations:", {
+      this.logger.error('Failed to get applied migrations:', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -162,7 +162,7 @@ export class MigrationRunner {
     const startTime = Date.now();
 
     try {
-      await client.query("BEGIN");
+      await client.query('BEGIN');
 
       // Execute the migration
       await client.query(migration.up);
@@ -180,13 +180,13 @@ export class MigrationRunner {
         ]
       );
 
-      await client.query("COMMIT");
+      await client.query('COMMIT');
 
       this.logger.info(
         `Applied migration: ${migration.name} (${Date.now() - startTime}ms)`
       );
     } catch (error) {
-      await client.query("ROLLBACK");
+      await client.query('ROLLBACK');
 
       // Record failed migration
       try {
@@ -201,9 +201,9 @@ export class MigrationRunner {
             false,
           ]
         );
-        await client.query("COMMIT");
+        await client.query('COMMIT');
       } catch (recordError) {
-        this.logger.error("Failed to record migration failure:", {
+        this.logger.error('Failed to record migration failure:', {
           error:
             recordError instanceof Error
               ? recordError.message
@@ -234,7 +234,7 @@ export class MigrationRunner {
     const startTime = Date.now();
 
     try {
-      await client.query("BEGIN");
+      await client.query('BEGIN');
 
       // Execute the rollback
       await client.query(migration.down);
@@ -244,13 +244,13 @@ export class MigrationRunner {
         migration.id,
       ]);
 
-      await client.query("COMMIT");
+      await client.query('COMMIT');
 
       this.logger.info(
         `Rolled back migration: ${migration.name} (${Date.now() - startTime}ms)`
       );
     } catch (error) {
-      await client.query("ROLLBACK");
+      await client.query('ROLLBACK');
       this.logger.error(`Failed to rollback migration ${migration.name}:`, {
         error: error instanceof Error ? error.message : String(error),
       });
@@ -265,7 +265,7 @@ export class MigrationRunner {
    */
   async runMigrations(_connectionName?: string): Promise<void> {
     try {
-      this.logger.info("Starting migration process...");
+      this.logger.info('Starting migration process...');
 
       // Initialize migrations table
       await this.initializeMigrationsTable();
@@ -274,7 +274,7 @@ export class MigrationRunner {
       const migrations = await this.loadMigrationFiles();
 
       if (migrations.length === 0) {
-        this.logger.info("No migration files found");
+        this.logger.info('No migration files found');
         return;
       }
 
@@ -286,7 +286,7 @@ export class MigrationRunner {
       const pendingMigrations = migrations.filter((m) => !appliedIds.has(m.id));
 
       if (pendingMigrations.length === 0) {
-        this.logger.info("No pending migrations to apply");
+        this.logger.info('No pending migrations to apply');
         return;
       }
 
@@ -301,7 +301,7 @@ export class MigrationRunner {
         `Successfully applied ${pendingMigrations.length} migrations`
       );
     } catch (error) {
-      this.logger.error("Migration process failed:", {
+      this.logger.error('Migration process failed:', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -327,7 +327,7 @@ export class MigrationRunner {
         .reverse();
 
       if (migrationsToRollback.length === 0) {
-        this.logger.info("No migrations to rollback");
+        this.logger.info('No migrations to rollback');
         return;
       }
 
@@ -351,7 +351,7 @@ export class MigrationRunner {
 
       this.logger.info(`Successfully rolled back to version: ${targetVersion}`);
     } catch (error) {
-      this.logger.error("Rollback process failed:", {
+      this.logger.error('Rollback process failed:', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -388,7 +388,7 @@ export class MigrationRunner {
         total: migrations.length,
       };
     } catch (error) {
-      this.logger.error("Failed to get migration status:", {
+      this.logger.error('Failed to get migration status:', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -404,9 +404,11 @@ export class MigrationRunner {
   ): Promise<string> {
     const timestamp = new Date()
       .toISOString()
-      .replace(/[-:T.]/g, "")
+      .replace(/[-:T.]/g, '')
       .slice(0, 14);
-    const filename = `${timestamp}_${name.replace(/\s+/g, "_").toLowerCase()}.sql`;
+    const filename = `${timestamp}_${name
+      .replace(/\s+/g, '_')
+      .toLowerCase()}.sql`;
     const filepath = join(this.migrationsDirectory, filename);
 
     const migrationContent = content
@@ -427,19 +429,19 @@ ${content.down}`
 -- Add rollback statements here`;
 
     try {
-      await readFile(filepath, "utf-8");
+      await readFile(filepath, 'utf-8');
       throw new Error(`Migration file already exists: ${filename}`);
     } catch (error) {
       // File doesn't exist, which is what we want
     }
 
     try {
-      const fs = await import("fs/promises");
-      await fs.writeFile(filepath, migrationContent, "utf-8");
+      const fs = await import('fs/promises');
+      await fs.writeFile(filepath, migrationContent, 'utf-8');
       this.logger.info(`Created migration file: ${filename}`);
       return filepath;
     } catch (error) {
-      this.logger.error("Failed to create migration file:", {
+      this.logger.error('Failed to create migration file:', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
