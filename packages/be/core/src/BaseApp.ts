@@ -6,12 +6,13 @@ import cors from 'cors';
 import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
 import hpp from 'hpp';
 import morgan from 'morgan';
-import { Logger } from './logging/Logger';
-import { Plugin } from './plugins/Plugin';
-import { PluginManager } from './plugins/PluginManager';
-import { HealthCheckManager, HealthCheck } from './utils/HealthCheck';
-import { GracefulShutdown } from './utils/GracefulShutdown';
-import { AppConfig, RateLimitConfig, PluginConfig } from './types';
+import { Logger } from './logging/Logger.js';
+import { Plugin } from './plugins/Plugin.js';
+import { PluginManager } from './plugins/PluginManager.js';
+import { CoreValidationPlugin } from './plugins/ValidationPlugin.js';
+import { HealthCheckManager, HealthCheck } from './utils/HealthCheck.js';
+import { GracefulShutdown } from './utils/GracefulShutdown.js';
+import { AppConfig, RateLimitConfig, PluginConfig } from './types/index.js';
 
 export class BaseApp {
   private app: Express;
@@ -33,6 +34,7 @@ export class BaseApp {
       this.logger
     );
     this.initializeCore();
+    this.setupDefaultPlugins();
     this.setupHealthChecks();
   }
 
@@ -84,6 +86,31 @@ export class BaseApp {
    */
   listPlugins(): { name: string; version: string; enabled: boolean }[] {
     return this.pluginManager.list();
+  }
+
+  /**
+   * Setup default plugins that should be included by default
+   */
+  private setupDefaultPlugins(): void {
+    // Add validation plugin by default if not explicitly disabled
+    const validationConfig = this.config.validation || {};
+    const isValidationEnabled = validationConfig.enabled !== false; // Default to true
+    
+    if (isValidationEnabled) {
+      const validationPlugin = new CoreValidationPlugin(this.logger, validationConfig);
+      this.use(validationPlugin, validationConfig);
+      this.logger.info('Validation plugin automatically registered', { context: 'BaseApp' });
+    } else {
+      this.logger.info('Validation plugin disabled via configuration', { context: 'BaseApp' });
+    }
+  }
+
+  /**
+   * Get the validation plugin instance if it exists
+   */
+  getValidationPlugin(): CoreValidationPlugin | undefined {
+    const plugin = this.pluginManager.get('validation');
+    return plugin as CoreValidationPlugin | undefined;
   }
 
   /**
@@ -173,7 +200,7 @@ export class BaseApp {
       this.app.listen(this.config.port || 3000, () => {
         // Log application startup information
         this.logger.info(`==================================================`);
-        this.logger.info(`============== ENV: ${environment} ===============`);
+        this.logger.info(`================ ENV: ${environment} =================`);
         this.logger.info(`🚀 ${appName || 'Base App'} is on port: ${appPort}`);
         this.logger.info(`==================================================`);
         this.logger.info(`Listening for incoming requests...`);

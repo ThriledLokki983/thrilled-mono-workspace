@@ -45,7 +45,8 @@ export class JWTProvider {
         options.audience = this.config.accessToken.audience;
       }
 
-      const token = jwt.sign(
+      const jwtModule = jwt.default || jwt;
+      const token = jwtModule.sign(
         tokenPayload,
         this.config.accessToken.secret,
         options
@@ -54,6 +55,19 @@ export class JWTProvider {
       this.logger.debug('Access token created', { userId: payload.userId });
       return token;
     } catch (error: unknown) {
+      // More detailed error logging
+      console.error('JWT Provider createAccessToken error details:', {
+        errorType: typeof error,
+        errorConstructor: error?.constructor?.name,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+        payloadType: typeof payload,
+        configType: typeof this.config,
+        secretLength: this.config?.accessToken?.secret?.length,
+        algorithm: this.config?.accessToken?.algorithm,
+        expiresIn: this.config?.accessToken?.expiresIn
+      });
+
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
       this.logger.error('Failed to create access token:', {
@@ -92,7 +106,8 @@ export class JWTProvider {
         options.audience = this.config.refreshToken.audience;
       }
 
-      const token = jwt.sign(
+      const jwtModule = jwt.default || jwt;
+      const token = jwtModule.sign(
         tokenPayload,
         this.config.refreshToken.secret,
         options
@@ -139,7 +154,8 @@ export class JWTProvider {
         options.audience = this.config.accessToken.audience;
       }
 
-      const payload = jwt.verify(
+      const jwtModule = jwt.default || jwt;
+      const payload = jwtModule.verify(
         token,
         this.config.accessToken.secret,
         options
@@ -176,7 +192,8 @@ export class JWTProvider {
         options.audience = this.config.refreshToken.audience;
       }
 
-      const payload = jwt.verify(
+      const jwtModule = jwt.default || jwt;
+      const payload = jwtModule.verify(
         token,
         this.config.refreshToken.secret,
         options
@@ -389,7 +406,8 @@ export class JWTProvider {
    */
   getTokenPayload(token: string): jwt.JwtPayload | null {
     try {
-      return jwt.decode(token) as jwt.JwtPayload;
+      const jwtModule = jwt.default || jwt;
+      return jwtModule.decode(token) as jwt.JwtPayload;
     } catch (error: unknown) {
       this.logger.debug('Failed to decode token:', {
         error: error instanceof Error ? error.message : String(error),

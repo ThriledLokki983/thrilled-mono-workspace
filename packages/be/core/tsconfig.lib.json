@@ -13,6 +13,9 @@
   "include": ["src/**/*.ts"],
   "references": [
     {
+      "path": "../validation/tsconfig.lib.json"
+    },
+    {
       "path": "../be-types/tsconfig.lib.json"
     }
   ],

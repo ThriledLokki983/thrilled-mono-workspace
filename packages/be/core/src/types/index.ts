@@ -12,6 +12,41 @@ import type {
 // Re-export some utility types that don't conflict
 export type { Environment } from '@thrilled/be-types';
 
+// Validation configuration types
+export interface ValidationConfig extends PluginConfig {
+  /** Whether validation is enabled - defaults to true */
+  enabled?: boolean;
+  
+  /** Enable XSS protection middleware */
+  enableXSSProtection?: boolean;
+  
+  /** Enable SQL injection protection middleware */
+  enableSQLInjectionProtection?: boolean;
+  
+  /** Global validation configuration */
+  globalValidation?: {
+    enabled: boolean;
+    soft?: boolean;
+    options?: Record<string, unknown>;
+  };
+  
+  /** Global sanitization configuration */
+  globalSanitization?: {
+    body?: Record<string, unknown>;
+    query?: Record<string, unknown>;
+    params?: Record<string, unknown>;
+  };
+  
+  /** Custom validators */
+  customValidators?: Record<string, (value: unknown) => Promise<{ isValid: boolean; errors: unknown[] }>>;
+  
+  /** Content Security Policy configuration */
+  csp?: {
+    enabled: boolean;
+    directives?: Record<string, string[]>;
+  };
+}
+
 export interface AppLoggingConfig {
   level?: string;
   dir?: string;
@@ -69,6 +104,7 @@ export interface AppConfig {
   rateLimit?: RateLimitConfig;
   helmet?: HelmetConfig;
   security?: SecurityConfig; // Use SecurityConfig from be-types
+  validation?: ValidationConfig; // Add validation configuration
   timeout?: number;
   gracefulShutdown?: {
     enabled?: boolean;

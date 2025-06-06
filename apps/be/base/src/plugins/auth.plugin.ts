@@ -46,7 +46,13 @@ export class AuthPlugin extends BasePlugin {
       this.cacheAdapter = new this.authModule.RedisCacheAdapter(this.redisClient);
 
       // Initialize JWT Provider
-      this.jwtProvider = new this.authModule.JWTProvider(this.redisClient, createJWTConfig(), this.logger);
+      const jwtConfig = createJWTConfig();
+      this.logger.info('JWT Config being passed to JWTProvider:', {
+        hasAccessTokenSecret: !!jwtConfig.accessToken.secret,
+        accessTokenExpiresIn: jwtConfig.accessToken.expiresIn,
+        algorithm: jwtConfig.accessToken.algorithm
+      });
+      this.jwtProvider = new this.authModule.JWTProvider(this.redisClient, jwtConfig, this.logger);
 
       // Initialize Password Manager
       this.passwordManager = new this.authModule.PasswordManager(createPasswordConfig(), this.cacheAdapter, this.logger);
@@ -92,9 +98,11 @@ export class AuthPlugin extends BasePlugin {
   protected override registerRoutes(app: Express): void {
     this.logger.info('Registering authentication routes');
 
-    // Authentication middleware for protected routes
-    // This will be available for other route plugins to use
-    app.use('/api/v1/auth/*', this.authMiddleware.authenticate());
+    // Authentication middleware for protected auth routes only (exclude login/signup)
+    // Apply auth middleware to logout and other protected auth endpoints
+    app.use('/api/v1/auth/logout', this.authMiddleware.authenticate());
+    app.use('/api/v1/auth/profile', this.authMiddleware.authenticate());
+    app.use('/api/v1/auth/refresh', this.authMiddleware.authenticate());
 
     // Protected routes middleware - use this for any routes that require authentication
     app.use('/api/v1/protected/*', this.authMiddleware.authenticate());

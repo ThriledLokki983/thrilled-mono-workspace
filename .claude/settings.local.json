@@ -5,7 +5,10 @@
       "Bash(ls:*)",
       "Bash(yarn nx format:check)",
       "Bash(yarn nx format:write)",
-      "Bash(yarn nx lint:*)"
+      "Bash(yarn nx lint:*)",
+      "Bash(npx nx build:*)",
+      "Bash(pkill:*)",
+      "Bash(true)"
     ],
     "deny": []
   }
