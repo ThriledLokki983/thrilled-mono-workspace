@@ -1,8 +1,10 @@
 import request from 'supertest';
-import { App } from '@/app';
-import pg, { pool } from '@database';
-import { CreateUserDto, UpdateUserDto, UserRole } from '@dtos/users.dto';
-import { UserRoute } from '@routes/users.route';
+import { App } from '../app';
+import pg, { pool } from '../database';
+import { CreateUserDto, UpdateUserDto, UserRole } from '../dtos/users.dto';
+import { UserRoute } from '../routes/users.route';
+import { setupAuthForTesting, teardownAuth } from './helpers/test-setup';
+import { AuthPlugin } from '../plugins/auth.plugin';
 
 // Test user data that matches the schema requirements
 const testUser: CreateUserDto = {
@@ -18,8 +20,12 @@ const testUser: CreateUserDto = {
   is_active: true,
 };
 
+let sharedAuthPlugin: AuthPlugin;
+
 // Clean up test data
 beforeAll(async () => {
+  // Setup auth plugin for all tests
+  sharedAuthPlugin = await setupAuthForTesting();
   // Delete test users if they exist from previous test runs
   try {
     await pg.query(
@@ -32,6 +38,11 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await new Promise<void>(resolve => setTimeout(() => resolve(), 500));
+
+  // Clean up auth plugin
+  if (sharedAuthPlugin) {
+    await teardownAuth(sharedAuthPlugin);
+  }
   // Clean up test data
   try {
     await pg.query(
@@ -48,7 +59,7 @@ describe('Testing Users', () => {
   describe('[GET] /users', () => {
     it('response statusCode 200 / findAll', async () => {
       const usersRoute = new UserRoute();
-      const app = new App([usersRoute]);
+      const app = new App([usersRoute], sharedAuthPlugin);
 
       return await request(app.getServer()).get(`/api/v1${usersRoute.path}`).expect(200);
     });
@@ -58,7 +69,7 @@ describe('Testing Users', () => {
     it('response statusCode 200 / findOne', async () => {
       // First create a user to ensure we have a valid ID
       const usersRoute = new UserRoute();
-      const app = new App([usersRoute]);
+      const app = new App([usersRoute], sharedAuthPlugin);
 
       const createResponse = await request(app.getServer())
         .post(`/api/v1${usersRoute.path}`)
@@ -81,7 +92,7 @@ describe('Testing Users', () => {
         email: 'create.test@example.com',
       };
       const usersRoute = new UserRoute();
-      const app = new App([usersRoute]);
+      const app = new App([usersRoute], sharedAuthPlugin);
 
       const response = await request(app.getServer()).post(`/api/v1${usersRoute.path}`).send(userData).expect(201);
 
@@ -99,7 +110,7 @@ describe('Testing Users', () => {
         email: 'duplicate.test@example.com',
       };
       const usersRoute = new UserRoute();
-      const app = new App([usersRoute]);
+      const app = new App([usersRoute], sharedAuthPlugin);
 
       await request(app.getServer()).post(`/api/v1${usersRoute.path}`).send(userData).expect(201);
 
@@ -112,7 +123,7 @@ describe('Testing Users', () => {
     it('response statusCode 200 / updated', async () => {
       // First create a user
       const usersRoute = new UserRoute();
-      const app = new App([usersRoute]);
+      const app = new App([usersRoute], sharedAuthPlugin);
 
       const userData: CreateUserDto = {
         ...testUser,
@@ -142,7 +153,7 @@ describe('Testing Users', () => {
     it('response statusCode 200 / deleted', async () => {
       // First create a user
       const usersRoute = new UserRoute();
-      const app = new App([usersRoute]);
+      const app = new App([usersRoute], sharedAuthPlugin);
 
       const userData: CreateUserDto = {
         ...testUser,

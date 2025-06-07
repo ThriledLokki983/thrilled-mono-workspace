@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import { randomBytes, createHash } from 'crypto';
 import type { Logger } from '@mono/be-core';
 import type {

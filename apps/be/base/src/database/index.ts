@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
 import Redis from 'ioredis';
-import { POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, POSTGRES_DB, REDIS_HOST, REDIS_PORT } from '@config';
-import { logger } from '@utils/logger';
+import { POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, POSTGRES_DB, REDIS_HOST, REDIS_PORT } from '../config';
+import { logger } from '../utils/logger';
 import migrate from 'node-pg-migrate';
 
 // PostgreSQL pool setup with optimized connection parameters

@@ -1,9 +1,17 @@
 import { Router } from 'express';
-import { UserController } from '@controllers/users.controller';
-import { CreateUserDto } from '@dtos/users.dto';
-import { Routes } from '@interfaces/routes.interface';
-import { ValidationMiddleware } from '@middlewares/validation.middleware';
-import { AuthMiddleware } from '@middlewares/auth.middleware';
+import { UserController } from '../controllers/users.controller';
+import { CreateUserDto } from '../dtos/users.dto';
+import { Routes } from '../interfaces/routes.interface';
+import { ValidationMiddleware } from '../middlewares/validation.middleware';
+import { Container } from 'typedi';
+import { AuthMiddleware } from '@thrilled/be-auth';
+
+/**
+ * Get the centralized auth middleware instance from the container
+ */
+function getAuthMiddleware(): AuthMiddleware {
+  return Container.get('authMiddleware') as AuthMiddleware;
+}
 
 export class UserRoute implements Routes {
   public path = '/users';
@@ -38,7 +46,7 @@ export class UserRoute implements Routes {
      *       404:
      *         description: Authentication token missing
      */
-    this.router.get(`${this.path}/me`, AuthMiddleware, this.user.getCurrentUser);
+    this.router.get(`${this.path}/me`, getAuthMiddleware().requireAuth(), this.user.getCurrentUser);
 
     /**
      * @swagger

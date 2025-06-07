@@ -4,6 +4,7 @@ export { QueryBuilder } from './builders/QueryBuilder';
 export { MigrationRunner } from './migrations/MigrationRunner';
 export { CacheManager } from './cache/CacheManager';
 export { DatabaseUtils } from './utils/DatabaseUtils';
+export { DbHelper } from './utils/DbHelper';
 
 // Re-export types from be-types for convenience
 export type {

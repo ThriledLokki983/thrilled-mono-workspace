@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import { Container } from 'typedi';
-import { User } from '@interfaces/users.interface';
-import { RequestWithUser } from '@interfaces/auth.interface';
-import { CreateUserDto, UpdateUserDto } from '@dtos/users.dto';
-import { UserService } from '@services/users.service';
-import { HttpException } from '@exceptions/httpException';
+import { User } from '../interfaces/users.interface';
+import { RequestWithUser } from '../interfaces/auth.interface';
+import { CreateUserDto, UpdateUserDto } from '../dtos/users.dto';
+import { UserService } from '../services/users.service';
+import { HttpException } from '../exceptions/httpException';
 import { apiResponse, HttpStatusCodes } from '@mono/be-core';
 
 export class UserController {

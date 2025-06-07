@@ -1,4 +1,4 @@
-import { HttpStatusCodes } from '@/utils/httpStatusCodes';
+import { HttpStatusCodes } from '../utils/httpStatusCodes';
 
 export interface ApiResponse<T = any> {
   success: boolean;

@@ -1,12 +1,9 @@
 import { BasePlugin } from '@mono/be-core';
 import type { Express } from 'express';
 import { Container } from 'typedi';
-import { createRedisClient, createJWTConfig, createPasswordConfig, createSessionConfig } from '../config/auth.config';
-
-// Function to import ES module from CommonJS context
-const importESModule = async (specifier: string) => {
-  return new Function('specifier', 'return import(specifier)')(specifier);
-};
+import { createJWTConfig, createPasswordConfig, createSessionConfig, createRedisClient } from '../config/auth.config';
+import { CacheManager } from '@thrilled/databases';
+import * as BeAuth from '@thrilled/be-auth';
 
 export class AuthPlugin extends BasePlugin {
   readonly name = 'auth';
@@ -34,16 +31,38 @@ export class AuthPlugin extends BasePlugin {
     this.logger.info('Setting up authentication services');
 
     try {
-      // Dynamically import the ES module using a wrapper function
-      this.authModule = await importESModule('@thrilled/be-auth');
+      // Use the imported auth module
+      this.authModule = BeAuth;
 
-      // Create Redis client
-      this.redisClient = createRedisClient();
-      await this.redisClient.connect();
-      this.logger.info('Redis client connected successfully');
+      // Get the centralized CacheManager from TypeDI container
+      try {
+        const cacheManager = Container.get('cacheManager') as CacheManager;
+        this.logger.info('Using centralized CacheManager for auth services');
 
-      // Create cache adapter
-      this.cacheAdapter = new this.authModule.RedisCacheAdapter(this.redisClient);
+        // Get Redis client for JWTProvider (which needs direct Redis operations)
+        // Check if getRedisClient method exists and call it
+        if ('getRedisClient' in cacheManager && typeof cacheManager.getRedisClient === 'function') {
+          this.redisClient = cacheManager.getRedisClient();
+          if (!this.redisClient) {
+            throw new Error('Redis client not available from CacheManager');
+          }
+          this.logger.info('Redis client obtained from centralized CacheManager');
+        } else {
+          throw new Error('CacheManager does not support getRedisClient method');
+        }
+
+        // Create cache adapter using the centralized cache manager Redis client
+        this.cacheAdapter = new this.authModule.RedisCacheAdapter(this.redisClient);
+      } catch (error) {
+        this.logger.warn('CacheManager not available, falling back to local Redis client', { error });
+        // Fallback to creating local Redis client
+        this.redisClient = createRedisClient();
+        await this.redisClient.connect();
+        this.logger.info('Local Redis client connected successfully');
+
+        // Create cache adapter using local Redis client
+        this.cacheAdapter = new this.authModule.RedisCacheAdapter(this.redisClient);
+      }
 
       // Initialize JWT Provider
       const jwtConfig = createJWTConfig();
@@ -87,6 +106,7 @@ export class AuthPlugin extends BasePlugin {
       Container.set('passwordManager', this.passwordManager);
       Container.set('sessionManager', this.sessionManager);
       Container.set('rbacManager', this.rbacManager);
+      Container.set('authMiddleware', this.authMiddleware);
 
       this.logger.info('Auth package instances registered with TypeDI container');
     } catch (error) {

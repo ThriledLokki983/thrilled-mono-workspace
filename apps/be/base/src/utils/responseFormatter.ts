@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { HttpStatusCodes } from './httpStatusCodes';
-import { ApiError, ApiResponse, PaginationOptions } from '@interfaces/response.interface';
+import { ApiError, ApiResponse, PaginationOptions } from '../interfaces/response.interface';
 
 /**
  * Creates a standardized API response

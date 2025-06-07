@@ -1,17 +1,16 @@
 import { hash, compare } from 'bcrypt';
 import { sign } from 'jsonwebtoken';
-import { DataStoredInToken, TokenData } from '@interfaces/auth.interface';
-import { User } from '@interfaces/users.interface';
-import { SECRET_KEY } from '@config';
+import { DataStoredInToken, TokenData } from '../../interfaces/auth.interface';
+import { User } from '../../interfaces/users.interface';
+import { SECRET_KEY } from '../../config';
 import crypto from 'crypto';
 import { randomBytes } from 'crypto';
-import { redisClient } from '@database';
 import { JwtBlacklist } from './jwtBlacklist';
-import { logger, redactSensitiveData } from '@utils/logger';
+import { logger, redactSensitiveData } from '../../utils/logger';
 
-// Use the centralized Redis client
+// Use the centralized CacheManager through JwtBlacklist
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const jwtBlacklist = new JwtBlacklist(redisClient);
+const jwtBlacklist = new JwtBlacklist();
 
 const createToken = (user: User): TokenData => {
   // Thorough validation of user object

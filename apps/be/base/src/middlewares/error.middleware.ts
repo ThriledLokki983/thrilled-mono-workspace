@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { HttpException } from '@exceptions/httpException';
-import { logger } from '@utils/logger';
+import { HttpException } from '../exceptions/httpException';
+import { logger } from '../utils/logger';
 import { apiResponse, HttpStatusCodes, ApiError } from '@mono/be-core';
 
 // Express error middleware must have exactly 4 parameters

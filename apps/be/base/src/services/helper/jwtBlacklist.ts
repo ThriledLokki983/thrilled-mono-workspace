@@ -1,44 +1,36 @@
 // jwtBlacklist.ts
-import { Redis } from 'ioredis';
+import { Container } from 'typedi';
+import { CacheManager } from '@thrilled/databases';
 import jwt from 'jsonwebtoken';
-import { logger } from '@utils/logger';
+import { logger } from '../../utils/logger';
 
 /**
- * Class to handle JWT token blacklisting using Redis
+ * Class to handle JWT token blacklisting using the centralized CacheManager
  */
 export class JwtBlacklist {
-  private redis: Redis;
   private readonly keyPrefix = 'blacklist:';
-  private redisAvailable = true;
+  private cacheAvailable = true;
   private healthCheckInterval: NodeJS.Timeout | null = null;
 
-  constructor(redisClient: Redis) {
-    this.redis = redisClient;
+  constructor() {
     this.setupHealthCheck();
-
-    // Monitor Redis connection events
-    this.redis.on('error', err => {
-      logger.error(`Redis Error: ${err.message}`);
-      this.redisAvailable = false;
-    });
-
-    this.redis.on('ready', () => {
-      logger.info('Redis connection established');
-      this.redisAvailable = true;
-    });
-
-    this.redis.on('reconnecting', () => {
-      logger.info('Redis client reconnecting');
-    });
-
-    this.redis.on('end', () => {
-      logger.warn('Redis connection closed');
-      this.redisAvailable = false;
-    });
   }
 
   /**
-   * Setup a health check interval to periodically verify Redis connectivity
+   * Get CacheManager instance from TypeDI container
+   */
+  private getCacheManager(): CacheManager {
+    try {
+      return Container.get('cacheManager');
+    } catch (error) {
+      logger.error('Failed to get CacheManager from container');
+      this.cacheAvailable = false;
+      throw error;
+    }
+  }
+
+  /**
+   * Setup a health check interval to periodically verify cache connectivity
    */
   private setupHealthCheck() {
     // Clear any existing interval
@@ -49,25 +41,26 @@ export class JwtBlacklist {
     // Check every 30 seconds
     this.healthCheckInterval = setInterval(async () => {
       try {
-        await this.redis.ping();
-        if (!this.redisAvailable) {
-          logger.info('Redis connection restored');
-          this.redisAvailable = true;
+        const cacheManager = this.getCacheManager();
+        await cacheManager.ping();
+        if (!this.cacheAvailable) {
+          logger.info('Cache connection restored');
+          this.cacheAvailable = true;
         }
       } catch (err) {
-        if (this.redisAvailable) {
-          logger.error(`Redis health check failed: ${err.message}`);
-          this.redisAvailable = false;
+        if (this.cacheAvailable) {
+          logger.error(`Cache health check failed: ${(err as Error).message}`);
+          this.cacheAvailable = false;
         }
       }
     }, 30000); // 30 seconds
   }
 
   /**
-   * Check if Redis is available
+   * Check if cache is available
    */
-  public isRedisAvailable(): boolean {
-    return this.redisAvailable;
+  public isCacheAvailable(): boolean {
+    return this.cacheAvailable;
   }
 
   /**
@@ -77,13 +70,13 @@ export class JwtBlacklist {
    */
   async blacklistToken(token: string): Promise<boolean> {
     try {
-      if (!this.redisAvailable) {
-        logger.warn('Redis unavailable, token blacklisting skipped');
+      if (!this.cacheAvailable) {
+        logger.warn('Cache unavailable, token blacklisting skipped');
         return false;
       }
 
-      const decoded: any = jwt.decode(token);
-      if (!decoded || !decoded.exp) {
+      const decoded: unknown = jwt.decode(token);
+      if (!decoded || typeof decoded !== 'object' || !('exp' in decoded) || typeof decoded.exp !== 'number') {
         logger.warn('Invalid token format: missing exp claim');
         throw new Error('Invalid token: missing exp claim');
       }
@@ -95,11 +88,12 @@ export class JwtBlacklist {
       }
 
       // Add to blacklist with expiry
-      await this.redis.set(`${this.keyPrefix}${token}`, '1', 'EX', ttl);
+      const cacheManager = this.getCacheManager();
+      await cacheManager.set(`${this.keyPrefix}${token}`, '1', ttl);
       logger.debug(`Token blacklisted for ${ttl} seconds`);
       return true;
     } catch (err) {
-      logger.error(`Failed to blacklist token: ${err.message}`);
+      logger.error(`Failed to blacklist token: ${(err as Error).message}`);
       // Don't throw the error, but return false to indicate failure
       return false;
     }
@@ -112,20 +106,21 @@ export class JwtBlacklist {
    */
   async isBlacklisted(token: string): Promise<boolean> {
     try {
-      if (!this.redisAvailable) {
-        logger.warn('Redis unavailable during blacklist check, proceeding with caution');
+      if (!this.cacheAvailable) {
+        logger.warn('Cache unavailable during blacklist check, proceeding with caution');
         // Configure behavior based on security needs:
-        // 1. Fail closed: return true (assuming token is blacklisted when Redis is down)
-        // 2. Fail open: return false (assuming token is valid when Redis is down)
+        // 1. Fail closed: return true (assuming token is blacklisted when cache is down)
+        // 2. Fail open: return false (assuming token is valid when cache is down)
         // Default to fail open, but this is configurable based on security requirements
         return false;
       }
 
-      const exists = await this.redis.exists(`${this.keyPrefix}${token}`);
-      return exists === 1;
+      const cacheManager = this.getCacheManager();
+      const exists = await cacheManager.exists(`${this.keyPrefix}${token}`);
+      return exists;
     } catch (err) {
-      logger.error(`Error checking blacklisted token: ${err.message}`);
-      // In case of Redis error, fail open (assume token is valid)
+      logger.error(`Error checking blacklisted token: ${(err as Error).message}`);
+      // In case of cache error, fail open (assume token is valid)
       return false;
     }
   }
@@ -136,20 +131,24 @@ export class JwtBlacklist {
    */
   async clearAllBlacklisted(): Promise<number> {
     try {
-      if (!this.redisAvailable) {
-        logger.warn('Redis unavailable, cannot clear blacklist');
+      if (!this.cacheAvailable) {
+        logger.warn('Cache unavailable, cannot clear blacklist');
         return 0;
       }
 
-      const keys = await this.redis.keys(`${this.keyPrefix}*`);
+      const cacheManager = this.getCacheManager();
+      const keys = await cacheManager.keys(`${this.keyPrefix}*`);
+
       if (keys.length > 0) {
-        const deleted = await this.redis.del(...keys);
-        logger.info(`Cleared ${deleted} blacklisted tokens`);
-        return deleted;
+        for (const key of keys) {
+          await cacheManager.del(key);
+        }
+        logger.info(`Cleared ${keys.length} blacklisted tokens`);
+        return keys.length;
       }
       return 0;
     } catch (err) {
-      logger.error(`Error clearing blacklisted tokens: ${err.message}`);
+      logger.error(`Error clearing blacklisted tokens: ${(err as Error).message}`);
       throw err;
     }
   }

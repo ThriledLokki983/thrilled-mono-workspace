@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { Logger as CoreLogger } from '@mono/be-core';
-import { LOG_DIR } from '@config';
+import { LOG_DIR } from '../config';
 
 // logs dir - provide fallback if LOG_DIR is undefined
 const logDir: string = join(__dirname, LOG_DIR || 'logs');

@@ -17,5 +17,9 @@ module.exports = {
     '^@routes/(.*)$': '<rootDir>/src/routes/$1',
     '^@services/(.*)$': '<rootDir>/src/services/$1',
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
+    '^@thrilled/be-auth$': '<rootDir>/../../../packages/be/auth/src/index.ts',
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!@thrilled/be-auth)',
+  ],
 };

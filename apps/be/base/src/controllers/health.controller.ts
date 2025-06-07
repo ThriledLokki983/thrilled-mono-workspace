@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { redisClient } from '@database';
-import { RedisMonitor } from '@services/helper/redisMonitor';
+import { RedisMonitor } from '../services/helper/redisMonitor';
 import { apiResponse, HttpStatusCodes } from '@mono/be-core';
 import os from 'os';
 
@@ -8,8 +7,8 @@ export class HealthController {
   private redisMonitor: RedisMonitor;
 
   constructor() {
-    // Initialize Redis monitor
-    this.redisMonitor = new RedisMonitor(redisClient);
+    // Initialize Redis monitor (now using CacheManager from TypeDI)
+    this.redisMonitor = new RedisMonitor();
 
     // Start monitoring with 1-minute interval
     this.redisMonitor.startMonitoring(60000);

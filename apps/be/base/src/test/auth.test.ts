@@ -1,8 +1,10 @@
 import request from 'supertest';
-import { App } from '@/app';
-import pg, { pool } from '@database';
-import { CreateUserDto, UserLoginDto, UserRole } from '@dtos/users.dto';
-import { AuthRoute } from '@routes/auth.route';
+import { App } from '../app';
+import pg, { pool } from '../database';
+import { CreateUserDto, UserLoginDto, UserRole } from '../dtos/users.dto';
+import { AuthRoute } from '../routes/auth.route';
+import { setupAuthForTesting, teardownAuth } from './helpers/test-setup';
+import { AuthPlugin } from '../plugins/auth.plugin';
 
 // Test user data that matches the schema requirements
 const testUser: CreateUserDto = {
@@ -25,8 +27,13 @@ const loginCredentials: UserLoginDto = {
   password: testUser.password,
 };
 
+let sharedAuthPlugin: AuthPlugin;
+
 // Clean up test data
 beforeAll(async () => {
+  // Setup auth plugin for all tests
+  sharedAuthPlugin = await setupAuthForTesting();
+
   // Delete test users if they exist from previous test runs
   try {
     await pg.query(
@@ -39,6 +46,12 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await new Promise<void>(resolve => setTimeout(() => resolve(), 500));
+
+  // Clean up auth plugin
+  if (sharedAuthPlugin) {
+    await teardownAuth(sharedAuthPlugin);
+  }
+
   // Clean up test data
   try {
     await pg.query(
@@ -61,7 +74,7 @@ describe('Testing Auth', () => {
       };
 
       const authRoute = new AuthRoute();
-      const app = new App([authRoute]);
+      const app = new App([authRoute], sharedAuthPlugin);
 
       const response = await request(app.getServer()).post('/api/v1/auth/signup').send(signupUser).expect(201);
 
@@ -80,7 +93,7 @@ describe('Testing Auth', () => {
       };
 
       const authRoute = new AuthRoute();
-      const app = new App([authRoute]);
+      const app = new App([authRoute], sharedAuthPlugin);
 
       await request(app.getServer()).post('/api/v1/auth/signup').send(signupUser).expect(201);
 
@@ -92,7 +105,7 @@ describe('Testing Auth', () => {
   describe('[POST] /login', () => {
     it('response should have the Set-Cookie header with the Authorization token', async () => {
       const authRoute = new AuthRoute();
-      const app = new App([authRoute]);
+      const app = new App([authRoute], sharedAuthPlugin);
 
       // First create a user
       const loginUser = {
@@ -116,7 +129,7 @@ describe('Testing Auth', () => {
 
     it('response should have 401 with incorrect password', async () => {
       const authRoute = new AuthRoute();
-      const app = new App([authRoute]);
+      const app = new App([authRoute], sharedAuthPlugin);
 
       // First create a user
       const loginUser = {
@@ -139,7 +152,7 @@ describe('Testing Auth', () => {
   describe('[POST] /logout', () => {
     it('logout should set Authorization cookie to empty with Max-age=0', async () => {
       const authRoute = new AuthRoute();
-      const app = new App([authRoute]);
+      const app = new App([authRoute], sharedAuthPlugin);
 
       // First create a user
       const logoutUser = {

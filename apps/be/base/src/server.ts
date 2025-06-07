@@ -1,10 +1,10 @@
-import { App } from '@/app';
-import { AuthRoute } from '@routes/auth.route';
-import { UserRoute } from '@routes/users.route';
-import { HealthRoute } from '@routes/health.route';
-import { AuthPlugin } from '@/plugins/auth.plugin';
-import { ValidateEnv } from '@utils/validateEnv';
-import { logger as customAppLogger } from '@utils/logger';
+import { App } from './app';
+import { AuthRoute } from './routes/auth.route';
+import { UserRoute } from './routes/users.route';
+import { HealthRoute } from './routes/health.route';
+import { AuthPlugin } from './/plugins/auth.plugin';
+import { ValidateEnv } from './utils/validateEnv';
+import { logger as customAppLogger } from './utils/logger';
 
 ValidateEnv();
 

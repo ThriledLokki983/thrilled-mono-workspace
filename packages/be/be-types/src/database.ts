@@ -64,6 +64,7 @@ export interface CacheOperations {
   exists(key: string): Promise<boolean>;
   keys(pattern: string): Promise<string[]>;
   flushAll(): Promise<void>;
+  getRedisClient?(): unknown; // Optional for advanced operations
 }
 
 // Extended database configuration with auto-creation support

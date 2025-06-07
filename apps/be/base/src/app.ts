@@ -1,12 +1,12 @@
 import 'reflect-metadata';
 import { BaseApp, ErrorMiddleware } from '@mono/be-core';
 import { createAppConfig } from './config/app.config';
-import { Routes } from '@interfaces/routes.interface';
-import { DatabasePlugin } from '@/plugins/database.plugin';
-import { AuthPlugin } from '@/plugins/auth.plugin';
-import { RoutesPlugin } from '@/plugins/routes.plugin';
-import { SwaggerPlugin } from '@/plugins/swagger.plugin';
-import { RateLimitPlugin } from '@/plugins/rateLimit.plugin';
+import { Routes } from './interfaces/routes.interface';
+import { DatabasePlugin } from './plugins/database.plugin';
+import { AuthPlugin } from './plugins/auth.plugin';
+import { RoutesPlugin } from './plugins/routes.plugin';
+import { SwaggerPlugin } from './plugins/swagger.plugin';
+import { RateLimitPlugin } from './plugins/rateLimit.plugin';
 // ValidationPlugin is now automatically included in BaseApp
 
 export class App extends BaseApp {

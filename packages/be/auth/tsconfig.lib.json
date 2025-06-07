@@ -8,7 +8,6 @@
     "emitDeclarationOnly": false,
     "module": "nodenext",
     "moduleResolution": "nodenext",
-    "forceConsistentCasingInFileNames": true,
     "types": ["node"]
   },
   "include": ["src/**/*.ts"],

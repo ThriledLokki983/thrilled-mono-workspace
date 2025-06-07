@@ -1,88 +1,125 @@
-import { Redis } from 'ioredis';
-import { logger } from '@utils/logger';
+import { Container } from 'typedi';
+import { CacheManager } from '@thrilled/databases';
+import { logger } from '../../utils/logger';
 import { EventEmitter } from 'events';
 
-export interface RedisMetrics {
-  uptime: number; // Server uptime in seconds
-  connectedClients: number; // Number of connected clients
-  usedMemory: number; // Used memory in bytes
-  usedMemoryPeak: number; // Peak memory usage in bytes
-  totalCommands: number; // Total number of commands processed
-  hitRate?: number; // Cache hit rate (percentage)
-  missRate?: number; // Cache miss rate (percentage)
-  keyspaceHits: number; // Number of successful lookups
-  keyspaceMisses: number; // Number of failed lookups
+export interface CacheMetrics {
+  uptime: number;
   status: 'connected' | 'disconnected' | 'reconnecting' | 'error';
   lastError?: string;
   lastErrorTime?: Date;
   reconnectAttempts: number;
-  latency?: number; // Response time in milliseconds
+  latency?: number;
+  keyCount?: number;
+  lastCheck?: Date;
 }
 
 /**
- * Redis Monitor Service for collecting metrics and health data
+ * Cache Monitor Service for collecting metrics and health data from CacheManager
  */
 export class RedisMonitor extends EventEmitter {
-  private redis: Redis;
-  private metrics: RedisMetrics = {
+  private metrics: CacheMetrics = {
     uptime: 0,
-    connectedClients: 0,
-    usedMemory: 0,
-    usedMemoryPeak: 0,
-    totalCommands: 0,
-    keyspaceHits: 0,
-    keyspaceMisses: 0,
     status: 'disconnected',
     reconnectAttempts: 0,
   };
   private monitorInterval: NodeJS.Timeout | null = null;
   private pingInterval: NodeJS.Timeout | null = null;
-  private reconnectAttempts = 0;
+  private startTime: number = Date.now();
 
-  constructor(redisClient: Redis) {
+  constructor() {
     super();
-    this.redis = redisClient;
     this.setupEventHandlers();
   }
 
   /**
-   * Set up event handlers for Redis client
+   * Get CacheManager instance from TypeDI container
+   */
+  private getCacheManager(): CacheManager | null {
+    try {
+      return Container.get('cacheManager');
+    } catch (error) {
+      // Don't log error on every attempt - cache manager might not be ready yet
+      return null;
+    }
+  }
+
+  /**
+   * Set up event handlers for monitoring
    */
   private setupEventHandlers(): void {
-    this.redis.on('connect', () => {
-      this.metrics.status = 'connected';
-      this.metrics.reconnectAttempts = this.reconnectAttempts;
-      this.emit('status', { status: 'connected' });
-      logger.info('Redis monitor: connection established');
-    });
+    // Since we don't have direct access to Redis events through CacheManager,
+    // we'll use periodic health checks to determine status
+    this.startPeriodicHealthCheck();
+  }
 
-    this.redis.on('ready', () => {
-      this.metrics.status = 'connected';
-      this.emit('status', { status: 'connected' });
-      logger.info('Redis monitor: client ready');
-    });
+  /**
+   * Start periodic health checks to monitor cache status
+   */
+  private startPeriodicHealthCheck(): void {
+    // Don't run initial health check immediately - wait for cache manager to be available
+    // Set up periodic health check every 30 seconds
+    const healthCheckInterval = setInterval(() => {
+      this.checkCacheHealth();
+    }, 30000);
 
-    this.redis.on('error', err => {
-      this.metrics.status = 'error';
-      this.metrics.lastError = err.message;
-      this.metrics.lastErrorTime = new Date();
-      this.emit('status', { status: 'error', error: err.message });
-      logger.error(`Redis monitor error: ${err.message}`);
-    });
+    // Store reference for cleanup
+    this.pingInterval = healthCheckInterval;
+  }
 
-    this.redis.on('reconnecting', () => {
-      this.reconnectAttempts++;
-      this.metrics.status = 'reconnecting';
-      this.metrics.reconnectAttempts = this.reconnectAttempts;
-      this.emit('status', { status: 'reconnecting', attempts: this.reconnectAttempts });
-      logger.warn(`Redis monitor: reconnecting (attempt ${this.reconnectAttempts})`);
-    });
+  /**
+   * Perform a health check on the cache manager
+   */
+  private async checkCacheHealth(): Promise<void> {
+    try {
+      const cacheManager = this.getCacheManager();
 
-    this.redis.on('end', () => {
-      this.metrics.status = 'disconnected';
-      this.emit('status', { status: 'disconnected' });
-      logger.warn('Redis monitor: connection closed');
-    });
+      // If cache manager is not available yet, just return silently
+      if (!cacheManager) {
+        this.metrics.status = 'disconnected';
+        this.metrics.lastCheck = new Date();
+        return;
+      }
+
+      const isConnected = cacheManager.getConnectionStatus();
+
+      if (isConnected) {
+        // Try to ping to confirm actual connectivity
+        await cacheManager.ping();
+
+        if (this.metrics.status !== 'connected') {
+          logger.info('Cache connection established');
+          this.metrics.reconnectAttempts = 0;
+        }
+
+        this.metrics.status = 'connected';
+        this.metrics.lastError = undefined;
+        this.metrics.lastErrorTime = undefined;
+      } else {
+        this.handleConnectionError('Cache manager reports disconnected status');
+      }
+    } catch (error) {
+      this.handleConnectionError((error as Error).message);
+    }
+
+    this.metrics.lastCheck = new Date();
+  }
+
+  /**
+   * Handle connection errors
+   */
+  private handleConnectionError(errorMessage: string): void {
+    this.metrics.status = 'error';
+    this.metrics.lastError = errorMessage;
+    this.metrics.lastErrorTime = new Date();
+    this.metrics.reconnectAttempts++;
+
+    if (this.metrics.reconnectAttempts === 1) {
+      // Only log on first error to avoid spam
+      logger.error(`Cache health check failed: ${errorMessage}`);
+    }
+
+    this.emit('error', { error: errorMessage, attempts: this.metrics.reconnectAttempts });
   }
 
   /**
@@ -99,12 +136,17 @@ export class RedisMonitor extends EventEmitter {
     }, interval);
 
     // Also start ping interval (more frequent)
-    this.pingInterval = setInterval(() => {
-      this.measureLatency();
-    }, Math.min(interval / 4, 15000)); // At least every 15 seconds
+    if (!this.pingInterval) {
+      // Only create ping interval if we don't already have a health check
+      this.pingInterval = setInterval(() => {
+        this.measureLatency();
+      }, Math.min(interval / 4, 15000)); // At least every 15 seconds
+    }
 
-    // Collect initial metrics
-    this.collectMetrics();
+    // Try to collect initial metrics, but don't fail if cache manager isn't ready
+    this.collectMetrics().catch(() => {
+      // Ignore errors during initial collection - cache manager might not be ready
+    });
 
     logger.info(`Redis monitoring started with ${interval}ms interval`);
   }
@@ -135,23 +177,31 @@ export class RedisMonitor extends EventEmitter {
     }
 
     try {
+      const cacheManager = this.getCacheManager();
+
+      // If cache manager is not available, skip latency measurement
+      if (!cacheManager) {
+        return;
+      }
+
       const start = Date.now();
-      await this.redis.ping();
+      await cacheManager.ping();
       const end = Date.now();
       this.metrics.latency = end - start;
 
       // Emit event if latency is too high (> 100ms)
       if (this.metrics.latency > 100) {
         this.emit('high-latency', { latency: this.metrics.latency });
-        logger.warn(`Redis high latency: ${this.metrics.latency}ms`);
+        logger.warn(`Cache high latency: ${this.metrics.latency}ms`);
       }
     } catch (error) {
-      logger.error(`Redis latency check failed: ${error.message}`);
+      logger.error(`Cache latency check failed: ${(error as Error).message}`);
+      this.handleConnectionError((error as Error).message);
     }
   }
 
   /**
-   * Collect Redis metrics using INFO command
+   * Collect cache metrics using CacheManager
    */
   private async collectMetrics(): Promise<void> {
     if (this.metrics.status !== 'connected') {
@@ -159,84 +209,35 @@ export class RedisMonitor extends EventEmitter {
     }
 
     try {
-      // Get Redis statistics
-      const info = await this.redis.info();
-      const sections = this.parseRedisInfo(info);
+      const cacheManager = this.getCacheManager();
 
-      // Update metrics from Redis INFO
-      if (sections.server) {
-        this.metrics.uptime = parseInt(sections.server['uptime_in_seconds'] || '0', 10);
+      // If cache manager is not available, skip metrics collection
+      if (!cacheManager) {
+        return;
       }
 
-      if (sections.clients) {
-        this.metrics.connectedClients = parseInt(sections.clients['connected_clients'] || '0', 10);
-      }
+      // Update uptime
+      this.metrics.uptime = Math.floor((Date.now() - this.startTime) / 1000);
 
-      if (sections.memory) {
-        this.metrics.usedMemory = parseInt(sections.memory['used_memory'] || '0', 10);
-        this.metrics.usedMemoryPeak = parseInt(sections.memory['used_memory_peak'] || '0', 10);
-      }
-
-      if (sections.stats) {
-        this.metrics.totalCommands = parseInt(sections.stats['total_commands_processed'] || '0', 10);
-        this.metrics.keyspaceHits = parseInt(sections.stats['keyspace_hits'] || '0', 10);
-        this.metrics.keyspaceMisses = parseInt(sections.stats['keyspace_misses'] || '0', 10);
-
-        // Calculate hit/miss rates
-        const total = this.metrics.keyspaceHits + this.metrics.keyspaceMisses;
-        if (total > 0) {
-          this.metrics.hitRate = (this.metrics.keyspaceHits / total) * 100;
-          this.metrics.missRate = (this.metrics.keyspaceMisses / total) * 100;
-        }
-      }
+      // Get basic cache statistics
+      const stats = await cacheManager.getStats();
+      this.metrics.keyCount = stats.keyCount;
 
       // Emit metrics event
       this.emit('metrics', this.metrics);
 
-      // Log important metrics changes only if they changed significantly
-      logger.debug(`Redis metrics collected: ${this.metrics.connectedClients} clients, ${(this.metrics.usedMemory / 1024 / 1024).toFixed(2)}MB used`);
+      // Log important metrics changes
+      logger.debug(`Cache metrics collected: ${this.metrics.keyCount} keys, status: ${this.metrics.status}`);
     } catch (error) {
-      logger.error(`Redis metrics collection failed: ${error.message}`);
+      logger.error(`Cache metrics collection failed: ${(error as Error).message}`);
+      this.handleConnectionError((error as Error).message);
     }
-  }
-
-  /**
-   * Parse Redis INFO command output
-   */
-  private parseRedisInfo(info: string): Record<string, Record<string, string>> {
-    const sections: Record<string, Record<string, string>> = {};
-    let currentSection = '';
-
-    const lines = info.split('\n');
-    for (const line of lines) {
-      // Skip empty lines and comments
-      if (!line || line.startsWith('#')) continue;
-
-      // New section
-      if (line.startsWith('# ')) {
-        currentSection = line.substring(2).trim().toLowerCase();
-        sections[currentSection] = {};
-        continue;
-      }
-
-      // Key-value pair
-      const parts = line.split(':');
-      if (parts.length >= 2 && currentSection) {
-        const key = parts[0].trim();
-        const value = parts.slice(1).join(':').trim();
-        if (sections[currentSection]) {
-          sections[currentSection][key] = value;
-        }
-      }
-    }
-
-    return sections;
   }
 
   /**
    * Get the current metrics snapshot
    */
-  public getMetrics(): RedisMetrics {
+  public getMetrics(): CacheMetrics {
     return { ...this.metrics };
   }
 
@@ -255,11 +256,10 @@ export class RedisMonitor extends EventEmitter {
     status: string;
     latency?: number;
     uptime: number;
-    memoryUsage: number;
-    memoryPeakUsage: number;
-    cacheHitRatio?: number;
+    keyCount?: number;
     lastError?: string;
     lastErrorTime?: Date;
+    lastCheck?: Date;
   } {
     const healthy = this.isHealthy();
 
@@ -268,11 +268,10 @@ export class RedisMonitor extends EventEmitter {
       status: this.metrics.status,
       latency: this.metrics.latency,
       uptime: this.metrics.uptime,
-      memoryUsage: this.metrics.usedMemory,
-      memoryPeakUsage: this.metrics.usedMemoryPeak,
-      cacheHitRatio: this.metrics.hitRate,
+      keyCount: this.metrics.keyCount,
       lastError: this.metrics.lastError,
       lastErrorTime: this.metrics.lastErrorTime,
+      lastCheck: this.metrics.lastCheck,
     };
   }
 

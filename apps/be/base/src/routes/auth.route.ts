@@ -1,11 +1,10 @@
 import { Router } from 'express';
-import { AuthController } from '@controllers/auth.controller';
-import { CreateUserDto } from '@dtos/users.dto';
-import { LoginDto, RequestPasswordResetDto, ResetPasswordDto } from '@dtos/auth.dto';
-import { Routes } from '@interfaces/routes.interface';
-import { AuthMiddleware } from '@middlewares/auth.middleware';
-import { ValidationMiddleware } from '@middlewares/validation.middleware';
-import { NODE_ENV } from '@config';
+import { AuthController } from '../controllers/auth.controller';
+import { CreateUserDto } from '../dtos/users.dto';
+import { LoginDto, RequestPasswordResetDto, ResetPasswordDto } from '../dtos/auth.dto';
+import { Routes } from '../interfaces/routes.interface';
+import { ValidationMiddleware } from '../middlewares/validation.middleware';
+import { NODE_ENV } from '../config';
 
 export class AuthRoute implements Routes {
   public path = '/auth';
@@ -110,7 +109,7 @@ export class AuthRoute implements Routes {
      *       404:
      *         description: Authentication token missing
      */
-    this.router.post(`${this.path}/logout`, AuthMiddleware, this.auth.logOut);
+    this.router.post(`${this.path}/logout`, this.auth.logOut);
 
     /**
      * @swagger

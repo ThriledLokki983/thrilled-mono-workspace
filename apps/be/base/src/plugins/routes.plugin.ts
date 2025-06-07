@@ -1,6 +1,6 @@
 import { Express } from 'express';
 import { BasePlugin } from '@mono/be-core';
-import { Routes } from '@interfaces/routes.interface';
+import { Routes } from '../interfaces/routes.interface';
 
 interface RoutesPluginConfig {
   routes: Routes[];

@@ -45,8 +45,7 @@ export class JWTProvider {
         options.audience = this.config.accessToken.audience;
       }
 
-      const jwtModule = jwt.default || jwt;
-      const token = jwtModule.sign(
+      const token = jwt.sign(
         tokenPayload,
         this.config.accessToken.secret,
         options
@@ -106,8 +105,7 @@ export class JWTProvider {
         options.audience = this.config.refreshToken.audience;
       }
 
-      const jwtModule = jwt.default || jwt;
-      const token = jwtModule.sign(
+      const token = jwt.sign(
         tokenPayload,
         this.config.refreshToken.secret,
         options
@@ -154,8 +152,7 @@ export class JWTProvider {
         options.audience = this.config.accessToken.audience;
       }
 
-      const jwtModule = jwt.default || jwt;
-      const payload = jwtModule.verify(
+      const payload = jwt.verify(
         token,
         this.config.accessToken.secret,
         options
@@ -192,8 +189,7 @@ export class JWTProvider {
         options.audience = this.config.refreshToken.audience;
       }
 
-      const jwtModule = jwt.default || jwt;
-      const payload = jwtModule.verify(
+      const payload = jwt.verify(
         token,
         this.config.refreshToken.secret,
         options
@@ -406,8 +402,7 @@ export class JWTProvider {
    */
   getTokenPayload(token: string): jwt.JwtPayload | null {
     try {
-      const jwtModule = jwt.default || jwt;
-      return jwtModule.decode(token) as jwt.JwtPayload;
+      return jwt.decode(token) as jwt.JwtPayload;
     } catch (error: unknown) {
       this.logger.debug('Failed to decode token:', {
         error: error instanceof Error ? error.message : String(error),

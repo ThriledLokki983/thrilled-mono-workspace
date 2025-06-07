@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": "src",
+    "outDir": "dist-cjs",
+    "tsBuildInfoFile": "dist-cjs/tsconfig.cjs.tsbuildinfo",
+    "emitDeclarationOnly": false,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node"],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "declaration": true,
+    "target": "es2020",
+    "lib": ["es2020"]
+  },
+  "include": ["src/**/*.ts"],
+  "references": [
+    {
+      "path": "../core/tsconfig.lib.json"
+    },
+    {
+      "path": "../be-types/tsconfig.lib.json"
+    }
+  ],
+  "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
+}

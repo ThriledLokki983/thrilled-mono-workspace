@@ -1,5 +1,5 @@
-import { UserResponseDto } from '@dtos/users.dto';
-import { User } from '@interfaces/users.interface';
+import { UserResponseDto } from '../dtos/users.dto';
+import { User } from '../interfaces/users.interface';
 
 /**
  * Utility functions for user object operations

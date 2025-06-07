@@ -329,4 +329,12 @@ export class CacheManager implements CacheOperations {
   getConnectionStatus(): boolean {
     return this.isConnected;
   }
+
+  /**
+   * Get the underlying Redis client for advanced operations
+   * Use with caution - this bypasses the cache manager's prefix and error handling
+   */
+  getRedisClient(): Redis | null {
+    return this.client;
+  }
 }

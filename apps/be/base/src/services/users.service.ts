@@ -1,12 +1,12 @@
 import { hash } from 'bcrypt';
 import { Service } from 'typedi';
-import { HttpException } from '@exceptions/httpException';
-import { CreateUserDto, UpdateUserDto, UserResponseDto } from '@dtos/users.dto';
-import { DbHelper } from '@utils/dbHelper';
+import { HttpException } from '../exceptions/httpException';
+import { CreateUserDto, UpdateUserDto, UserResponseDto } from '../dtos/users.dto';
+import { DbHelper } from '@thrilled/databases';
 import { PoolClient } from 'pg';
-import { SqlHelper } from '@utils/sqlHelper';
+import { SqlHelper } from '../utils/sqlHelper';
 import { HttpStatusCodes } from '@mono/be-core';
-import { CacheHelper } from '@utils/cacheHelper';
+import { CacheHelper } from '../utils/cacheHelper';
 
 @Service()
 export class UserService {
@@ -29,7 +29,7 @@ export class UserService {
       this.CACHE_ALL_USERS,
       async () => {
         const { rows } = await DbHelper.query(SqlHelper.getUserSelectQuery());
-        return rows;
+        return rows as UserResponseDto[];
       },
       { ttl: this.CACHE_TTL.USER_LIST },
     );
@@ -50,7 +50,7 @@ export class UserService {
           throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
         }
 
-        return user;
+        return user as UserResponseDto;
       },
       { ttl: this.CACHE_TTL.USER_DETAIL },
     );
@@ -66,9 +66,10 @@ export class UserService {
     const newUser = await DbHelper.withTransaction(async (client: PoolClient) => {
       // Check if email already exists
       const {
-        rows: [{ exists }],
+        rows: [result],
       } = await DbHelper.query(`SELECT EXISTS(SELECT 1 FROM users WHERE email = $1 AND deleted_at IS NULL)`, [email], client);
 
+      const { exists } = result as { exists: boolean };
       if (exists) {
         throw new HttpException(HttpStatusCodes.CONFLICT, `This email ${email} already exists`);
       }
@@ -85,7 +86,7 @@ export class UserService {
         client,
       );
 
-      return newUser;
+      return newUser as UserResponseDto;
     });
 
     // Invalidate all users cache since we added a new user
@@ -100,7 +101,7 @@ export class UserService {
   public async updateUser(userId: string, userData: UpdateUserDto): Promise<UserResponseDto> {
     // Using transaction to ensure atomicity of the update operation
     const updatedUser = await DbHelper.withTransaction(async (client: PoolClient) => {
-      // Step 1: Fetch current user
+      // Step 1: Fetch current user with password
       const {
         rows: [currentUser],
       } = await DbHelper.query(SqlHelper.getUserByIdQuery(true), [userId], client);
@@ -109,32 +110,36 @@ export class UserService {
         throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
       }
 
+      // Type assertion for user with password field
+      const typedCurrentUser = currentUser as UserResponseDto & { password: string };
+
       // Step 2: Merge incoming data with existing data
       const {
-        email = currentUser.email,
-        name = currentUser.name,
-        first_name = currentUser.first_name,
-        last_name = currentUser.last_name,
-        phone = currentUser.phone,
-        address = currentUser.address,
-        role = currentUser.role,
-        language_preference = currentUser.language_preference,
-        is_active = currentUser.is_active,
+        email = typedCurrentUser.email,
+        name = typedCurrentUser.name,
+        first_name = typedCurrentUser.first_name,
+        last_name = typedCurrentUser.last_name,
+        phone = typedCurrentUser.phone,
+        address = typedCurrentUser.address,
+        role = typedCurrentUser.role,
+        language_preference = typedCurrentUser.language_preference,
+        is_active = typedCurrentUser.is_active,
         password,
       } = userData;
 
       // If the email is being changed, check if the new email already exists
-      if (email !== currentUser.email) {
+      if (email !== typedCurrentUser.email) {
         const {
-          rows: [{ exists }],
+          rows: [result],
         } = await DbHelper.query(`SELECT EXISTS(SELECT 1 FROM users WHERE email = $1 AND id != $2 AND deleted_at IS NULL)`, [email, userId], client);
 
+        const { exists } = result as { exists: boolean };
         if (exists) {
           throw new HttpException(HttpStatusCodes.CONFLICT, `This email ${email} already exists`);
         }
       }
 
-      const hashedPassword = password ? await hash(password, 10) : currentUser.password;
+      const hashedPassword = password ? await hash(password, 10) : typedCurrentUser.password;
 
       // Step 3: Update the user
       const {
@@ -145,7 +150,7 @@ export class UserService {
         client,
       );
 
-      return updatedUser;
+      return updatedUser as UserResponseDto;
     });
 
     // Invalidate affected caches
@@ -169,7 +174,7 @@ export class UserService {
         throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
       }
 
-      return deletedUser;
+      return deletedUser as UserResponseDto;
     });
 
     // Invalidate affected caches

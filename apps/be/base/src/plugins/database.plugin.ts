@@ -1,8 +1,9 @@
 import { Express } from 'express';
+import { Container } from 'typedi';
 import { BasePlugin } from '@mono/be-core';
-import { DatabaseManager } from '@thrilled/databases';
+import { DatabaseManager, DbHelper } from '@thrilled/databases';
 import { DatabaseManagerConfig } from '@thrilled/be-types';
-import { POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, POSTGRES_DB, REDIS_HOST, REDIS_PORT, REDIS_PASSWORD } from '@config';
+import { DB_CONFIG } from '../config';
 
 export class DatabasePlugin extends BasePlugin {
   readonly name = 'database';
@@ -20,11 +21,11 @@ export class DatabasePlugin extends BasePlugin {
       const dbConfig: DatabaseManagerConfig = {
         connections: {
           primary: {
-            host: POSTGRES_HOST || 'localhost',
-            port: parseInt(POSTGRES_PORT || '5432'),
-            database: POSTGRES_DB || 'thrilled_dev',
-            username: POSTGRES_USER || 'postgres',
-            password: POSTGRES_PASSWORD || 'postgres',
+            host: DB_CONFIG.POSTGRES_HOST || 'localhost',
+            port: parseInt(DB_CONFIG.POSTGRES_PORT || '5432'),
+            database: DB_CONFIG.POSTGRES_DB || 'thrilled_dev',
+            username: DB_CONFIG.POSTGRES_USER || 'postgres',
+            password: DB_CONFIG.POSTGRES_PASSWORD || 'postgres',
             ssl: process.env.NODE_ENV === 'production',
             pool: {
               min: 2,
@@ -46,9 +47,9 @@ export class DatabasePlugin extends BasePlugin {
           timeout: 5000, // 5 seconds
         },
         cache: {
-          host: REDIS_HOST || 'localhost',
-          port: parseInt(REDIS_PORT || '6379'),
-          password: REDIS_PASSWORD,
+          host: DB_CONFIG.REDIS_HOST || 'localhost',
+          port: parseInt(DB_CONFIG.REDIS_PORT || '6379'),
+          password: DB_CONFIG.REDIS_PASSWORD,
           db: parseInt(process.env.REDIS_DB || '0'),
           keyPrefix: `thrilled:${process.env.NODE_ENV || 'dev'}:`,
           ttl: 3600, // 1 hour default
@@ -60,12 +61,49 @@ export class DatabasePlugin extends BasePlugin {
       // Initialize the DatabaseManager
       this.databaseManager = new DatabaseManager(dbConfig, this.logger);
       await this.databaseManager.initialize();
-
       this.logger.info('DatabaseManager initialized successfully');
+
+      // Initialize the static DbHelper with the DatabaseManager instance
+      DbHelper.initialize(this.databaseManager, this.logger);
+      this.logger.info('DbHelper initialized with DatabaseManager');
+
+      // Register CacheManager with TypeDI if cache is available
+      if (this.databaseManager && dbConfig.cache) {
+        try {
+          const cacheManager = this.databaseManager.getCache();
+          Container.set('cacheManager', cacheManager);
+          this.logger.info('CacheManager registered with TypeDI container');
+        } catch (error) {
+          this.logger.warn('Failed to register CacheManager with TypeDI', { error });
+        }
+      }
     } catch (error) {
-      this.logger.error('Database initialization failed', { error });
       // Don't throw error - allow app to start even if DB is down
       // This enables API endpoints that don't need DB to still work
+      this.logger.error('Database initialization failed', { error });
+
+      // Try to register a dummy cache manager to prevent container lookup failures
+      try {
+        if (!Container.has('cacheManager')) {
+          this.logger.info('Registering fallback cache manager to prevent container errors');
+          // Create a minimal cache manager that doesn't require Redis
+          const dummyCacheManager = {
+            get: async <T>(): Promise<T | null> => null,
+            set: async (): Promise<void> => { /* no-op */ },
+            del: async (): Promise<void> => { /* no-op */ },
+            exists: async (): Promise<boolean> => false,
+            keys: async (): Promise<string[]> => [],
+            flushAll: async (): Promise<void> => { /* no-op */ },
+            getRedisClient: (): null => null,
+            getConnectionStatus: (): boolean => false,
+            ping: async (): Promise<string> => 'PONG'
+          };
+          Container.set('cacheManager', dummyCacheManager);
+          this.logger.info('Fallback cache manager registered with TypeDI container');
+        }
+      } catch (fallbackError) {
+        this.logger.error('Failed to register fallback cache manager', { fallbackError });
+      }
     }
   }
 

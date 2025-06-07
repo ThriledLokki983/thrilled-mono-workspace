@@ -1,13 +1,13 @@
 import { Container, Service } from 'typedi';
-import { HttpException } from '@exceptions/httpException';
-import { User } from '@interfaces/users.interface';
-import { LoginDto, RequestPasswordResetDto, ResetPasswordDto } from '@dtos/auth.dto';
-import { logger, redactSensitiveData } from '@utils/logger';
-import { DbHelper } from '@utils/dbHelper';
+import { HttpException } from '../exceptions/httpException';
+import { User } from '../interfaces/users.interface';
+import { LoginDto, RequestPasswordResetDto, ResetPasswordDto } from '../dtos/auth.dto';
+import { logger, redactSensitiveData } from '../utils/logger';
+import { DbHelper } from '@thrilled/databases';
 import { PoolClient } from 'pg';
-import { SqlHelper } from '@utils/sqlHelper';
-import { UserHelper } from '@utils/userHelper';
-import { HttpStatusCodes } from '@/utils/httpStatusCodes';
+import { SqlHelper } from '../utils/sqlHelper';
+import { UserHelper } from '../utils/userHelper';
+import { HttpStatusCodes } from '../utils/httpStatusCodes';
 import { Logger } from '@mono/be-core';
 
 /**
@@ -52,8 +52,8 @@ export class AuthService {
     // Using transaction to ensure atomicity of the signup process
     return await DbHelper.withTransaction(async (client: PoolClient) => {
       // Check if the email already exists
-      const { rowCount } = await DbHelper.query(`SELECT 1 FROM users WHERE email = $1 LIMIT 1`, [email], client);
-      if (rowCount > 0) {
+      const existsResult = await DbHelper.query(`SELECT 1 FROM users WHERE email = $1 LIMIT 1`, [email], client);
+      if (existsResult.rowCount > 0) {
         throw new HttpException(HttpStatusCodes.CONFLICT, `This email ${email} already exists`);
       }
 
@@ -61,9 +61,7 @@ export class AuthService {
       const hashedPassword = await this.passwordManager.hashPassword(password);
 
       // Insert the new user into the database
-      const {
-        rows: [newUser],
-      } = await DbHelper.query(
+      const result = await DbHelper.query(
         `INSERT INTO users (email, password, name, first_name, last_name, phone, address)
          VALUES ($1, $2, $3, $4, $5, $6, $7)
          RETURNING ${SqlHelper.USER_SELECT_FIELDS}`,
@@ -71,7 +69,7 @@ export class AuthService {
         client,
       );
 
-      return newUser;
+      return result.rows[0] as Omit<User, 'password'>;
     });
   }
 
@@ -80,9 +78,8 @@ export class AuthService {
 
     try {
       // Get the full user object with ALL fields including ID
-      const { rows } = await DbHelper.query(SqlHelper.getUserByEmailQuery(true, true), [email]);
-
-      const user = rows[0];
+      const result = await DbHelper.query(SqlHelper.getUserByEmailQuery(true, true), [email]);
+      const user = result.rows[0] as (User & { password: string }) | undefined;
 
       if (!user) {
         // Changed status code to 404 as this is a not found scenario
@@ -128,7 +125,7 @@ export class AuthService {
 
       return {
         cookie,
-        findUser: userWithoutPassword,
+        findUser: userWithoutPassword as Omit<User, 'password'>,
         token: accessToken,
       };
     } catch (error) {
@@ -141,8 +138,8 @@ export class AuthService {
     const { email } = userData;
 
     // Check if the user exists
-    const { rows } = await DbHelper.query(SqlHelper.getUserByEmailQuery(true, false), [email]);
-    const user = rows[0];
+    const result = await DbHelper.query(SqlHelper.getUserByEmailQuery(true, false), [email]);
+    const user = result.rows[0] as User | undefined;
 
     if (!user) {
       // Changed to NOT_FOUND status code
@@ -161,7 +158,7 @@ export class AuthService {
     await this.jwtProvider.blacklistToken(token);
 
     // Format the user response using our helper
-    return UserHelper.formatUserResponse(user);
+    return UserHelper.formatUserResponse(user) as Omit<User, 'password'>;
   }
 
   public async requestPasswordReset(passwordResetData: RequestPasswordResetDto): Promise<{ message: string }> {
@@ -169,8 +166,8 @@ export class AuthService {
 
     try {
       // 1. Find user by email
-      const { rows } = await DbHelper.query(`SELECT id, email FROM users WHERE email = $1 LIMIT 1`, [email]);
-      const user = rows[0];
+      const result = await DbHelper.query(`SELECT id, email FROM users WHERE email = $1 LIMIT 1`, [email]);
+      const user = result.rows[0] as { id: string; email: string } | undefined;
 
       if (!user) {
         throw new HttpException(HttpStatusCodes.NOT_FOUND, `User with email ${email} not found`);
@@ -200,8 +197,8 @@ export class AuthService {
       const userId = await this.passwordManager.verifyResetToken(token);
 
       // 2. Confirm user exists
-      const { rows } = await DbHelper.query(`SELECT id FROM users WHERE id = $1 LIMIT 1`, [userId]);
-      const user = rows[0];
+      const result = await DbHelper.query(`SELECT id FROM users WHERE id = $1 LIMIT 1`, [userId]);
+      const user = result.rows[0] as { id: string } | undefined;
 
       if (!user) {
         throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
@@ -224,8 +221,8 @@ export class AuthService {
   public async getResetTokenForDev(email: string): Promise<string | null> {
     try {
       // 1. Lookup user by email
-      const { rows } = await DbHelper.query(`SELECT id FROM users WHERE email = $1 LIMIT 1`, [email]);
-      const user = rows[0];
+      const result = await DbHelper.query(`SELECT id FROM users WHERE email = $1 LIMIT 1`, [email]);
+      const user = result.rows[0] as { id: string } | undefined;
 
       if (!user) return null;
 

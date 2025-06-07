@@ -1,16 +1,32 @@
+/**
+ * @deprecated This local AuthMiddleware is deprecated and should not be used.
+ * Use the centralized AuthMiddleware from @thrilled/be-auth package instead.
+ *
+ * The centralized middleware is available through TypeDI container:
+ * ```typescript
+ * import { Container } from 'typedi';
+ * import { AuthMiddleware } from '@thrilled/be-auth';
+ *
+ * const authMiddleware = Container.get('authMiddleware') as AuthMiddleware;
+ * router.get('/protected', authMiddleware.requireAuth(), handler);
+ * ```
+ *
+ * This file will be removed in a future version.
+ */
+
 import { verify } from 'jsonwebtoken';
 import { NextFunction, Request, Response } from 'express';
-import { redisClient } from '@database';
-import { SECRET_KEY } from '@config';
-import { HttpException } from '@exceptions/httpException';
-import { DataStoredInToken, RequestWithUser } from '@interfaces/auth.interface';
-import { JwtBlacklist } from '@services/helper/jwtBlacklist';
-import { logger } from '@/utils/logger';
-import { DbHelper } from '@utils/dbHelper';
-import { SqlHelper } from '@utils/sqlHelper';
+import { SECRET_KEY } from '../config';
+import { HttpException } from '../exceptions/httpException';
+import { DataStoredInToken, RequestWithUser } from '../interfaces/auth.interface';
+import { JwtBlacklist } from '../services/helper/jwtBlacklist';
+import { logger } from '../utils/logger';
+import { DbHelper } from '@thrilled/databases';
+import { SqlHelper } from '../utils/sqlHelper';
+import { User } from '../interfaces/users.interface';
 
-// Use the centralized Redis client
-const jwtBlacklist = new JwtBlacklist(redisClient);
+// Use the centralized cache-based JWT blacklist
+const jwtBlacklist = new JwtBlacklist();
 
 // Utility: Get token from cookies or headers
 const extractToken = (req: Request): string | null => {
@@ -88,8 +104,8 @@ export const AuthMiddleware = async (req: RequestWithUser, res: Response, next: 
 
     try {
       // Using our SQL helper for consistent user queries
-      const { rows } = await DbHelper.query(SqlHelper.getUserByIdQuery(), [decoded.id]);
-      const user = rows[0];
+      const result = await DbHelper.query(SqlHelper.getUserByIdQuery(), [decoded.id]);
+      const user = result.rows[0] as User | undefined;
 
       if (!user) {
         logger.error(`User not found for ID: ${decoded.id}`);
