@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { App } from '../app';
-import pg, { pool } from '../database';
+import { DbHelper } from '@thrilled/databases';
 import { CreateUserDto, UpdateUserDto, UserRole } from '../dtos/users.dto';
 import { UserRoute } from '../routes/users.route';
 import { setupAuthForTesting, teardownAuth } from './helpers/test-setup';
@@ -28,7 +28,7 @@ beforeAll(async () => {
   sharedAuthPlugin = await setupAuthForTesting();
   // Delete test users if they exist from previous test runs
   try {
-    await pg.query(
+    await DbHelper.query(
       `DELETE FROM users WHERE email LIKE 'test.%@example.com' OR email LIKE 'get.%@example.com' OR email LIKE 'create.%@example.com' OR email LIKE 'duplicate.%@example.com' OR email LIKE 'update.%@example.com' OR email LIKE 'delete.%@example.com'`,
     );
   } catch (error) {
@@ -45,14 +45,12 @@ afterAll(async () => {
   }
   // Clean up test data
   try {
-    await pg.query(
+    await DbHelper.query(
       `DELETE FROM users WHERE email LIKE 'test.%@example.com' OR email LIKE 'get.%@example.com' OR email LIKE 'create.%@example.com' OR email LIKE 'duplicate.%@example.com' OR email LIKE 'update.%@example.com' OR email LIKE 'delete.%@example.com'`,
     );
   } catch (error) {
     console.error('Error cleaning test data:', error);
   }
-  // Use pool.end() since pg is just an object with query, pool and redisClient
-  await pool.end();
 });
 
 describe('Testing Users', () => {

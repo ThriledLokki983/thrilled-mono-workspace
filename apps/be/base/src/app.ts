@@ -7,7 +7,6 @@ import { AuthPlugin } from './plugins/auth.plugin';
 import { RoutesPlugin } from './plugins/routes.plugin';
 import { SwaggerPlugin } from './plugins/swagger.plugin';
 import { RateLimitPlugin } from './plugins/rateLimit.plugin';
-// ValidationPlugin is now automatically included in BaseApp
 
 export class App extends BaseApp {
   private authPlugin?: AuthPlugin;
@@ -26,8 +25,8 @@ export class App extends BaseApp {
     // Database plugin
     this.use(new DatabasePlugin(this.getLogger()));
 
-    // Validation plugin is now automatically included in BaseApp
-    // No need to manually register it here
+    //! Validation plugin is now automatically included in BaseApp
+    //! No need to manually register it here
 
     // Authentication plugin - use shared instance if provided, otherwise create new one
     if (this.authPlugin) {

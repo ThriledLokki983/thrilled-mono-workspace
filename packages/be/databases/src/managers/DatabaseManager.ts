@@ -156,7 +156,7 @@ export class DatabaseManager {
         await systemClient.end();
       }
     } catch (error) {
-      this.logger.error(`Failed to create database '${config.database}':`, {
+      this.logger.error(`Database: '${config.database}' already exist:`, {
         error: error instanceof Error ? error.message : String(error),
       });
       // Don't throw here - let the connection attempt proceed

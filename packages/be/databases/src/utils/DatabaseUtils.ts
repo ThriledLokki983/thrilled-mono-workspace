@@ -70,7 +70,7 @@ export class DatabaseUtils {
       logger.info(`Database '${databaseName}' created successfully`);
       return true;
     } catch (error) {
-      logger.error(`Failed to create database '${databaseName}':`, {
+      logger.error(`Database '${databaseName}' already exist:`, {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
