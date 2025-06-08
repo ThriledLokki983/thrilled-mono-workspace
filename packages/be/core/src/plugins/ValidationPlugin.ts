@@ -172,22 +172,21 @@ export class CoreValidationPlugin extends BasePlugin {
         try {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const SanitizerClass = this.validationModules.Sanitizer as any;
-          const sanitizer = new SanitizerClass();
           
           // Sanitize request body
           if (req.body && typeof req.body === 'object' && this.config.globalSanitization?.body) {
-            req.body = sanitizer.sanitizeObject(req.body, this.config.globalSanitization.body);
+            req.body = SanitizerClass.sanitizeObject(req.body, this.config.globalSanitization.body);
           }
 
           // Sanitize query parameters
           if (req.query && typeof req.query === 'object' && this.config.globalSanitization?.query) {
-            const sanitized = sanitizer.sanitizeObject(req.query, this.config.globalSanitization.query);
+            const sanitized = SanitizerClass.sanitizeObject(req.query, this.config.globalSanitization.query);
             req.query = sanitized as typeof req.query;
           }
 
           // Sanitize URL parameters
           if (req.params && typeof req.params === 'object' && this.config.globalSanitization?.params) {
-            const sanitized = sanitizer.sanitizeObject(req.params, this.config.globalSanitization.params);
+            const sanitized = SanitizerClass.sanitizeObject(req.params, this.config.globalSanitization.params);
             req.params = sanitized as typeof req.params;
           }
 

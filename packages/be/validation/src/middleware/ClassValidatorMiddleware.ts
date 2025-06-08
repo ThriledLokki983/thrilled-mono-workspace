@@ -1,8 +1,13 @@
 import { plainToInstance } from 'class-transformer';
 import { validateOrReject, ValidationError } from 'class-validator';
 import { NextFunction, Request, Response } from 'express';
-import { HttpException } from '../exceptions/httpException';
-import { logger } from '../utils/logger';
+
+/**
+ * Class-validator based validation middleware for DTO validation.
+ * 
+ * This middleware is designed for validating DTOs using class-validator decorators.
+ * It complements the existing Joi/Zod validation middleware in this package.
+ */
 
 type RequestPart = 'body' | 'query' | 'params';
 
@@ -22,7 +27,7 @@ interface EnhancedRequest extends Request {
  * @param options.forbidNonWhitelisted - Throw an error if non-whitelisted properties are found.
  * @returns Middleware function.
  */
-export function ValidationMiddleware<T extends object>(
+export function ClassValidatorMiddleware<T extends object>(
   type: new () => T,
   value: RequestPart = 'body',
   options: {
@@ -57,7 +62,14 @@ export function ValidationMiddleware<T extends object>(
       next();
     } catch (errors) {
       const message = formatValidationErrors(errors);
-      next(new HttpException(400, message));
+      
+      // Return standardized error response
+      res.status(400).json({
+        error: 'Validation failed',
+        message,
+        details: Array.isArray(errors) ? errors.map(formatSingleError) : [formatSingleError(errors)],
+        timestamp: new Date().toISOString(),
+      });
     }
   };
 }
@@ -85,7 +97,29 @@ function formatValidationErrors(errors: unknown): string {
 
     return messages.length ? messages.join(', ') : 'Validation failed';
   } catch (e) {
-    logger.error('Validation error formatting failed:', e);
+    console.error('Validation error formatting failed:', e);
     return 'Validation error occurred';
   }
+}
+
+/**
+ * Formats a single validation error for API response
+ * @param error - A validation error
+ * @returns Formatted error object
+ */
+function formatSingleError(error: unknown) {
+  if (error && typeof error === 'object' && 'property' in error && 'constraints' in error) {
+    const validationError = error as ValidationError;
+    return {
+      field: validationError.property,
+      value: validationError.value,
+      constraints: validationError.constraints,
+      messages: validationError.constraints ? Object.values(validationError.constraints) : [],
+    };
+  }
+  
+  return {
+    field: 'unknown',
+    message: error instanceof Error ? error.message : String(error),
+  };
 }

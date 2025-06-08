@@ -2,7 +2,6 @@
   "name": "@thrilled/be-validation",
   "version": "0.0.1",
   "private": true,
-  "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -12,6 +11,7 @@
       "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
+      "require": "./dist/index.js",
       "default": "./dist/index.js"
     }
   },
@@ -30,7 +30,9 @@
     "dompurify": "^3.0.5",
     "validator": "^13.11.0",
     "express": "^4.18.2",
-    "jsdom": "^23.0.1"
+    "jsdom": "^23.0.1",
+    "class-validator": "^0.14.1",
+    "class-transformer": "^0.5.1"
   },
   "devDependencies": {
     "@types/dompurify": "^3.0.4",

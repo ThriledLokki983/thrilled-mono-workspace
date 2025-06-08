@@ -3,7 +3,7 @@ import { AuthController } from '../controllers/auth.controller';
 import { CreateUserDto } from '../dtos/users.dto';
 import { LoginDto, RequestPasswordResetDto, ResetPasswordDto } from '../dtos/auth.dto';
 import { Routes } from '../interfaces/routes.interface';
-import { ValidationMiddleware } from '../middlewares/validation.middleware';
+import { ClassValidatorMiddleware } from '@thrilled/be-validation';
 import { NODE_ENV } from '../config';
 
 export class AuthRoute implements Routes {
@@ -48,7 +48,7 @@ export class AuthRoute implements Routes {
      *       409:
      *         description: Email already exists
      */
-    this.router.post(`${this.path}/signup`, ValidationMiddleware(CreateUserDto, 'body'), this.auth.signUp);
+    this.router.post(`${this.path}/signup`, ClassValidatorMiddleware(CreateUserDto, 'body'), this.auth.signUp);
 
     /**
      * @swagger
@@ -84,7 +84,7 @@ export class AuthRoute implements Routes {
      *       409:
      *         description: Wrong credentials
      */
-    this.router.post(`${this.path}/login`, ValidationMiddleware(LoginDto, 'body'), this.auth.logIn);
+    this.router.post(`${this.path}/login`, ClassValidatorMiddleware(LoginDto, 'body'), this.auth.logIn);
 
     /**
      * @swagger
@@ -140,7 +140,7 @@ export class AuthRoute implements Routes {
      *       409:
      *         description: User not found
      */
-    this.router.post(`${this.path}/request-password-reset`, ValidationMiddleware(RequestPasswordResetDto, 'body'), this.auth.requestPasswordReset);
+    this.router.post(`${this.path}/request-password-reset`, ClassValidatorMiddleware(RequestPasswordResetDto, 'body'), this.auth.requestPasswordReset);
 
     /**
      * @swagger
@@ -171,7 +171,7 @@ export class AuthRoute implements Routes {
      *       409:
      *         description: Invalid or expired token
      */
-    this.router.post(`${this.path}/reset-password`, ValidationMiddleware(ResetPasswordDto, 'body'), this.auth.resetPassword);
+    this.router.post(`${this.path}/reset-password`, ClassValidatorMiddleware(ResetPasswordDto, 'body'), this.auth.resetPassword);
 
     // DEV-ONLY: Add development endpoint to retrieve tokens for testing
     if (NODE_ENV === 'development') {

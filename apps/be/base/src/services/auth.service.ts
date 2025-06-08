@@ -1,4 +1,5 @@
 import { Container, Service } from 'typedi';
+import { Logger } from '@mono/be-core';
 import { HttpException } from '../exceptions/httpException';
 import { User } from '../interfaces/users.interface';
 import { LoginDto, RequestPasswordResetDto, ResetPasswordDto } from '../dtos/auth.dto';
@@ -8,7 +9,6 @@ import { PoolClient } from 'pg';
 import { SqlHelper } from '../utils/sqlHelper';
 import { UserHelper } from '../utils/userHelper';
 import { HttpStatusCodes } from '../utils/httpStatusCodes';
-import { Logger } from '@mono/be-core';
 
 /**
  * AuthService handles user authentication, including signup, login, logout,

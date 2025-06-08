@@ -4,6 +4,7 @@
 export { JoiValidator } from './validators/JoiValidator.js';
 export { ZodValidator } from './validators/ZodValidator.js';
 export { ValidationMiddleware } from './middleware/ValidationMiddleware.js';
+export { ClassValidatorMiddleware } from './middleware/ClassValidatorMiddleware.js';
 
 // Sanitization
 export { Sanitizer } from './sanitization/Sanitizer.js';

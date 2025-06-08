@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { UserController } from '../controllers/users.controller';
 import { CreateUserDto } from '../dtos/users.dto';
 import { Routes } from '../interfaces/routes.interface';
-import { ValidationMiddleware } from '../middlewares/validation.middleware';
+import { ClassValidatorMiddleware } from '@thrilled/be-validation';
 import { Container } from 'typedi';
 import { AuthMiddleware } from '@thrilled/be-auth';
 
@@ -122,7 +122,7 @@ export class UserRoute implements Routes {
      *       409:
      *         description: Email already exists
      */
-    this.router.post(`${this.path}`, ValidationMiddleware(CreateUserDto, 'body'), this.user.createUser);
+    this.router.post(`${this.path}`, ClassValidatorMiddleware(CreateUserDto, 'body'), this.user.createUser);
 
     /**
      * @swagger
@@ -160,7 +160,7 @@ export class UserRoute implements Routes {
      */
     this.router.put(
       `${this.path}/:id`,
-      ValidationMiddleware(CreateUserDto, 'body', {
+      ClassValidatorMiddleware(CreateUserDto, 'body', {
         skipMissingProperties: true,
         whitelist: true,
         forbidNonWhitelisted: true,
