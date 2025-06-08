@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { Container } from 'typedi';
 import { User } from '../interfaces/users.interface';
-import { RequestWithUser } from '../interfaces/auth.interface';
+import { AuthenticatedRequest } from '@thrilled/be-auth';
 import { CreateUserDto, UpdateUserDto } from '../dtos/users.dto';
 import { UserService } from '../services/users.service';
 import { HttpException } from '../exceptions/httpException';
@@ -65,7 +65,7 @@ export class UserController {
     }
   };
 
-  public getCurrentUser = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<void> => {
+  public getCurrentUser = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       if (!req.user) {
         throw new HttpException(HttpStatusCodes.UNAUTHORIZED, 'User not authenticated');
