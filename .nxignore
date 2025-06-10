@@ -1,0 +1,2 @@
+# Ignore CLI template files (they contain Handlebars syntax which breaks JSON parsing)
+packages/be/cli/templates/
