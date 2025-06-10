@@ -1,0 +1,364 @@
+{{#if (eq project.framework 'express')}}
+{{#if (eq project.language 'typescript')}}
+import { Request, Response, NextFunction } from 'express';
+{{#if project.features.validation}}
+import Joi from 'joi';
+{{/if}}
+{{#if project.features.database}}
+{{#if (eq project.database 'mongodb')}}
+import { {{pascalCase name}}Model } from '../models/{{kebabCase name}}.model';
+{{else}}
+import { {{pascalCase name}} } from '../models/{{kebabCase name}}.model';
+{{/if}}
+{{/if}}
+
+{{#if project.features.validation}}
+const {{camelCase name}}Schema = Joi.object({
+  // Define your validation schema here
+  name: Joi.string().required(),
+  email: Joi.string().email().required(),
+});
+{{/if}}
+
+{{#if project.features.authentication}}
+// Authentication middleware
+const authenticate = (req: Request, res: Response, next: NextFunction) => {
+  // Add your authentication logic here
+  next();
+};
+{{/if}}
+
+// GET /{{kebabCase (pluralize name)}}
+export const get{{pascalCase (pluralize name)}} = async (req: Request, res: Response) => {
+  try {
+    {{#if project.features.database}}
+    {{#if (eq project.database 'mongodb')}}
+    const {{camelCase (pluralize name)}} = await {{pascalCase name}}Model.find();
+    {{else}}
+    const {{camelCase (pluralize name)}} = await {{pascalCase name}}.find();
+    {{/if}}
+    res.json({{camelCase (pluralize name)}});
+    {{else}}
+    res.json({ message: 'Get all {{kebabCase (pluralize name)}}' });
+    {{/if}}
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// GET /{{kebabCase (pluralize name)}}/:id
+export const get{{pascalCase name}}ById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    {{#if project.features.database}}
+    {{#if (eq project.database 'mongodb')}}
+    const {{camelCase name}} = await {{pascalCase name}}Model.findById(id);
+    {{else}}
+    const {{camelCase name}} = await {{pascalCase name}}.findOne({ where: { id } });
+    {{/if}}
+    if (!{{camelCase name}}) {
+      return res.status(404).json({ error: '{{pascalCase name}} not found' });
+    }
+    res.json({{camelCase name}});
+    {{else}}
+    res.json({ message: `Get {{kebabCase name}} with id: ${id}` });
+    {{/if}}
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// POST /{{kebabCase (pluralize name)}}
+export const create{{pascalCase name}} = async (req: Request, res: Response) => {
+  try {
+    {{#if project.features.validation}}
+    const { error, value } = {{camelCase name}}Schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+    {{/if}}
+    
+    {{#if project.features.database}}
+    {{#if (eq project.database 'mongodb')}}
+    const {{camelCase name}} = new {{pascalCase name}}Model({{#if project.features.validation}}value{{else}}req.body{{/if}});
+    await {{camelCase name}}.save();
+    {{else}}
+    const {{camelCase name}} = {{pascalCase name}}.create({{#if project.features.validation}}value{{else}}req.body{{/if}});
+    await {{camelCase name}}.save();
+    {{/if}}
+    res.status(201).json({{camelCase name}});
+    {{else}}
+    res.status(201).json({ message: 'Create {{kebabCase name}}', data: {{#if project.features.validation}}value{{else}}req.body{{/if}} });
+    {{/if}}
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// PUT /{{kebabCase (pluralize name)}}/:id
+export const update{{pascalCase name}} = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    {{#if project.features.validation}}
+    const { error, value } = {{camelCase name}}Schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+    {{/if}}
+    
+    {{#if project.features.database}}
+    {{#if (eq project.database 'mongodb')}}
+    const {{camelCase name}} = await {{pascalCase name}}Model.findByIdAndUpdate(id, {{#if project.features.validation}}value{{else}}req.body{{/if}}, { new: true });
+    {{else}}
+    const {{camelCase name}} = await {{pascalCase name}}.findOne({ where: { id } });
+    if (!{{camelCase name}}) {
+      return res.status(404).json({ error: '{{pascalCase name}} not found' });
+    }
+    await {{camelCase name}}.update({{#if project.features.validation}}value{{else}}req.body{{/if}});
+    {{/if}}
+    res.json({{camelCase name}});
+    {{else}}
+    res.json({ message: `Update {{kebabCase name}} with id: ${id}`, data: {{#if project.features.validation}}value{{else}}req.body{{/if}} });
+    {{/if}}
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// DELETE /{{kebabCase (pluralize name)}}/:id
+export const delete{{pascalCase name}} = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    {{#if project.features.database}}
+    {{#if (eq project.database 'mongodb')}}
+    const {{camelCase name}} = await {{pascalCase name}}Model.findByIdAndDelete(id);
+    {{else}}
+    const {{camelCase name}} = await {{pascalCase name}}.findOne({ where: { id } });
+    if (!{{camelCase name}}) {
+      return res.status(404).json({ error: '{{pascalCase name}} not found' });
+    }
+    await {{camelCase name}}.destroy();
+    {{/if}}
+    res.status(204).send();
+    {{else}}
+    res.status(204).send();
+    {{/if}}
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+{{else}}
+// JavaScript Express Route Controller
+const {{camelCase name}}Controller = {
+  // GET /{{kebabCase (pluralize name)}}
+  getAll: async (req, res) => {
+    try {
+      res.json({ message: 'Get all {{kebabCase (pluralize name)}}' });
+    } catch (error) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  },
+
+  // GET /{{kebabCase (pluralize name)}}/:id
+  getById: async (req, res) => {
+    try {
+      const { id } = req.params;
+      res.json({ message: `Get {{kebabCase name}} with id: ${id}` });
+    } catch (error) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  },
+
+  // POST /{{kebabCase (pluralize name)}}
+  create: async (req, res) => {
+    try {
+      res.status(201).json({ message: 'Create {{kebabCase name}}', data: req.body });
+    } catch (error) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  },
+
+  // PUT /{{kebabCase (pluralize name)}}/:id
+  update: async (req, res) => {
+    try {
+      const { id } = req.params;
+      res.json({ message: `Update {{kebabCase name}} with id: ${id}`, data: req.body });
+    } catch (error) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  },
+
+  // DELETE /{{kebabCase (pluralize name)}}/:id
+  delete: async (req, res) => {
+    try {
+      const { id } = req.params;
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+};
+
+module.exports = {{camelCase name}}Controller;
+{{/if}}
+{{else if (eq project.framework 'fastify')}}
+// Fastify Route Handler
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+{{#if project.features.validation}}
+import { Type } from '@sinclair/typebox';
+{{/if}}
+
+{{#if project.features.validation}}
+const {{pascalCase name}}Schema = Type.Object({
+  name: Type.String(),
+  email: Type.String({ format: 'email' }),
+});
+{{/if}}
+
+export default async function {{camelCase name}}Routes(fastify: FastifyInstance) {
+  // GET /{{kebabCase (pluralize name)}}
+  fastify.get('/{{kebabCase (pluralize name)}}', {
+    {{#if project.features.validation}}
+    schema: {
+      response: {
+        200: Type.Array({{pascalCase name}}Schema)
+      }
+    }
+    {{/if}}
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    return { message: 'Get all {{kebabCase (pluralize name)}}' };
+  });
+
+  // GET /{{kebabCase (pluralize name)}}/:id
+  fastify.get('/{{kebabCase (pluralize name)}}/:id', {
+    {{#if project.features.validation}}
+    schema: {
+      params: Type.Object({
+        id: Type.String()
+      }),
+      response: {
+        200: {{pascalCase name}}Schema
+      }
+    }
+    {{/if}}
+  }, async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+    const { id } = request.params;
+    return { message: `Get {{kebabCase name}} with id: ${id}` };
+  });
+
+  // POST /{{kebabCase (pluralize name)}}
+  fastify.post('/{{kebabCase (pluralize name)}}', {
+    {{#if project.features.validation}}
+    schema: {
+      body: {{pascalCase name}}Schema,
+      response: {
+        201: {{pascalCase name}}Schema
+      }
+    }
+    {{/if}}
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    reply.status(201);
+    return { message: 'Create {{kebabCase name}}', data: request.body };
+  });
+
+  // PUT /{{kebabCase (pluralize name)}}/:id
+  fastify.put('/{{kebabCase (pluralize name)}}/:id', {
+    {{#if project.features.validation}}
+    schema: {
+      params: Type.Object({
+        id: Type.String()
+      }),
+      body: {{pascalCase name}}Schema,
+      response: {
+        200: {{pascalCase name}}Schema
+      }
+    }
+    {{/if}}
+  }, async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+    const { id } = request.params;
+    return { message: `Update {{kebabCase name}} with id: ${id}`, data: request.body };
+  });
+
+  // DELETE /{{kebabCase (pluralize name)}}/:id
+  fastify.delete('/{{kebabCase (pluralize name)}}/:id', {
+    {{#if project.features.validation}}
+    schema: {
+      params: Type.Object({
+        id: Type.String()
+      }),
+      response: {
+        204: Type.Null()
+      }
+    }
+    {{/if}}
+  }, async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+    reply.status(204);
+  });
+}
+{{else if (eq project.framework 'nestjs')}}
+// NestJS Controller
+import { Controller, Get, Post, Put, Delete, Body, Param, HttpStatus } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+{{#if project.features.validation}}
+import { CreateUpdateDto } from './dto/create-update-{{kebabCase name}}.dto';
+{{/if}}
+{{#if project.features.authentication}}
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+{{/if}}
+
+@ApiTags('{{kebabCase (pluralize name)}}')
+@Controller('{{kebabCase (pluralize name)}}')
+{{#if project.features.authentication}}
+@UseGuards(JwtAuthGuard)
+{{/if}}
+export class {{pascalCase name}}Controller {
+  @Get()
+  @ApiOperation({ summary: 'Get all {{kebabCase (pluralize name)}}' })
+  @ApiResponse({ status: 200, description: 'Return all {{kebabCase (pluralize name)}}' })
+  findAll() {
+    return { message: 'Get all {{kebabCase (pluralize name)}}' };
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a {{kebabCase name}} by id' })
+  @ApiParam({ name: 'id', description: '{{pascalCase name}} ID' })
+  @ApiResponse({ status: 200, description: 'Return the {{kebabCase name}}' })
+  @ApiResponse({ status: 404, description: '{{pascalCase name}} not found' })
+  findOne(@Param('id') id: string) {
+    return { message: `Get {{kebabCase name}} with id: ${id}` };
+  }
+
+  @Post()
+  @ApiOperation({ summary: 'Create a new {{kebabCase name}}' })
+  @ApiResponse({ status: 201, description: 'The {{kebabCase name}} has been successfully created' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  create(@Body() {{#if project.features.validation}}createDto: CreateUpdateDto{{else}}body: any{{/if}}) {
+    return { 
+      message: 'Create {{kebabCase name}}', 
+      data: {{#if project.features.validation}}createDto{{else}}body{{/if}} 
+    };
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update a {{kebabCase name}}' })
+  @ApiParam({ name: 'id', description: '{{pascalCase name}} ID' })
+  @ApiResponse({ status: 200, description: 'The {{kebabCase name}} has been successfully updated' })
+  @ApiResponse({ status: 404, description: '{{pascalCase name}} not found' })
+  update(@Param('id') id: string, @Body() {{#if project.features.validation}}updateDto: CreateUpdateDto{{else}}body: any{{/if}}) {
+    return { 
+      message: `Update {{kebabCase name}} with id: ${id}`, 
+      data: {{#if project.features.validation}}updateDto{{else}}body{{/if}} 
+    };
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a {{kebabCase name}}' })
+  @ApiParam({ name: 'id', description: '{{pascalCase name}} ID' })
+  @ApiResponse({ status: 204, description: 'The {{kebabCase name}} has been successfully deleted' })
+  @ApiResponse({ status: 404, description: '{{pascalCase name}} not found' })
+  remove(@Param('id') id: string) {
+    return;
+  }
+}
+{{/if}}

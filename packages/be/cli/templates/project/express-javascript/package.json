@@ -1,0 +1,38 @@
+{
+  "name": "{{kebabCase name}}",
+  "version": "1.0.0",
+  "description": "{{description}}",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src --fix",
+    "format": "prettier --write src/**/*.js"
+  },
+  "keywords": [],
+  "author": "{{author}}",
+  "license": "{{license}}",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "morgan": "^1.10.0",
+    "dotenv": "^16.3.1"{{#if database}}{{#if (eq database 'postgresql')}},
+    "pg": "^8.11.0"{{else if (eq database 'mysql')}},
+    "mysql2": "^3.6.0"{{else if (eq database 'sqlite')}},
+    "sqlite3": "^5.1.6"{{else if (eq database 'mongodb')}},
+    "mongoose": "^7.4.0"{{/if}}{{/if}}{{#if features.authentication}},
+    "jsonwebtoken": "^9.0.1",
+    "bcryptjs": "^2.4.3"{{/if}}{{#if features.validation}},
+    "joi": "^17.9.2"{{/if}}
+  },
+  "devDependencies": {
+    "jest": "^29.6.1",
+    "supertest": "^6.3.3",
+    "nodemon": "^3.0.1",
+    "eslint": "^8.45.0",
+    "prettier": "^3.0.0"
+  }
+}

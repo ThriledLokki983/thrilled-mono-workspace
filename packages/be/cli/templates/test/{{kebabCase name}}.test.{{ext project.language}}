@@ -1,0 +1,508 @@
+{{#if (eq project.framework 'nestjs')}}
+import { Test, TestingModule } from '@nestjs/testing';
+import { {{pascalCase name}}Controller } from './{{kebabCase name}}.controller';
+import { {{pascalCase name}}Service } from './{{kebabCase name}}.service';
+{{#if project.features.database}}
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { {{pascalCase name}} } from './entities/{{kebabCase name}}.entity';
+{{/if}}
+
+describe('{{pascalCase name}}Controller', () => {
+  let controller: {{pascalCase name}}Controller;
+  let service: {{pascalCase name}}Service;
+  {{#if project.features.database}}
+  let repository: Repository<{{pascalCase name}}>;
+  {{/if}}
+
+  const mock{{pascalCase name}} = {
+    id: 1,
+    name: 'Test {{pascalCase name}}',
+    email: 'test@example.com',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  const mock{{pascalCase name}}Service = {
+    findAll: jest.fn().mockResolvedValue([mock{{pascalCase name}}]),
+    findOne: jest.fn().mockResolvedValue(mock{{pascalCase name}}),
+    create: jest.fn().mockResolvedValue(mock{{pascalCase name}}),
+    update: jest.fn().mockResolvedValue(mock{{pascalCase name}}),
+    remove: jest.fn().mockResolvedValue(undefined),
+  };
+
+  {{#if project.features.database}}
+  const mockRepository = {
+    find: jest.fn().mockResolvedValue([mock{{pascalCase name}}]),
+    findOne: jest.fn().mockResolvedValue(mock{{pascalCase name}}),
+    create: jest.fn().mockReturnValue(mock{{pascalCase name}}),
+    save: jest.fn().mockResolvedValue(mock{{pascalCase name}}),
+    update: jest.fn().mockResolvedValue({ affected: 1 }),
+    delete: jest.fn().mockResolvedValue({ affected: 1 }),
+  };
+  {{/if}}
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [{{pascalCase name}}Controller],
+      providers: [
+        {
+          provide: {{pascalCase name}}Service,
+          useValue: mock{{pascalCase name}}Service,
+        },
+        {{#if project.features.database}}
+        {
+          provide: getRepositoryToken({{pascalCase name}}),
+          useValue: mockRepository,
+        },
+        {{/if}}
+      ],
+    }).compile();
+
+    controller = module.get<{{pascalCase name}}Controller>({{pascalCase name}}Controller);
+    service = module.get<{{pascalCase name}}Service>({{pascalCase name}}Service);
+    {{#if project.features.database}}
+    repository = module.get<Repository<{{pascalCase name}}>>(getRepositoryToken({{pascalCase name}}));
+    {{/if}}
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+
+  describe('findAll', () => {
+    it('should return an array of {{kebabCase (pluralize name)}}', async () => {
+      const result = await controller.findAll();
+      expect(result).toEqual([mock{{pascalCase name}}]);
+      expect(service.findAll).toHaveBeenCalled();
+    });
+  });
+
+  describe('findOne', () => {
+    it('should return a single {{kebabCase name}}', async () => {
+      const result = await controller.findOne('1');
+      expect(result).toEqual(mock{{pascalCase name}});
+      expect(service.findOne).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe('create', () => {
+    it('should create a new {{kebabCase name}}', async () => {
+      const createDto = { name: 'Test {{pascalCase name}}', email: 'test@example.com' };
+      const result = await controller.create(createDto);
+      expect(result).toEqual(mock{{pascalCase name}});
+      expect(service.create).toHaveBeenCalledWith(createDto);
+    });
+  });
+
+  describe('update', () => {
+    it('should update a {{kebabCase name}}', async () => {
+      const updateDto = { name: 'Updated {{pascalCase name}}' };
+      const result = await controller.update('1', updateDto);
+      expect(result).toEqual(mock{{pascalCase name}});
+      expect(service.update).toHaveBeenCalledWith(1, updateDto);
+    });
+  });
+
+  describe('remove', () => {
+    it('should remove a {{kebabCase name}}', async () => {
+      await controller.remove('1');
+      expect(service.remove).toHaveBeenCalledWith(1);
+    });
+  });
+});
+
+describe('{{pascalCase name}}Service', () => {
+  let service: {{pascalCase name}}Service;
+  {{#if project.features.database}}
+  let repository: Repository<{{pascalCase name}}>;
+  {{/if}}
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        {{pascalCase name}}Service,
+        {{#if project.features.database}}
+        {
+          provide: getRepositoryToken({{pascalCase name}}),
+          useValue: mockRepository,
+        },
+        {{/if}}
+      ],
+    }).compile();
+
+    service = module.get<{{pascalCase name}}Service>({{pascalCase name}}Service);
+    {{#if project.features.database}}
+    repository = module.get<Repository<{{pascalCase name}}>>(getRepositoryToken({{pascalCase name}}));
+    {{/if}}
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
+  describe('findAll', () => {
+    it('should return an array of {{kebabCase (pluralize name)}}', async () => {
+      const result = await service.findAll();
+      expect(result).toEqual([mock{{pascalCase name}}]);
+      {{#if project.features.database}}
+      expect(repository.find).toHaveBeenCalled();
+      {{/if}}
+    });
+  });
+
+  describe('findOne', () => {
+    it('should return a single {{kebabCase name}}', async () => {
+      const result = await service.findOne(1);
+      expect(result).toEqual(mock{{pascalCase name}});
+      {{#if project.features.database}}
+      expect(repository.findOne).toHaveBeenCalledWith({ where: { id: 1 } });
+      {{/if}}
+    });
+
+    it('should throw NotFoundException if {{kebabCase name}} not found', async () => {
+      {{#if project.features.database}}
+      mockRepository.findOne.mockResolvedValueOnce(null);
+      {{/if}}
+      await expect(service.findOne(999)).rejects.toThrow('{{pascalCase name}} with ID 999 not found');
+    });
+  });
+
+  describe('create', () => {
+    it('should create and return a {{kebabCase name}}', async () => {
+      const createDto = { name: 'Test {{pascalCase name}}', email: 'test@example.com' };
+      const result = await service.create(createDto);
+      expect(result).toEqual(mock{{pascalCase name}});
+      {{#if project.features.database}}
+      expect(repository.create).toHaveBeenCalledWith(createDto);
+      expect(repository.save).toHaveBeenCalled();
+      {{/if}}
+    });
+  });
+
+  describe('update', () => {
+    it('should update and return a {{kebabCase name}}', async () => {
+      const updateDto = { name: 'Updated {{pascalCase name}}' };
+      const result = await service.update(1, updateDto);
+      expect(result).toEqual(mock{{pascalCase name}});
+      {{#if project.features.database}}
+      expect(repository.update).toHaveBeenCalledWith(1, updateDto);
+      {{/if}}
+    });
+  });
+
+  describe('remove', () => {
+    it('should remove a {{kebabCase name}}', async () => {
+      await service.remove(1);
+      {{#if project.features.database}}
+      expect(repository.delete).toHaveBeenCalledWith(1);
+      {{/if}}
+    });
+
+    it('should throw NotFoundException if {{kebabCase name}} not found', async () => {
+      {{#if project.features.database}}
+      mockRepository.delete.mockResolvedValueOnce({ affected: 0 });
+      {{/if}}
+      await expect(service.remove(999)).rejects.toThrow('{{pascalCase name}} with ID 999 not found');
+    });
+  });
+});
+{{else}}
+{{#if (eq project.language 'typescript')}}
+import { Request, Response } from 'express';
+import request from 'supertest';
+import express from 'express';
+{{#if project.features.database}}
+{{#if (eq project.database 'mongodb')}}
+import { {{pascalCase name}}Model } from '../models/{{kebabCase name}}.model';
+{{else}}
+import { {{pascalCase name}} } from '../models/{{kebabCase name}}.model';
+{{/if}}
+{{/if}}
+import { 
+  get{{pascalCase (pluralize name)}}, 
+  get{{pascalCase name}}ById, 
+  create{{pascalCase name}}, 
+  update{{pascalCase name}}, 
+  delete{{pascalCase name}} 
+} from '../controllers/{{kebabCase name}}.controller';
+
+// Mock the model
+{{#if project.features.database}}
+{{#if (eq project.database 'mongodb')}}
+jest.mock('../models/{{kebabCase name}}.model');
+const mock{{pascalCase name}}Model = {{pascalCase name}}Model as jest.Mocked<typeof {{pascalCase name}}Model>;
+{{else}}
+jest.mock('../models/{{kebabCase name}}.model');
+const mock{{pascalCase name}} = {{pascalCase name}} as jest.Mocked<typeof {{pascalCase name}}>;
+{{/if}}
+{{/if}}
+
+describe('{{pascalCase name}} Controller', () => {
+  let app: express.Application;
+  let req: Partial<Request>;
+  let res: Partial<Response>;
+
+  const mock{{pascalCase name}}Data = {
+    id: 1,
+    name: 'Test {{pascalCase name}}',
+    email: 'test@example.com',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  beforeEach(() => {
+    app = express();
+    app.use(express.json());
+    
+    req = {
+      params: {},
+      body: {},
+      query: {},
+    };
+
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+      send: jest.fn().mockReturnThis(),
+    };
+
+    // Reset mocks
+    jest.clearAllMocks();
+  });
+
+  describe('get{{pascalCase (pluralize name)}}', () => {
+    it('should return all {{kebabCase (pluralize name)}}', async () => {
+      {{#if project.features.database}}
+      {{#if (eq project.database 'mongodb')}}
+      mock{{pascalCase name}}Model.find.mockResolvedValue([mock{{pascalCase name}}Data]);
+      {{else}}
+      mock{{pascalCase name}}.find.mockResolvedValue([mock{{pascalCase name}}Data]);
+      {{/if}}
+      {{/if}}
+
+      await get{{pascalCase (pluralize name)}}(req as Request, res as Response);
+
+      expect(res.json).toHaveBeenCalledWith(
+        {{#if project.features.database}}[mock{{pascalCase name}}Data]{{else}}{ message: 'Get all {{kebabCase (pluralize name)}}' }{{/if}}
+      );
+    });
+
+    it('should handle errors', async () => {
+      {{#if project.features.database}}
+      {{#if (eq project.database 'mongodb')}}
+      mock{{pascalCase name}}Model.find.mockRejectedValue(new Error('Database error'));
+      {{else}}
+      mock{{pascalCase name}}.find.mockRejectedValue(new Error('Database error'));
+      {{/if}}
+      {{/if}}
+
+      await get{{pascalCase (pluralize name)}}(req as Request, res as Response);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Internal server error' });
+    });
+  });
+
+  describe('get{{pascalCase name}}ById', () => {
+    beforeEach(() => {
+      req.params = { id: '1' };
+    });
+
+    it('should return a {{kebabCase name}} by id', async () => {
+      {{#if project.features.database}}
+      {{#if (eq project.database 'mongodb')}}
+      mock{{pascalCase name}}Model.findById.mockResolvedValue(mock{{pascalCase name}}Data);
+      {{else}}
+      mock{{pascalCase name}}.findOne.mockResolvedValue(mock{{pascalCase name}}Data);
+      {{/if}}
+      {{/if}}
+
+      await get{{pascalCase name}}ById(req as Request, res as Response);
+
+      expect(res.json).toHaveBeenCalledWith(
+        {{#if project.features.database}}mock{{pascalCase name}}Data{{else}}{ message: 'Get {{kebabCase name}} with id: 1' }{{/if}}
+      );
+    });
+
+    {{#if project.features.database}}
+    it('should return 404 if {{kebabCase name}} not found', async () => {
+      {{#if (eq project.database 'mongodb')}}
+      mock{{pascalCase name}}Model.findById.mockResolvedValue(null);
+      {{else}}
+      mock{{pascalCase name}}.findOne.mockResolvedValue(null);
+      {{/if}}
+
+      await get{{pascalCase name}}ById(req as Request, res as Response);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ error: '{{pascalCase name}} not found' });
+    });
+    {{/if}}
+  });
+
+  describe('create{{pascalCase name}}', () => {
+    beforeEach(() => {
+      req.body = { name: 'Test {{pascalCase name}}', email: 'test@example.com' };
+    });
+
+    it('should create a new {{kebabCase name}}', async () => {
+      {{#if project.features.database}}
+      {{#if (eq project.database 'mongodb')}}
+      const mockSave = jest.fn().mockResolvedValue(mock{{pascalCase name}}Data);
+      mock{{pascalCase name}}Model.mockImplementation(() => ({ save: mockSave }));
+      {{else}}
+      const mockSave = jest.fn().mockResolvedValue(mock{{pascalCase name}}Data);
+      mock{{pascalCase name}}.create.mockReturnValue({ save: mockSave });
+      {{/if}}
+      {{/if}}
+
+      await create{{pascalCase name}}(req as Request, res as Response);
+
+      expect(res.status).toHaveBeenCalledWith(201);
+      {{#if project.features.database}}
+      expect(res.json).toHaveBeenCalledWith(mock{{pascalCase name}}Data);
+      {{else}}
+      expect(res.json).toHaveBeenCalledWith({ 
+        message: 'Create {{kebabCase name}}', 
+        data: req.body 
+      });
+      {{/if}}
+    });
+  });
+
+  describe('update{{pascalCase name}}', () => {
+    beforeEach(() => {
+      req.params = { id: '1' };
+      req.body = { name: 'Updated {{pascalCase name}}' };
+    });
+
+    it('should update a {{kebabCase name}}', async () => {
+      {{#if project.features.database}}
+      {{#if (eq project.database 'mongodb')}}
+      mock{{pascalCase name}}Model.findByIdAndUpdate.mockResolvedValue(mock{{pascalCase name}}Data);
+      {{else}}
+      const mockUpdate = jest.fn().mockResolvedValue(undefined);
+      mock{{pascalCase name}}.findOne.mockResolvedValue({ update: mockUpdate });
+      {{/if}}
+      {{/if}}
+
+      await update{{pascalCase name}}(req as Request, res as Response);
+
+      {{#if project.features.database}}
+      expect(res.json).toHaveBeenCalledWith(mock{{pascalCase name}}Data);
+      {{else}}
+      expect(res.json).toHaveBeenCalledWith({ 
+        message: 'Update {{kebabCase name}} with id: 1', 
+        data: req.body 
+      });
+      {{/if}}
+    });
+  });
+
+  describe('delete{{pascalCase name}}', () => {
+    beforeEach(() => {
+      req.params = { id: '1' };
+    });
+
+    it('should delete a {{kebabCase name}}', async () => {
+      {{#if project.features.database}}
+      {{#if (eq project.database 'mongodb')}}
+      mock{{pascalCase name}}Model.findByIdAndDelete.mockResolvedValue(mock{{pascalCase name}}Data);
+      {{else}}
+      const mockDestroy = jest.fn().mockResolvedValue(undefined);
+      mock{{pascalCase name}}.findOne.mockResolvedValue({ destroy: mockDestroy });
+      {{/if}}
+      {{/if}}
+
+      await delete{{pascalCase name}}(req as Request, res as Response);
+
+      expect(res.status).toHaveBeenCalledWith(204);
+      expect(res.send).toHaveBeenCalled();
+    });
+  });
+});
+{{else}}
+const request = require('supertest');
+const express = require('express');
+const {{camelCase name}}Controller = require('../controllers/{{kebabCase name}}.controller');
+
+describe('{{pascalCase name}} Controller', () => {
+  let app;
+
+  beforeEach(() => {
+    app = express();
+    app.use(express.json());
+    
+    // Setup routes
+    app.get('/{{kebabCase (pluralize name)}}', {{camelCase name}}Controller.getAll);
+    app.get('/{{kebabCase (pluralize name)}}/:id', {{camelCase name}}Controller.getById);
+    app.post('/{{kebabCase (pluralize name)}}', {{camelCase name}}Controller.create);
+    app.put('/{{kebabCase (pluralize name)}}/:id', {{camelCase name}}Controller.update);
+    app.delete('/{{kebabCase (pluralize name)}}/:id', {{camelCase name}}Controller.delete);
+  });
+
+  describe('GET /{{kebabCase (pluralize name)}}', () => {
+    it('should return all {{kebabCase (pluralize name)}}', async () => {
+      const response = await request(app)
+        .get('/{{kebabCase (pluralize name)}}')
+        .expect(200);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toBe('Get all {{kebabCase (pluralize name)}}');
+    });
+  });
+
+  describe('GET /{{kebabCase (pluralize name)}}/:id', () => {
+    it('should return a {{kebabCase name}} by id', async () => {
+      const response = await request(app)
+        .get('/{{kebabCase (pluralize name)}}/1')
+        .expect(200);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toBe('Get {{kebabCase name}} with id: 1');
+    });
+  });
+
+  describe('POST /{{kebabCase (pluralize name)}}', () => {
+    it('should create a new {{kebabCase name}}', async () => {
+      const newData = { name: 'Test {{pascalCase name}}', email: 'test@example.com' };
+      
+      const response = await request(app)
+        .post('/{{kebabCase (pluralize name)}}')
+        .send(newData)
+        .expect(201);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toBe('Create {{kebabCase name}}');
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toEqual(newData);
+    });
+  });
+
+  describe('PUT /{{kebabCase (pluralize name)}}/:id', () => {
+    it('should update a {{kebabCase name}}', async () => {
+      const updateData = { name: 'Updated {{pascalCase name}}' };
+      
+      const response = await request(app)
+        .put('/{{kebabCase (pluralize name)}}/1')
+        .send(updateData)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toBe('Update {{kebabCase name}} with id: 1');
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toEqual(updateData);
+    });
+  });
+
+  describe('DELETE /{{kebabCase (pluralize name)}}/:id', () => {
+    it('should delete a {{kebabCase name}}', async () => {
+      await request(app)
+        .delete('/{{kebabCase (pluralize name)}}/1')
+        .expect(204);
+    });
+  });
+});
+{{/if}}
+{{/if}}

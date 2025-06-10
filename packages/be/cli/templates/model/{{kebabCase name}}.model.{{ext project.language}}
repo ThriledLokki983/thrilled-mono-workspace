@@ -1,0 +1,194 @@
+{{#if (eq project.database 'mongodb')}}
+{{#if (eq project.language 'typescript')}}
+import { Schema, model, Document } from 'mongoose';
+
+export interface I{{pascalCase name}} extends Document {
+  // Define your model properties here
+  name: string;
+  email: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const {{camelCase name}}Schema = new Schema<I{{pascalCase name}}>({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 100
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+  }
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Add indexes
+{{camelCase name}}Schema.index({ email: 1 });
+{{camelCase name}}Schema.index({ createdAt: -1 });
+
+// Add virtual fields
+{{camelCase name}}Schema.virtual('id').get(function() {
+  return this._id.toHexString();
+});
+
+// Add instance methods
+{{camelCase name}}Schema.methods.toJSON = function() {
+  const obj = this.toObject();
+  delete obj.__v;
+  return obj;
+};
+
+// Add static methods
+{{camelCase name}}Schema.statics.findByEmail = function(email: string) {
+  return this.findOne({ email });
+};
+
+export const {{pascalCase name}}Model = model<I{{pascalCase name}}>('{{pascalCase name}}', {{camelCase name}}Schema);
+{{else}}
+const { Schema, model } = require('mongoose');
+
+const {{camelCase name}}Schema = new Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 100
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+  }
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Add indexes
+{{camelCase name}}Schema.index({ email: 1 });
+{{camelCase name}}Schema.index({ createdAt: -1 });
+
+// Add virtual fields
+{{camelCase name}}Schema.virtual('id').get(function() {
+  return this._id.toHexString();
+});
+
+// Add instance methods
+{{camelCase name}}Schema.methods.toJSON = function() {
+  const obj = this.toObject();
+  delete obj.__v;
+  return obj;
+};
+
+// Add static methods
+{{camelCase name}}Schema.statics.findByEmail = function(email) {
+  return this.findOne({ email });
+};
+
+module.exports = model('{{pascalCase name}}', {{camelCase name}}Schema);
+{{/if}}
+{{else}}
+{{#if (eq project.language 'typescript')}}
+{{#if (eq project.framework 'nestjs')}}
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+{{#if project.features.validation}}
+import { IsEmail, IsNotEmpty, MaxLength } from 'class-validator';
+{{/if}}
+
+@Entity('{{snakeCase (pluralize name)}}')
+export class {{pascalCase name}} {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ length: 100 })
+  {{#if project.features.validation}}
+  @IsNotEmpty()
+  @MaxLength(100)
+  {{/if}}
+  name: string;
+
+  @Column({ unique: true })
+  {{#if project.features.validation}}
+  @IsEmail()
+  @IsNotEmpty()
+  {{/if}}
+  email: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+}
+{{else}}
+// TypeORM Entity
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+
+@Entity('{{snakeCase (pluralize name)}}')
+export class {{pascalCase name}} {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ length: 100 })
+  name: string;
+
+  @Column({ unique: true })
+  email: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+}
+{{/if}}
+{{else}}
+// JavaScript SQL Model (using simple object)
+class {{pascalCase name}} {
+  constructor(data = {}) {
+    this.id = data.id || null;
+    this.name = data.name || '';
+    this.email = data.email || '';
+    this.createdAt = data.createdAt || new Date();
+    this.updatedAt = data.updatedAt || new Date();
+  }
+
+  static tableName = '{{snakeCase (pluralize name)}}';
+
+  static createTable() {
+    return `
+      CREATE TABLE IF NOT EXISTS ${this.tableName} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name VARCHAR(100) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      email: this.email,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt
+    };
+  }
+}
+
+module.exports = {{pascalCase name}};
+{{/if}}
+{{/if}}

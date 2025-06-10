@@ -1,0 +1,61 @@
+{
+  "name": "{{kebabCase name}}",
+  "version": "1.0.0",
+  "description": "{{description}}",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write src/**/*.ts",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "express",
+    "typescript",
+    "api",
+    "backend"
+  ],
+  "author": "{{author}}",
+  "license": "{{license}}",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "dotenv": "^16.4.0"{{#if features.authentication}},
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3"{{/if}}{{#if features.validation}},
+    "joi": "^17.12.0"{{/if}}{{#if database}}{{#if (eq database 'postgresql')}},
+    "pg": "^8.11.3"{{else if (eq database 'mysql')}},
+    "mysql2": "^3.6.5"{{else if (eq database 'sqlite')}},
+    "sqlite3": "^5.1.6"{{else if (eq database 'mongodb')}},
+    "mongoose": "^8.0.3"{{/if}}{{/if}}
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/morgan": "^1.9.9",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.8",
+    "supertest": "^6.3.3",
+    "@types/supertest": "^6.0.2",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "prettier": "^3.2.0"{{#if features.authentication}},
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/bcryptjs": "^2.4.6"{{/if}}
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

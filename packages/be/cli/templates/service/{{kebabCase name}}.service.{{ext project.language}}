@@ -1,0 +1,337 @@
+{{#if (eq project.framework 'nestjs')}}
+import { Injectable, NotFoundException } from '@nestjs/common';
+{{#if project.features.database}}
+{{#if (eq project.database 'mongodb')}}
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { {{pascalCase name}}, {{pascalCase name}}Document } from './schemas/{{kebabCase name}}.schema';
+{{else}}
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { {{pascalCase name}} } from './entities/{{kebabCase name}}.entity';
+{{/if}}
+{{/if}}
+{{#if project.features.validation}}
+import { CreateUpdateDto } from './dto/create-update-{{kebabCase name}}.dto';
+{{/if}}
+
+@Injectable()
+export class {{pascalCase name}}Service {
+  {{#if project.features.database}}
+  {{#if (eq project.database 'mongodb')}}
+  constructor(
+    @InjectModel({{pascalCase name}}.name) private {{camelCase name}}Model: Model<{{pascalCase name}}Document>,
+  ) {}
+  {{else}}
+  constructor(
+    @InjectRepository({{pascalCase name}})
+    private {{camelCase name}}Repository: Repository<{{pascalCase name}}>,
+  ) {}
+  {{/if}}
+  {{else}}
+  constructor() {}
+  {{/if}}
+
+  async findAll(): Promise<{{#if project.features.database}}{{pascalCase name}}[]{{else}}any[]{{/if}}> {
+    {{#if project.features.database}}
+    {{#if (eq project.database 'mongodb')}}
+    return this.{{camelCase name}}Model.find().exec();
+    {{else}}
+    return this.{{camelCase name}}Repository.find();
+    {{/if}}
+    {{else}}
+    // Mock data - replace with actual implementation
+    return [
+      { id: 1, name: 'Sample {{pascalCase name}}', email: 'sample@example.com' }
+    ];
+    {{/if}}
+  }
+
+  async findOne(id: {{#if (eq project.database 'mongodb')}}string{{else}}number{{/if}}): Promise<{{#if project.features.database}}{{pascalCase name}}{{else}}any{{/if}}> {
+    {{#if project.features.database}}
+    {{#if (eq project.database 'mongodb')}}
+    const {{camelCase name}} = await this.{{camelCase name}}Model.findById(id).exec();
+    {{else}}
+    const {{camelCase name}} = await this.{{camelCase name}}Repository.findOne({ where: { id } });
+    {{/if}}
+    if (!{{camelCase name}}) {
+      throw new NotFoundException(`{{pascalCase name}} with ID ${id} not found`);
+    }
+    return {{camelCase name}};
+    {{else}}
+    // Mock data - replace with actual implementation
+    if (id === 1) {
+      return { id: 1, name: 'Sample {{pascalCase name}}', email: 'sample@example.com' };
+    }
+    throw new NotFoundException(`{{pascalCase name}} with ID ${id} not found`);
+    {{/if}}
+  }
+
+  async create({{#if project.features.validation}}createDto: CreateUpdateDto{{else}}data: any{{/if}}): Promise<{{#if project.features.database}}{{pascalCase name}}{{else}}any{{/if}}> {
+    {{#if project.features.database}}
+    {{#if (eq project.database 'mongodb')}}
+    const created{{pascalCase name}} = new this.{{camelCase name}}Model({{#if project.features.validation}}createDto{{else}}data{{/if}});
+    return created{{pascalCase name}}.save();
+    {{else}}
+    const {{camelCase name}} = this.{{camelCase name}}Repository.create({{#if project.features.validation}}createDto{{else}}data{{/if}});
+    return this.{{camelCase name}}Repository.save({{camelCase name}});
+    {{/if}}
+    {{else}}
+    // Mock data - replace with actual implementation
+    return { 
+      id: Date.now(), 
+      ...{{#if project.features.validation}}createDto{{else}}data{{/if}},
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    {{/if}}
+  }
+
+  async update(id: {{#if (eq project.database 'mongodb')}}string{{else}}number{{/if}}, {{#if project.features.validation}}updateDto: CreateUpdateDto{{else}}data: any{{/if}}): Promise<{{#if project.features.database}}{{pascalCase name}}{{else}}any{{/if}}> {
+    {{#if project.features.database}}
+    {{#if (eq project.database 'mongodb')}}
+    const updated{{pascalCase name}} = await this.{{camelCase name}}Model
+      .findByIdAndUpdate(id, {{#if project.features.validation}}updateDto{{else}}data{{/if}}, { new: true })
+      .exec();
+    if (!updated{{pascalCase name}}) {
+      throw new NotFoundException(`{{pascalCase name}} with ID ${id} not found`);
+    }
+    return updated{{pascalCase name}};
+    {{else}}
+    await this.{{camelCase name}}Repository.update(id, {{#if project.features.validation}}updateDto{{else}}data{{/if}});
+    const updated{{pascalCase name}} = await this.{{camelCase name}}Repository.findOne({ where: { id } });
+    if (!updated{{pascalCase name}}) {
+      throw new NotFoundException(`{{pascalCase name}} with ID ${id} not found`);
+    }
+    return updated{{pascalCase name}};
+    {{/if}}
+    {{else}}
+    // Mock data - replace with actual implementation
+    return { 
+      id, 
+      ...{{#if project.features.validation}}updateDto{{else}}data{{/if}},
+      updatedAt: new Date()
+    };
+    {{/if}}
+  }
+
+  async remove(id: {{#if (eq project.database 'mongodb')}}string{{else}}number{{/if}}): Promise<void> {
+    {{#if project.features.database}}
+    {{#if (eq project.database 'mongodb')}}
+    const result = await this.{{camelCase name}}Model.findByIdAndDelete(id).exec();
+    if (!result) {
+      throw new NotFoundException(`{{pascalCase name}} with ID ${id} not found`);
+    }
+    {{else}}
+    const result = await this.{{camelCase name}}Repository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`{{pascalCase name}} with ID ${id} not found`);
+    }
+    {{/if}}
+    {{else}}
+    // Mock implementation - replace with actual logic
+    if (id !== 1) {
+      throw new NotFoundException(`{{pascalCase name}} with ID ${id} not found`);
+    }
+    {{/if}}
+  }
+}
+{{else}}
+{{#if (eq project.language 'typescript')}}
+// Generic Service Class
+{{#if project.features.database}}
+{{#if (eq project.database 'mongodb')}}
+import { {{pascalCase name}}Model } from '../models/{{kebabCase name}}.model';
+{{else}}
+import { {{pascalCase name}} } from '../models/{{kebabCase name}}.model';
+{{/if}}
+{{/if}}
+
+export class {{pascalCase name}}Service {
+  async findAll(): Promise<any[]> {
+    try {
+      {{#if project.features.database}}
+      {{#if (eq project.database 'mongodb')}}
+      return await {{pascalCase name}}Model.find();
+      {{else}}
+      return await {{pascalCase name}}.find();
+      {{/if}}
+      {{else}}
+      // Mock data - replace with actual implementation
+      return [
+        { id: 1, name: 'Sample {{pascalCase name}}', email: 'sample@example.com' }
+      ];
+      {{/if}}
+    } catch (error) {
+      throw new Error(`Failed to fetch {{kebabCase (pluralize name)}}: ${error.message}`);
+    }
+  }
+
+  async findById(id: {{#if (eq project.database 'mongodb')}}string{{else}}number{{/if}}): Promise<any> {
+    try {
+      {{#if project.features.database}}
+      {{#if (eq project.database 'mongodb')}}
+      const {{camelCase name}} = await {{pascalCase name}}Model.findById(id);
+      {{else}}
+      const {{camelCase name}} = await {{pascalCase name}}.findOne({ where: { id } });
+      {{/if}}
+      if (!{{camelCase name}}) {
+        throw new Error('{{pascalCase name}} not found');
+      }
+      return {{camelCase name}};
+      {{else}}
+      // Mock data - replace with actual implementation
+      if (id === 1) {
+        return { id: 1, name: 'Sample {{pascalCase name}}', email: 'sample@example.com' };
+      }
+      throw new Error('{{pascalCase name}} not found');
+      {{/if}}
+    } catch (error) {
+      throw new Error(`Failed to fetch {{kebabCase name}}: ${error.message}`);
+    }
+  }
+
+  async create(data: any): Promise<any> {
+    try {
+      {{#if project.features.database}}
+      {{#if (eq project.database 'mongodb')}}
+      const {{camelCase name}} = new {{pascalCase name}}Model(data);
+      return await {{camelCase name}}.save();
+      {{else}}
+      const {{camelCase name}} = {{pascalCase name}}.create(data);
+      return await {{camelCase name}}.save();
+      {{/if}}
+      {{else}}
+      // Mock data - replace with actual implementation
+      return { 
+        id: Date.now(), 
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      {{/if}}
+    } catch (error) {
+      throw new Error(`Failed to create {{kebabCase name}}: ${error.message}`);
+    }
+  }
+
+  async update(id: {{#if (eq project.database 'mongodb')}}string{{else}}number{{/if}}, data: any): Promise<any> {
+    try {
+      {{#if project.features.database}}
+      {{#if (eq project.database 'mongodb')}}
+      const {{camelCase name}} = await {{pascalCase name}}Model.findByIdAndUpdate(id, data, { new: true });
+      {{else}}
+      const {{camelCase name}} = await {{pascalCase name}}.findOne({ where: { id } });
+      if (!{{camelCase name}}) {
+        throw new Error('{{pascalCase name}} not found');
+      }
+      await {{camelCase name}}.update(data);
+      {{/if}}
+      return {{camelCase name}};
+      {{else}}
+      // Mock data - replace with actual implementation
+      return { 
+        id, 
+        ...data,
+        updatedAt: new Date()
+      };
+      {{/if}}
+    } catch (error) {
+      throw new Error(`Failed to update {{kebabCase name}}: ${error.message}`);
+    }
+  }
+
+  async delete(id: {{#if (eq project.database 'mongodb')}}string{{else}}number{{/if}}): Promise<void> {
+    try {
+      {{#if project.features.database}}
+      {{#if (eq project.database 'mongodb')}}
+      const result = await {{pascalCase name}}Model.findByIdAndDelete(id);
+      if (!result) {
+        throw new Error('{{pascalCase name}} not found');
+      }
+      {{else}}
+      const {{camelCase name}} = await {{pascalCase name}}.findOne({ where: { id } });
+      if (!{{camelCase name}}) {
+        throw new Error('{{pascalCase name}} not found');
+      }
+      await {{camelCase name}}.destroy();
+      {{/if}}
+      {{else}}
+      // Mock implementation - replace with actual logic
+      if (id !== 1) {
+        throw new Error('{{pascalCase name}} not found');
+      }
+      {{/if}}
+    } catch (error) {
+      throw new Error(`Failed to delete {{kebabCase name}}: ${error.message}`);
+    }
+  }
+}
+{{else}}
+// JavaScript Service Class
+class {{pascalCase name}}Service {
+  async findAll() {
+    try {
+      // Mock data - replace with actual implementation
+      return [
+        { id: 1, name: 'Sample {{pascalCase name}}', email: 'sample@example.com' }
+      ];
+    } catch (error) {
+      throw new Error(`Failed to fetch {{kebabCase (pluralize name)}}: ${error.message}`);
+    }
+  }
+
+  async findById(id) {
+    try {
+      // Mock data - replace with actual implementation
+      if (id === 1) {
+        return { id: 1, name: 'Sample {{pascalCase name}}', email: 'sample@example.com' };
+      }
+      throw new Error('{{pascalCase name}} not found');
+    } catch (error) {
+      throw new Error(`Failed to fetch {{kebabCase name}}: ${error.message}`);
+    }
+  }
+
+  async create(data) {
+    try {
+      // Mock data - replace with actual implementation
+      return { 
+        id: Date.now(), 
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+    } catch (error) {
+      throw new Error(`Failed to create {{kebabCase name}}: ${error.message}`);
+    }
+  }
+
+  async update(id, data) {
+    try {
+      // Mock data - replace with actual implementation
+      return { 
+        id, 
+        ...data,
+        updatedAt: new Date()
+      };
+    } catch (error) {
+      throw new Error(`Failed to update {{kebabCase name}}: ${error.message}`);
+    }
+  }
+
+  async delete(id) {
+    try {
+      // Mock implementation - replace with actual logic
+      if (id !== 1) {
+        throw new Error('{{pascalCase name}} not found');
+      }
+    } catch (error) {
+      throw new Error(`Failed to delete {{kebabCase name}}: ${error.message}`);
+    }
+  }
+}
+
+module.exports = {{pascalCase name}}Service;
+{{/if}}
+{{/if}}
