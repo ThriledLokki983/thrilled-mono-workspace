@@ -7,9 +7,11 @@ import { AuthPlugin } from './plugins/auth.plugin';
 import { RoutesPlugin } from './plugins/routes.plugin';
 import { SwaggerPlugin } from './plugins/swagger.plugin';
 import { RateLimitPlugin } from './plugins/rateLimit.plugin';
+import { MonitoringPlugin } from './plugins/monitoring.plugin';
 
 export class App extends BaseApp {
   private authPlugin?: AuthPlugin;
+  private monitoringPlugin?: MonitoringPlugin;
 
   constructor(routes: Routes[], authPlugin?: AuthPlugin) {
     const config = createAppConfig();
@@ -22,8 +24,18 @@ export class App extends BaseApp {
   }
 
   private setupPlugins(routes: Routes[]) {
+    // Monitoring plugin - should be set up early to capture metrics from other plugins
+    this.monitoringPlugin = new MonitoringPlugin();
+    this.use(this.monitoringPlugin, {
+      enableMetrics: process.env.ENABLE_METRICS !== 'false',
+      enableHealthChecks: true,
+      enablePerformanceMonitoring: process.env.NODE_ENV !== 'test',
+      metricsEndpoint: '/metrics',
+      routePrefix: '/health',
+    });
+
     // Database plugin
-    this.use(new DatabasePlugin(this.getLogger()));
+    this.use(new DatabasePlugin());
 
     //! Validation plugin is now automatically included in BaseApp
     //! No need to manually register it here
@@ -122,5 +134,26 @@ export class App extends BaseApp {
 
   public getServer() {
     return this.getApp();
+  }
+
+  /**
+   * Get the monitoring plugin instance
+   */
+  getMonitoringPlugin(): MonitoringPlugin | undefined {
+    return this.monitoringPlugin;
+  }
+
+  /**
+   * Record a custom metric
+   */
+  recordMetric(name: string, value: number, labels?: Record<string, string>): void {
+    this.monitoringPlugin?.recordCustomMetric(name, value, labels);
+  }
+
+  /**
+   * Get monitoring status
+   */
+  getMonitoringStatus() {
+    return this.monitoringPlugin?.getStatus();
   }
 }

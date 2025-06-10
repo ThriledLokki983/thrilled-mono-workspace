@@ -2,6 +2,7 @@ import { App } from './app';
 import { AuthRoute } from './routes/auth.route';
 import { UserRoute } from './routes/users.route';
 import { HealthRoute } from './routes/health.route';
+import { MonitoringRoute } from './routes/monitoring.routes';
 import { AuthPlugin } from './/plugins/auth.plugin';
 import { ValidateEnv } from './utils/validateEnv';
 import { logger as customAppLogger } from './utils/logger';
@@ -29,6 +30,7 @@ async function startApp() {
       new AuthRoute(),
       new UserRoute(),
       new HealthRoute(),
+      new MonitoringRoute(),
     ];
 
     // Create the full app with all plugins

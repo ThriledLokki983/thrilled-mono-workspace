@@ -12,6 +12,11 @@ interface SwaggerPluginConfig {
   docsPath?: string;
 }
 
+/**
+ * Plugin for managing Swagger API documentation in the application.
+ * This plugin provides a flexible way to generate and serve Swagger documentation
+ * based on the defined API routes and data transfer objects (DTOs).
+ */
 export class SwaggerPlugin extends BasePlugin {
   readonly name = 'swagger';
   readonly version = '1.0.0';

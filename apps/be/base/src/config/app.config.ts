@@ -38,7 +38,7 @@ export const createAppConfig = (): AppConfig => {
     cors: {
       origin: ORIGIN === '*' ? ALLOWED_HOST : ORIGIN?.split(',') || ALLOWED_HOST,
       credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD', 'PATCH', 'TRACE'],
       allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     },
 

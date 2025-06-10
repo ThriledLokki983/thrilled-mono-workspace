@@ -3,8 +3,13 @@ import { Container } from 'typedi';
 import { BasePlugin } from '@mono/be-core';
 import { DatabaseManager, DbHelper } from '@thrilled/databases';
 import { DatabaseManagerConfig } from '@thrilled/be-types';
-import { DB_CONFIG } from '../config';
+import { DB_CONFIG, env } from '../config';
 
+/**
+ * Plugin for managing database connections and operations.
+ * This plugin initializes a DatabaseManager instance, sets up DbHelper,
+ * and registers a CacheManager with TypeDI for caching operations.
+ */
 export class DatabasePlugin extends BasePlugin {
   readonly name = 'database';
   readonly version = '2.0.0';
@@ -21,11 +26,11 @@ export class DatabasePlugin extends BasePlugin {
       const dbConfig: DatabaseManagerConfig = {
         connections: {
           primary: {
-            host: DB_CONFIG.POSTGRES_HOST || 'localhost',
-            port: parseInt(DB_CONFIG.POSTGRES_PORT || '5432'),
-            database: DB_CONFIG.POSTGRES_DB || 'thrilled_dev',
-            username: DB_CONFIG.POSTGRES_USER || 'postgres',
-            password: DB_CONFIG.POSTGRES_PASSWORD || 'postgres',
+            host: DB_CONFIG.POSTGRES_HOST,
+            port: DB_CONFIG.POSTGRES_PORT,
+            database: DB_CONFIG.POSTGRES_DB,
+            username: DB_CONFIG.POSTGRES_USER,
+            password: DB_CONFIG.POSTGRES_PASSWORD,
             ssl: process.env.NODE_ENV === 'production',
             pool: {
               min: 2,
@@ -47,11 +52,11 @@ export class DatabasePlugin extends BasePlugin {
           timeout: 5000, // 5 seconds
         },
         cache: {
-          host: DB_CONFIG.REDIS_HOST || 'localhost',
-          port: parseInt(DB_CONFIG.REDIS_PORT || '6379'),
+          host: DB_CONFIG.REDIS_HOST,
+          port: DB_CONFIG.REDIS_PORT,
           password: DB_CONFIG.REDIS_PASSWORD,
-          db: parseInt(process.env.REDIS_DB || '0'),
-          keyPrefix: `thrilled:${process.env.NODE_ENV || 'dev'}:`,
+          db: env.REDIS_DB,
+          keyPrefix: `thrilled:${env.NODE_ENV}:`,
           ttl: 3600, // 1 hour default
           maxRetries: 3,
           retryDelay: 1000,

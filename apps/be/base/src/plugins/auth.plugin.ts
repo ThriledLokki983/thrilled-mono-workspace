@@ -5,6 +5,11 @@ import { createJWTConfig, createPasswordConfig, createSessionConfig, createRedis
 import { CacheManager } from '@thrilled/databases';
 import * as BeAuth from '@thrilled/be-auth';
 
+/**
+ * Plugin for managing authentication services in the application.
+ * This plugin provides JWT authentication, password management, session management,
+ * role-based access control (RBAC), and integrates with a centralized cache manager.
+ */
 export class AuthPlugin extends BasePlugin {
   readonly name = 'auth';
   readonly version = '1.0.0';

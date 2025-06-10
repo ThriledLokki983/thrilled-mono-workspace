@@ -1,3 +1,6 @@
+/**
+ * HTTP Exception class for handling HTTP errors
+ */
 export class HttpException extends Error {
   public readonly status: number;
 
@@ -12,4 +15,13 @@ export class HttpException extends Error {
       Error.captureStackTrace(this, this.constructor);
     }
   }
+}
+
+/**
+ * HTTP Exception interface for middleware compatibility
+ * @deprecated Use HttpException class instead
+ */
+export interface HttpExceptionInterface extends Error {
+  status?: number;
+  statusCode?: number;
 }

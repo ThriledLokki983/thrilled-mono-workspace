@@ -2,11 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Logger } from '../logging/Logger';
 import { HttpStatusCodes } from '../types';
 import { apiResponse } from '../plugins/responseFormatter';
-
-export interface HttpException extends Error {
-  status?: number;
-  statusCode?: number;
-}
+import { HttpException } from '@thrilled/be-types';
 
 export class ErrorMiddleware {
   private logger: Logger;
@@ -27,9 +23,11 @@ export class ErrorMiddleware {
       _next: NextFunction
     ) => {
       try {
+        // Handle both HttpException class and legacy error objects with statusCode
+        const statusCode = 'statusCode' in error ? (error as unknown as { statusCode: number }).statusCode : undefined;
         const status: number =
           error.status ||
-          error.statusCode ||
+          statusCode ||
           HttpStatusCodes.INTERNAL_SERVER_ERROR;
         const message: string = error.message || 'Something went wrong';
         const requestId = (req as Request & { requestId?: string }).requestId;

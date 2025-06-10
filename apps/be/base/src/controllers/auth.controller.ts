@@ -1,35 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 import { Container } from 'typedi';
-import { AuthService } from '../services/auth.service';
 import { AuthenticatedRequest } from '@thrilled/be-auth';
+import { apiResponse } from '@mono/be-core';
+import { extractToken } from '@thrilled/be-types';
+import { AuthService } from '../services/auth.service';
 import { User } from '../interfaces/users.interface';
 import { LoginDto, RequestPasswordResetDto, ResetPasswordDto } from '../dtos/auth.dto';
 import { NODE_ENV } from '../config';
-import { apiResponse } from '@mono/be-core';
 
 export class AuthController {
   private readonly authService = Container.get(AuthService);
-
-  // Extract token from request headers, cookies, or query parameters
-  private extractToken(req: Request): string | null {
-    // Check Authorization header
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      return authHeader.substring(7);
-    }
-
-    // Check query parameter
-    if (req.query.token && typeof req.query.token === 'string') {
-      return req.query.token;
-    }
-
-    // Check cookie
-    if (req.cookies && req.cookies.accessToken) {
-      return req.cookies.accessToken;
-    }
-
-    return null;
-  }
 
   public signUp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -61,7 +41,7 @@ export class AuthController {
   public logOut = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       // Extract token from request headers, cookies, or query parameters
-      const token = this.extractToken(req);
+      const token = extractToken(req);
       if (!token) {
         apiResponse.badRequest(res, 'No token provided');
         return;

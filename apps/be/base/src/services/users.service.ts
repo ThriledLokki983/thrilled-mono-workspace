@@ -1,11 +1,11 @@
+import { PoolClient } from 'pg';
 import { hash } from 'bcrypt';
 import { Service } from 'typedi';
-import { HttpException } from '../exceptions/httpException';
-import { CreateUserDto, UpdateUserDto, UserResponseDto } from '../dtos/users.dto';
+import { HttpException } from '@thrilled/be-types';
 import { DbHelper } from '@thrilled/databases';
-import { PoolClient } from 'pg';
-import { SqlHelper } from '../utils/sqlHelper';
 import { HttpStatusCodes } from '@mono/be-core';
+import { CreateUserDto, UpdateUserDto, UserResponseDto } from '../dtos/users.dto';
+import { SqlHelper } from '../utils/sqlHelper';
 import { CacheHelper } from '../utils/cacheHelper';
 
 @Service()

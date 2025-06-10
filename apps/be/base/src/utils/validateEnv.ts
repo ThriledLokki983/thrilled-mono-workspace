@@ -1,8 +1,6 @@
-import { cleanEnv, port, str } from 'envalid';
+import { envValidators } from '@thrilled/be-types';
 
 export const ValidateEnv = () => {
-  cleanEnv(process.env, {
-    NODE_ENV: str(),
-    PORT: port(),
-  });
+  // Validate all environment variables required by the application
+  return envValidators.validateFullAppEnv();
 };

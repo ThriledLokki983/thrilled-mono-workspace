@@ -5,6 +5,13 @@ interface RateLimitPluginConfig {
   environment?: string;
 }
 
+/**
+ * Plugin for managing rate limiting in the application.
+ * This plugin provides a flexible rate limiting solution
+ * that can be configured based on the environment (development or production).
+ * It applies different rate limits to authentication endpoints, standard API endpoints,
+ * and public read-only endpoints.
+ */
 export class RateLimitPlugin extends BasePlugin {
   readonly name = 'rateLimit';
   readonly version = '1.0.0';

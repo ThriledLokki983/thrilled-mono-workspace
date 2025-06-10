@@ -39,6 +39,9 @@
   "exclude": ["node_modules", "src/http", "src/logs"],
   "references": [
     {
+      "path": "../../../packages/be/monitoring"
+    },
+    {
       "path": "../../../packages/be/validation"
     },
     {

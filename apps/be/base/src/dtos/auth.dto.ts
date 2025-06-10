@@ -1,5 +1,26 @@
 import { IsEmail, IsString, MinLength, MaxLength } from 'class-validator';
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     RegisterDto:
+ *       type: object
+ *       required:
+ *         - email
+ *         - password
+ *       properties:
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: User's email address
+ *         password:
+ *           type: string
+ *           format: password
+ *           minLength: 9
+ *           maxLength: 32
+ *           description: User's password (min 9 chars, max 32 chars)
+ */
 export class LoginDto {
   @IsEmail()
   public email: string;

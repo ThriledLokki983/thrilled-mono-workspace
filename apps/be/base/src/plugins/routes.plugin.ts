@@ -7,6 +7,11 @@ interface RoutesPluginConfig {
   apiPrefix?: string;
 }
 
+/**
+ * Plugin for managing and registering route groups in the application.
+ * This plugin allows for modular route management, enabling easy addition and configuration of route groups.
+ * It supports a customizable API prefix for all registered routes.
+ */
 export class RoutesPlugin extends BasePlugin {
   readonly name = 'routes';
   readonly version = '1.0.0';

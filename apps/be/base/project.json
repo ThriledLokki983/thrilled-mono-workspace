@@ -141,5 +141,5 @@
     }
   },
   "tags": ["type:app", "scope:be"],
-  "implicitDependencies": ["validation"]
+  "implicitDependencies": ["validation", "monitoring"]
 }

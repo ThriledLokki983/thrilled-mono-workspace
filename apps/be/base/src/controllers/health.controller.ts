@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { RedisMonitor } from '../services/helper/redisMonitor';
 import { apiResponse, HttpStatusCodes } from '@mono/be-core';
+import { RedisMonitor } from '../services/helper/redisMonitor';
 import os from 'os';
 
 export class HealthController {

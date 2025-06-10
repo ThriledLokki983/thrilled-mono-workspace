@@ -75,3 +75,37 @@ export interface PasswordResetData {
   token: string;
   newPassword: string;
 }
+
+// Auth utility types
+export interface RequestWithToken {
+  headers: {
+    authorization?: string;
+  };
+  query: {
+    token?: string | string[];
+  };
+  cookies?: {
+    accessToken?: string;
+  };
+}
+
+// Auth utility functions
+export const extractToken = (req: RequestWithToken): string | null => {
+  // Check Authorization header
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.substring(7);
+  }
+
+  // Check query parameter
+  if (req.query.token && typeof req.query.token === 'string') {
+    return req.query.token;
+  }
+
+  // Check cookie
+  if (req.cookies && req.cookies.accessToken) {
+    return req.cookies.accessToken;
+  }
+
+  return null;
+};
