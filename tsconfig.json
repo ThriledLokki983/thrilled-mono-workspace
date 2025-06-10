@@ -47,6 +47,9 @@
     },
     {
       "path": "./packages/be/uploads"
+    },
+    {
+      "path": "./packages/be/monitoring"
     }
   ]
 }
