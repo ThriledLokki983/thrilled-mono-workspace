@@ -1,0 +1,46 @@
+{
+  "name": "@thrilled/testing",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "nx": {
+    "tags": [
+      "npm:private",
+      "type:lib",
+      "scope:be"
+    ],
+    "name": "testing"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "@mono/be-core": "*",
+    "@thrilled/be-types": "*",
+    "@thrilled/databases": "*",
+    "@thrilled/be-auth": "*",
+    "express": "^4.21.2",
+    "supertest": "^6.3.3",
+    "jest": "^29.7.0",
+    "faker": "^5.5.3",
+    "ioredis": "^5.3.2",
+    "pg": "^8.11.3",
+    "typedi": "^0.10.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.2",
+    "@types/supertest": "^2.0.12",
+    "@types/jest": "^29.5.12",
+    "@types/faker": "^5.5.8",
+    "@types/pg": "^8.10.7"
+  }
+}

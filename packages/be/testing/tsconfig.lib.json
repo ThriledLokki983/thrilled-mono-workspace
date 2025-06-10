@@ -1,0 +1,44 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": "src",
+    "outDir": "dist",
+    "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
+    "emitDeclarationOnly": false,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node", "jest"],
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts"],
+  "references": [
+    {
+      "path": "../auth/tsconfig.lib.json"
+    },
+    {
+      "path": "../databases/tsconfig.lib.json"
+    },
+    {
+      "path": "../be-types/tsconfig.lib.json"
+    },
+    {
+      "path": "../core/tsconfig.lib.json"
+    }
+  ],
+  "exclude": [
+    "jest.config.ts", 
+    "src/**/*.spec.ts", 
+    "src/**/*.test.ts",
+    "src/lib/api-testing/**/*",
+    "src/lib/types/api-test-types.ts",
+    "src/lib/types/test-types.ts",
+    "src/lib/types/jest-globals.d.ts",
+    "src/lib/types/jest.d.ts",
+    "src/lib/mocks/**/*",
+    "src/lib/test-setup.ts",
+    "src/lib/test-app-factory.ts",
+    "src/lib/database-test-helpers.ts"
+  ]
+}
