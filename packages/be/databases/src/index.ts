@@ -5,6 +5,7 @@ export { MigrationRunner } from './migrations/MigrationRunner';
 export { CacheManager } from './cache/CacheManager';
 export { DatabaseUtils } from './utils/DatabaseUtils';
 export { DbHelper } from './utils/DbHelper';
+export { SqlTemplateHelper, EntitySqlHelpers } from './utils/SqlTemplateHelper';
 
 // Re-export types from be-types for convenience
 export type {

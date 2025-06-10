@@ -2,11 +2,10 @@ import { PoolClient } from 'pg';
 import { Container, Service } from 'typedi';
 import { Logger } from '@mono/be-core';
 import { HttpException } from '@thrilled/be-types';
-import { DbHelper } from '@thrilled/databases';
+import { DbHelper, EntitySqlHelpers } from '@thrilled/databases';
 import { User } from '../interfaces/users.interface';
 import { LoginDto, RequestPasswordResetDto, ResetPasswordDto } from '../dtos/auth.dto';
 import { logger, redactSensitiveData } from '../utils/logger';
-import { SqlHelper } from '../utils/sqlHelper';
 import { UserHelper } from '../utils/userHelper';
 import { HttpStatusCodes } from '../utils/httpStatusCodes';
 
@@ -62,9 +61,7 @@ export class AuthService {
 
       // Insert the new user into the database
       const result = await DbHelper.query(
-        `INSERT INTO users (email, password, name, first_name, last_name, phone, address)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
-         RETURNING ${SqlHelper.USER_SELECT_FIELDS}`,
+        EntitySqlHelpers.User.getInsertQuery(),
         [email, hashedPassword, name, first_name, last_name, phone || null, address || null],
         client,
       );
@@ -78,7 +75,7 @@ export class AuthService {
 
     try {
       // Get the full user object with ALL fields including ID
-      const result = await DbHelper.query(SqlHelper.getUserByEmailQuery(true, true), [email]);
+      const result = await DbHelper.query(EntitySqlHelpers.User.getByEmailQuery(true, true), [email]);
       const user = result.rows[0] as (User & { password: string }) | undefined;
 
       if (!user) {
@@ -138,7 +135,7 @@ export class AuthService {
     const { email } = userData;
 
     // Check if the user exists
-    const result = await DbHelper.query(SqlHelper.getUserByEmailQuery(true, false), [email]);
+    const result = await DbHelper.query(EntitySqlHelpers.User.getByEmailQuery(true, false), [email]);
     const user = result.rows[0] as User | undefined;
 
     if (!user) {
@@ -166,7 +163,7 @@ export class AuthService {
 
     try {
       // 1. Find user by email
-      const result = await DbHelper.query(`SELECT id, email FROM users WHERE email = $1 LIMIT 1`, [email]);
+      const result = await DbHelper.query(EntitySqlHelpers.User.getByEmailQuery(), [email]);
       const user = result.rows[0] as { id: string; email: string } | undefined;
 
       if (!user) {
@@ -197,7 +194,7 @@ export class AuthService {
       const userId = await this.passwordManager.verifyResetToken(token);
 
       // 2. Confirm user exists
-      const result = await DbHelper.query(`SELECT id FROM users WHERE id = $1 LIMIT 1`, [userId]);
+      const result = await DbHelper.query(EntitySqlHelpers.User.getByIdQuery(), [userId]);
       const user = result.rows[0] as { id: string } | undefined;
 
       if (!user) {
@@ -208,7 +205,10 @@ export class AuthService {
       const hashedPassword = await this.passwordManager.hashPassword(password);
 
       // 4. Update user's password
-      await DbHelper.query(`UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2`, [hashedPassword, userId]);
+      await DbHelper.query(
+        `UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2`,
+        [hashedPassword, userId]
+      );
 
       return { message: 'Password has been reset successfully' };
     } catch (error) {
@@ -221,7 +221,7 @@ export class AuthService {
   public async getResetTokenForDev(email: string): Promise<string | null> {
     try {
       // 1. Lookup user by email
-      const result = await DbHelper.query(`SELECT id FROM users WHERE email = $1 LIMIT 1`, [email]);
+      const result = await DbHelper.query(EntitySqlHelpers.User.getByEmailQuery(), [email]);
       const user = result.rows[0] as { id: string } | undefined;
 
       if (!user) return null;

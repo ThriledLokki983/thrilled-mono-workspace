@@ -2,10 +2,9 @@ import { PoolClient } from 'pg';
 import { hash } from 'bcrypt';
 import { Service } from 'typedi';
 import { HttpException } from '@thrilled/be-types';
-import { DbHelper } from '@thrilled/databases';
+import { DbHelper, EntitySqlHelpers } from '@thrilled/databases';
 import { HttpStatusCodes } from '@mono/be-core';
 import { CreateUserDto, UpdateUserDto, UserResponseDto } from '../dtos/users.dto';
-import { SqlHelper } from '../utils/sqlHelper';
 import { CacheHelper } from '../utils/cacheHelper';
 
 @Service()
@@ -28,7 +27,7 @@ export class UserService {
     return CacheHelper.getOrSet<UserResponseDto[]>(
       this.CACHE_ALL_USERS,
       async () => {
-        const { rows } = await DbHelper.query(SqlHelper.getUserSelectQuery());
+        const { rows } = await DbHelper.query(EntitySqlHelpers.User.getAllQuery());
         return rows as UserResponseDto[];
       },
       { ttl: this.CACHE_TTL.USER_LIST },
@@ -44,7 +43,7 @@ export class UserService {
       async () => {
         const {
           rows: [user],
-        } = await DbHelper.query(SqlHelper.getUserByIdQuery(), [userId]);
+        } = await DbHelper.query(EntitySqlHelpers.User.getByIdQuery(), [userId]);
 
         if (!user) {
           throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
@@ -81,7 +80,7 @@ export class UserService {
       const {
         rows: [newUser],
       } = await DbHelper.query(
-        SqlHelper.getInsertUserQuery(),
+        EntitySqlHelpers.User.getInsertQuery(),
         [email, hashedPassword, name, first_name, last_name, phone, address, role, language_preference, is_active],
         client,
       );
@@ -104,7 +103,7 @@ export class UserService {
       // Step 1: Fetch current user with password
       const {
         rows: [currentUser],
-      } = await DbHelper.query(SqlHelper.getUserByIdQuery(true), [userId], client);
+      } = await DbHelper.query(EntitySqlHelpers.User.getByIdQuery(true), [userId], client);
 
       if (!currentUser) {
         throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
@@ -145,7 +144,7 @@ export class UserService {
       const {
         rows: [updatedUser],
       } = await DbHelper.query(
-        SqlHelper.getUpdateUserQuery(),
+        EntitySqlHelpers.User.getUpdateQuery(),
         [userId, email, name, first_name, last_name, phone, address, role, language_preference, hashedPassword, is_active],
         client,
       );
@@ -168,7 +167,7 @@ export class UserService {
       // Using soft delete by setting deleted_at timestamp
       const {
         rows: [deletedUser],
-      } = await DbHelper.query(SqlHelper.getSoftDeleteUserQuery(), [userId], client);
+      } = await DbHelper.query(EntitySqlHelpers.User.getSoftDeleteQuery(), [userId], client);
 
       if (!deletedUser) {
         throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
