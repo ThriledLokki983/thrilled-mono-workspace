@@ -76,7 +76,7 @@ describe('BaseValidator', () => {
       expect(result.isValid).toBe(true);
       expect(result.data).toBe('valid');
       expect(result.errors).toHaveLength(0);
-      expect(result.metadata.validator).toBe('custom');
+      expect(result.metadata?.validator).toBe('custom');
     });
 
     it('should return invalid result for invalid data', async () => {

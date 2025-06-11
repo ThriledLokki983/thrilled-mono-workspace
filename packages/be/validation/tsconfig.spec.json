@@ -5,7 +5,9 @@
     "types": ["jest", "node"],
     "module": "esnext",
     "moduleResolution": "bundler",
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": [
     "jest.config.ts",

@@ -1,4 +1,4 @@
-import { DatabaseManager } from '../managers/DatabaseManager.js';
+import { DatabaseManager } from '../managers/DatabaseManager';
 import { DatabaseManagerConfig } from '@thrilled/be-types';
 import { Logger } from '@mono/be-core';
 

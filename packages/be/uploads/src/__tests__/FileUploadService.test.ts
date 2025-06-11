@@ -25,7 +25,7 @@ describe('FileUploadService', () => {
         generateThumbnails: false
       }
     };
-    
+
     service = new FileUploadService(config);
   });
 
@@ -33,7 +33,7 @@ describe('FileUploadService', () => {
     it('should initialize with default configuration', () => {
       const defaultService = new FileUploadService();
       const serviceConfig = defaultService.getConfig();
-      
+
       expect(serviceConfig.storage.provider).toBe('local');
       expect(serviceConfig.security.maxFileSize).toBe(10 * 1024 * 1024);
       expect(serviceConfig.imageProcessing.enabled).toBe(true);
@@ -41,7 +41,7 @@ describe('FileUploadService', () => {
 
     it('should merge provided configuration with defaults', () => {
       const serviceConfig = service.getConfig();
-      
+
       expect(serviceConfig.storage.provider).toBe('local');
       expect(serviceConfig.storage.basePath).toBe('./test-uploads');
       expect(serviceConfig.security.maxFileSize).toBe(5 * 1024 * 1024);
@@ -52,13 +52,15 @@ describe('FileUploadService', () => {
     it('should update configuration', () => {
       const newConfig = {
         security: {
-          maxFileSize: 20 * 1024 * 1024 // 20MB
+          maxFileSize: 20 * 1024 * 1024, // 20MB
+          allowedMimeTypes: ['image/jpeg', 'image/png'],
+          allowedExtensions: ['.jpg', '.jpeg', '.png']
         }
       };
 
       service.updateConfig(newConfig);
       const updatedConfig = service.getConfig();
-      
+
       expect(updatedConfig.security.maxFileSize).toBe(20 * 1024 * 1024);
     });
   });
@@ -88,7 +90,7 @@ describe('FileUploadService', () => {
       } as any;
 
       const result = await service.processUpload(mockReq);
-      
+
       expect(result.success).toBe(false);
       expect(result.error).toBe('No files provided');
       expect(result.files).toHaveLength(0);

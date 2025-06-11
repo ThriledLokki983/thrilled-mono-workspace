@@ -1,7 +1,6 @@
 import { HealthCheckService } from '../HealthCheckService';
 import {
   HealthCheckConfig,
-  DatabaseHealthCheck,
   ExternalServiceHealthCheck,
   SystemHealthCheck,
   HealthCheckDependency,
@@ -35,7 +34,7 @@ describe('HealthCheckService', () => {
       };
 
       healthCheckService.registerDependency('test-system', dependency);
-      
+
       // Verify dependency is registered by checking if it's included in health checks
       expect(healthCheckService['dependencies'].has('test-system')).toBe(true);
       expect(healthCheckService['dependencies'].get('test-system')).toEqual(dependency);
@@ -62,9 +61,9 @@ describe('HealthCheckService', () => {
       };
 
       (fetch as jest.Mock).mockRejectedValue(new Error('Connection failed'));
-      
+
       healthCheckService.registerDependency('failing-service', failingDependency);
-      
+
       const result = await healthCheckService.readinessProbe();
 
       expect(result.status).toBe('unhealthy');
@@ -86,9 +85,9 @@ describe('HealthCheckService', () => {
         status: 200,
         statusText: 'OK',
       });
-      
+
       healthCheckService.registerDependency('working-service', workingDependency);
-      
+
       const result = await healthCheckService.readinessProbe();
 
       expect(result.status).toBe('healthy');
@@ -140,7 +139,7 @@ describe('HealthCheckService', () => {
       // Set low memory threshold for testing
       const lowThresholdConfig = { ...config, memoryThreshold: 0.9 };
       const service = new HealthCheckService(lowThresholdConfig);
-      
+
       const result = await service.livenessProbe();
 
       expect(result.status).toBe('unhealthy');

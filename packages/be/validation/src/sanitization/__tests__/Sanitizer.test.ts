@@ -172,9 +172,9 @@ describe('Sanitizer', () => {
       });
 
       expect(result.name).toBe('John');
-      expect(result.profile.bio).toBe('Safe bio');
-      expect(result.profile.age).toBe(30);
-      expect(result.tags[0]).toBe('tag1');
+      expect((result as { profile: { bio: string; age: number } }).profile.bio).toBe('Safe bio');
+      expect((result as { profile: { bio: string; age: number } }).profile.age).toBe(30);
+      expect((result as { tags: string[] }).tags[0]).toBe('tag1');
     });
 
     it('should handle null and undefined values', () => {

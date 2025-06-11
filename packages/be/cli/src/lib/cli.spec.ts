@@ -1,7 +1,7 @@
-import { cli } from './cli';
+import { CLI_VERSION } from './cli';
 
 describe('cli', () => {
-  it('should work', () => {
-    expect(cli()).toEqual('cli');
+  it('should export CLI_VERSION', () => {
+    expect(CLI_VERSION).toEqual('1.0.0');
   });
 });

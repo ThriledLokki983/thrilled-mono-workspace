@@ -115,9 +115,22 @@ describe('Integration Tests', () => {
 
     test('should create ValidationPlugin instance', () => {
       const plugin = new ValidationPlugin({
-        globalValidation: { enabled: true },
+        globalValidation: {
+          body: undefined,
+          options: {
+            abortEarly: false,
+            allowUnknown: false,
+            stripUnknown: true,
+          },
+        },
         globalSanitization: {
-          body: { html: { enabled: true } },
+          body: {
+            html: {
+              stripTags: true,
+              allowedTags: ['p', 'br'],
+              allowedAttributes: {},
+            }
+          },
         },
       });
 

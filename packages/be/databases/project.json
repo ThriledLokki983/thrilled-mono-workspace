@@ -28,6 +28,14 @@
       "options": {
         "jestConfig": "packages/be/databases/jest.config.ts"
       }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build", "^typecheck"],
+      "options": {
+        "cwd": "packages/be/databases",
+        "command": "tsc --build tsconfig.lib.json --emitDeclarationOnly"
+      }
     }
   }
 }

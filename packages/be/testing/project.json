@@ -1,0 +1,17 @@
+{
+  "name": "testing",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/be/testing/src",
+  "projectType": "library",
+  "tags": ["npm:private", "type:lib", "scope:be"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build", "^typecheck"],
+      "options": {
+        "cwd": "packages/be/testing",
+        "command": "tsc --build tsconfig.lib.json --emitDeclarationOnly"
+      }
+    }
+  }
+}

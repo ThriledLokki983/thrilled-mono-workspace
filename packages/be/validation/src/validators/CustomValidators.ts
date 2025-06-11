@@ -496,7 +496,7 @@ export class CustomValidators {
   /**
    * Validate string/array length
    */
-  static async length(
+  static async validateLength(
     value: string | any[],
     options: { min?: number; max?: number }
   ): Promise<ValidationResult<string | any[]>> {

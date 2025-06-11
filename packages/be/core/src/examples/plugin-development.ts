@@ -56,11 +56,12 @@ class AuthenticationPlugin extends BasePlugin {
           userAgent: req.get('User-Agent'),
         });
 
-        return res.status(401).json({
+        res.status(401).json({
           success: false,
           message: 'No token provided',
           statusCode: 401,
         });
+        return;
       }
 
       // In a real implementation, you would verify the JWT token here

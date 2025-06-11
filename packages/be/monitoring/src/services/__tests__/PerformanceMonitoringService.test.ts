@@ -18,7 +18,7 @@ import * as cron from 'node-cron';
 describe('PerformanceMonitoringService', () => {
   let performanceService: PerformanceMonitoringService;
   let config: PerformanceConfig;
-  let mockScheduledTask: any;
+  let mockScheduledTask: { start: jest.Mock; stop: jest.Mock };
 
   beforeEach(() => {
     config = {
@@ -34,7 +34,7 @@ describe('PerformanceMonitoringService', () => {
     };
 
     (cron.schedule as jest.Mock).mockReturnValue(mockScheduledTask);
-    (pidusage.default as jest.Mock).mockResolvedValue({
+    (pidusage.default as unknown as jest.Mock).mockResolvedValue({
       cpu: 25.5,
       memory: 104857600, // 100MB
     });
@@ -56,7 +56,7 @@ describe('PerformanceMonitoringService', () => {
     it('should use default maxHistorySize if not provided', () => {
       const configWithoutHistory = { ...config };
       delete configWithoutHistory.maxHistorySize;
-      
+
       const service = new PerformanceMonitoringService(configWithoutHistory);
       expect(service['maxMetricsHistory']).toBe(1000);
     });
@@ -83,7 +83,7 @@ describe('PerformanceMonitoringService', () => {
     it('should use default interval if not provided', () => {
       const configWithoutInterval = { ...config };
       delete configWithoutInterval.interval;
-      
+
       const service = new PerformanceMonitoringService(configWithoutInterval);
       service.start();
 
@@ -164,14 +164,14 @@ describe('PerformanceMonitoringService', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      (pidusage.default as jest.Mock).mockRejectedValue(new Error('pidusage failed'));
+      (pidusage.default as unknown as jest.Mock).mockRejectedValue(new Error('pidusage failed'));
 
       await expect(performanceService.collectMetrics()).rejects.toThrow('pidusage failed');
     });
 
     it('should add metrics to history', async () => {
       await performanceService.collectMetrics();
-      
+
       const history = performanceService.getMetricsHistory();
       expect(history).toHaveLength(1);
     });
@@ -198,7 +198,7 @@ describe('PerformanceMonitoringService', () => {
 
     it('should return latest metrics after collection', async () => {
       await performanceService.collectMetrics();
-      
+
       const current = performanceService.getCurrentMetrics();
       expect(current).toBeDefined();
       expect(current?.timestamp).toBeGreaterThan(0);
@@ -223,7 +223,7 @@ describe('PerformanceMonitoringService', () => {
     it('should return limited metrics when limit specified', () => {
       const history = performanceService.getMetricsHistory(2);
       expect(history).toHaveLength(2);
-      
+
       // Should return the most recent metrics
       const allHistory = performanceService.getMetricsHistory();
       expect(history[0]).toEqual(allHistory[1]);
@@ -233,18 +233,16 @@ describe('PerformanceMonitoringService', () => {
 
   describe('getMetricsByTimeRange', () => {
     it('should return metrics within specified time range', async () => {
-      const startTime = Date.now();
-      
       await performanceService.collectMetrics();
       await new Promise(resolve => setTimeout(resolve, 50));
-      
+
       const midTime = Date.now();
-      
+
       await performanceService.collectMetrics();
       await new Promise(resolve => setTimeout(resolve, 50));
-      
+
       const endTime = Date.now();
-      
+
       const metricsInRange = performanceService.getMetricsByTimeRange(midTime - 10, endTime + 10);
       expect(metricsInRange).toHaveLength(1);
       expect(metricsInRange[0].timestamp).toBeGreaterThanOrEqual(midTime - 10);
@@ -262,7 +260,7 @@ describe('PerformanceMonitoringService', () => {
     beforeEach(async () => {
       // Mock different CPU and memory values for aggregation testing
       let callCount = 0;
-      (pidusage.default as jest.Mock).mockImplementation(() => {
+      (pidusage.default as unknown as jest.Mock).mockImplementation(() => {
         callCount++;
         return Promise.resolve({
           cpu: 20 + callCount * 5, // 25, 30, 35
@@ -278,7 +276,7 @@ describe('PerformanceMonitoringService', () => {
 
     it('should calculate aggregated metrics correctly', () => {
       const aggregated = performanceService.getAggregatedMetrics(60); // Large period to include all metrics
-      
+
       expect(aggregated.count).toBe(3);
       expect(aggregated.avg.system?.cpu?.usage).toBeCloseTo(30); // (25+30+35)/3
       expect(aggregated.min.system?.cpu?.usage).toBe(25);
@@ -288,7 +286,7 @@ describe('PerformanceMonitoringService', () => {
     it('should return empty aggregation when no metrics', () => {
       const service = new PerformanceMonitoringService(config);
       const aggregated = service.getAggregatedMetrics();
-      
+
       expect(aggregated.count).toBe(0);
       expect(aggregated.avg).toEqual({});
       expect(aggregated.min).toEqual({});
@@ -306,11 +304,11 @@ describe('PerformanceMonitoringService', () => {
     it('should clear all metrics history', async () => {
       await performanceService.collectMetrics();
       await performanceService.collectMetrics();
-      
+
       expect(performanceService.getMetricsHistory()).toHaveLength(2);
-      
+
       performanceService.clearHistory();
-      
+
       expect(performanceService.getMetricsHistory()).toHaveLength(0);
     });
   });
@@ -318,9 +316,9 @@ describe('PerformanceMonitoringService', () => {
   describe('updateConfig', () => {
     it('should update configuration', () => {
       const newConfig = { interval: '*/60 * * * * *' };
-      
+
       performanceService.updateConfig(newConfig);
-      
+
       const updatedConfig = performanceService.getConfig();
       expect(updatedConfig.interval).toBe('*/60 * * * * *');
       expect(updatedConfig.enabled).toBe(true); // Should preserve existing config
@@ -328,12 +326,12 @@ describe('PerformanceMonitoringService', () => {
 
     it('should restart monitoring if currently running', () => {
       performanceService.start();
-      
+
       const stopSpy = jest.spyOn(performanceService, 'stop');
       const startSpy = jest.spyOn(performanceService, 'start');
-      
+
       performanceService.updateConfig({ interval: '*/60 * * * * *' });
-      
+
       expect(stopSpy).toHaveBeenCalled();
       expect(startSpy).toHaveBeenCalled();
     });
@@ -341,12 +339,12 @@ describe('PerformanceMonitoringService', () => {
     it('should not restart if not currently running', () => {
       // Ensure service is not running
       performanceService.stop();
-      
+
       const stopSpy = jest.spyOn(performanceService, 'stop');
       const startSpy = jest.spyOn(performanceService, 'start');
-      
+
       performanceService.updateConfig({ interval: '*/60 * * * * *' });
-      
+
       expect(stopSpy).not.toHaveBeenCalled();
       expect(startSpy).not.toHaveBeenCalled();
     });

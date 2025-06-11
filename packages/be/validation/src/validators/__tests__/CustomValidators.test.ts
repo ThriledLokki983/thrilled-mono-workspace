@@ -253,7 +253,7 @@ describe('CustomValidators', () => {
 
   describe('length validation', () => {
     it('should validate strings within length range', async () => {
-      const result = await CustomValidators.length('hello', {
+      const result = await CustomValidators.validateLength('hello', {
         min: 3,
         max: 10,
       });
@@ -261,12 +261,12 @@ describe('CustomValidators', () => {
     });
 
     it('should reject strings outside length range', async () => {
-      const result = await CustomValidators.length('hi', { min: 3, max: 10 });
+      const result = await CustomValidators.validateLength('hi', { min: 3, max: 10 });
       expect(result.isValid).toBe(false);
     });
 
     it('should validate arrays within length range', async () => {
-      const result = await CustomValidators.length([1, 2, 3], {
+      const result = await CustomValidators.validateLength([1, 2, 3], {
         min: 2,
         max: 5,
       });

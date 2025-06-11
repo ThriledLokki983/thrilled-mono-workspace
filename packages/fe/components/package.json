@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "@mono/styles": "file:../styles",
-    "@thrilled/shared": "file:../shared/types"
+    "@thrilled/shared": "file:../../shared/types"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

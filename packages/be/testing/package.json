@@ -28,7 +28,7 @@
     "@thrilled/be-types": "*",
     "@thrilled/databases": "*",
     "@thrilled/be-auth": "*",
-    "express": "^4.21.2",
+    "express": "^5.1.0",
     "supertest": "^6.3.3",
     "jest": "^29.7.0",
     "faker": "^5.5.3",

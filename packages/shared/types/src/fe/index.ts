@@ -1,3 +1,3 @@
 export * from './base';
-export * from './ui';
+export * from './ui/index';
 export * from './api';

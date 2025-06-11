@@ -1,4 +1,4 @@
-import { Express, Request, Response, NextFunction } from 'express';
+import { Express, Request, Response, NextFunction, ErrorRequestHandler } from 'express';
 import { BasePlugin } from './Plugin.js';
 import { Logger } from '../logging/Logger.js';
 
@@ -12,30 +12,30 @@ interface ValidationError extends Error {
 export interface CoreValidationConfig {
   /** Enable XSS protection middleware */
   enableXSSProtection?: boolean;
-  
+
   /** Enable SQL injection protection middleware */
   enableSQLInjectionProtection?: boolean;
-  
+
   /** Global validation configuration */
   globalValidation?: {
     enabled: boolean;
     soft?: boolean;
     options?: Record<string, unknown>;
   };
-  
+
   /** Global sanitization configuration */
   globalSanitization?: {
     body?: Record<string, unknown>;
     query?: Record<string, unknown>;
     params?: Record<string, unknown>;
   };
-  
+
   /** Custom validators */
   customValidators?: Record<string, (value: unknown) => Promise<{ isValid: boolean; errors: unknown[] }>>;
-  
+
   /** Custom error handler */
   errorHandler?: (error: unknown, req: unknown, res: unknown, next: unknown) => void;
-  
+
   /** Content Security Policy configuration */
   csp?: {
     enabled: boolean;
@@ -45,14 +45,14 @@ export interface CoreValidationConfig {
 
 /**
  * Core Validation Plugin - integrates @thrilled/be-validation into be-core
- * 
+ *
  * This plugin provides comprehensive validation and sanitization capabilities
  * that are automatically available when using be-core.
  */
 export class CoreValidationPlugin extends BasePlugin {
   readonly name = 'validation';
   readonly version = '1.0.0';
-  
+
   private config: CoreValidationConfig = {
     enableXSSProtection: true,
     enableSQLInjectionProtection: true,
@@ -113,7 +113,7 @@ export class CoreValidationPlugin extends BasePlugin {
     if (config && typeof config === 'object') {
       this.config = { ...this.config, ...(config as Partial<CoreValidationConfig>) };
     }
-    
+
     // Load validation modules dynamically
     try {
       // Try dynamic import first (for ES modules)
@@ -125,15 +125,15 @@ export class CoreValidationPlugin extends BasePlugin {
         this.validationModules = require('@thrilled/be-validation');
         this.logger.info('Validation modules loaded successfully via require', { context: this.name });
       } catch (requireError) {
-        this.logger.warn('Validation modules are not available, continuing with basic security headers only', { 
-          context: this.name, 
+        this.logger.warn('Validation modules are not available, continuing with basic security headers only', {
+          context: this.name,
           importError: importError instanceof Error ? importError.message : String(importError),
           requireError: requireError instanceof Error ? requireError.message : String(requireError)
         });
         // Continue without validation modules - we can still provide basic security headers
       }
     }
-    
+
     this.logger.info('Setting up validation plugin with configuration', {
       context: this.name,
       config: this.getPublicConfig(),
@@ -148,13 +148,13 @@ export class CoreValidationPlugin extends BasePlugin {
     app.use((req, res, next) => {
       // XSS Protection header
       res.setHeader('X-XSS-Protection', '1; mode=block');
-      
+
       // Content Type Options
       res.setHeader('X-Content-Type-Options', 'nosniff');
-      
+
       // Frame Options
       res.setHeader('X-Frame-Options', 'DENY');
-      
+
       // Content Security Policy
       if (this.config.csp?.enabled && this.config.csp.directives) {
         const cspString = Object.entries(this.config.csp.directives)
@@ -172,7 +172,7 @@ export class CoreValidationPlugin extends BasePlugin {
         try {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const SanitizerClass = this.validationModules.Sanitizer as any;
-          
+
           // Sanitize request body
           if (req.body && typeof req.body === 'object' && this.config.globalSanitization?.body) {
             req.body = SanitizerClass.sanitizeObject(req.body, this.config.globalSanitization.body);
@@ -192,9 +192,9 @@ export class CoreValidationPlugin extends BasePlugin {
 
           next();
         } catch (error) {
-          this.logger.error('Global sanitization error', { 
-            context: this.name, 
-            error: error instanceof Error ? error.message : String(error) 
+          this.logger.error('Global sanitization error', {
+            context: this.name,
+            error: error instanceof Error ? error.message : String(error)
           });
           next(error);
         }
@@ -220,12 +220,11 @@ export class CoreValidationPlugin extends BasePlugin {
   }
 
   protected override registerErrorHandlers(app: Express): void {
-    this.logger.debug('Registering validation error handlers', { context: this.name });
-    
-    // Custom error handler for validation errors
-    app.use((err: ValidationError, req: Request, res: Response, next: NextFunction) => {
+    this.logger.debug('Registering validation error handlers', { context: this.name });    // Custom error handler for validation errors
+    const validationErrorHandler: ErrorRequestHandler = (err: ValidationError, req: Request, res: Response, next: NextFunction) => {
       if (this.config.errorHandler) {
-        return this.config.errorHandler(err, req, res, next);
+        this.config.errorHandler(err, req, res, next);
+        return;
       }
 
       // Default validation error handling
@@ -237,12 +236,13 @@ export class CoreValidationPlugin extends BasePlugin {
           path: req.path,
           method: req.method,
         });
-        
-        return res.status(400).json({
+
+        res.status(400).json({
           error: 'Validation Error',
           message: 'Invalid input data',
           details: err.details || err.errors,
         });
+        return;
       }
 
       if (err.name === 'SanitizationError') {
@@ -252,16 +252,19 @@ export class CoreValidationPlugin extends BasePlugin {
           path: req.path,
           method: req.method,
         });
-        
-        return res.status(400).json({
+
+        res.status(400).json({
           error: 'Security Error',
           message: 'Potentially malicious content detected',
         });
+        return;
       }
 
       // Pass other errors to the next error handler
       next(err);
-    });
+    };
+
+    app.use(validationErrorHandler as any);
   }
 
   /**

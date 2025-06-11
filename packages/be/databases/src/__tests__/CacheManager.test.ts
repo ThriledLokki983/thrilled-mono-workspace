@@ -1,4 +1,4 @@
-import { CacheManager } from '../cache/CacheManager.js';
+import { CacheManager } from '../cache/CacheManager';
 import type { CacheConfig } from '@thrilled/be-types';
 import type { Logger } from '@mono/be-core';
 
