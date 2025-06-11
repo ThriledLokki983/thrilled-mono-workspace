@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, RequestHandler } from 'express';
 import { Container } from 'typedi';
 import { MonitoringService } from '@thrilled/monitoring';
 
@@ -41,7 +41,7 @@ export const createMonitoringRoutes = (): Router => {
   });
 
   // Monitoring status endpoint
-  router.get('/monitoring/status', (req: Request, res: Response) => {
+  router.get('/monitoring/status', ((req: Request, res: Response) => {
     try {
       const monitoringService = Container.get('monitoring.service') as unknown;
 
@@ -65,7 +65,7 @@ export const createMonitoringRoutes = (): Router => {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-  });
+  }) as unknown as RequestHandler);
 
   // Simple metrics endpoint (if Prometheus is disabled)
   router.get('/metrics/simple', (req: Request, res: Response) => {

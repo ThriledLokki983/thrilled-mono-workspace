@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, RequestHandler } from 'express';
 import { UserController } from '../controllers/users.controller';
 import { CreateUserDto } from '../dtos/users.dto';
 import { Routes } from '../interfaces/routes.interface';
@@ -46,7 +46,7 @@ export class UserRoute implements Routes {
      *       404:
      *         description: Authentication token missing
      */
-    this.router.get(`${this.path}/me`, getAuthMiddleware().requireAuth(), this.user.getCurrentUser);
+    this.router.get(`${this.path}/me`, getAuthMiddleware().requireAuth() as RequestHandler, this.user.getCurrentUser as RequestHandler);
 
     /**
      * @swagger

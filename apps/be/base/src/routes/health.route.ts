@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, RequestHandler } from 'express';
 import { Routes } from '../interfaces/routes.interface';
 import { HealthController } from '../controllers/health.controller';
 import { Container } from 'typedi';
@@ -105,7 +105,7 @@ export class HealthRoute implements Routes {
      *       503:
      *         description: Redis is unhealthy
      */
-    this.router.get(`${this.path}/redis`, getAuthMiddleware().requireAuth(), this.health.getRedisHealth);
+    this.router.get(`${this.path}/redis`, getAuthMiddleware().requireAuth() as RequestHandler, this.health.getRedisHealth as RequestHandler);
 
     /**
      * @swagger
@@ -146,6 +146,6 @@ export class HealthRoute implements Routes {
      *       401:
      *         description: Unauthorized
      */
-    this.router.get(`${this.path}/redis/metrics`, getAuthMiddleware().requireAuth(), this.health.getRedisMetrics);
+    this.router.get(`${this.path}/redis/metrics`, getAuthMiddleware().requireAuth() as RequestHandler, this.health.getRedisMetrics as RequestHandler);
   }
 }
