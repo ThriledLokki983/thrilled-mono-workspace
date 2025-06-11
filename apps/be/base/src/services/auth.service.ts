@@ -46,7 +46,7 @@ export class AuthService {
   }
 
   public async signup(userData: User): Promise<Omit<User, 'password'>> {
-    const { email, password, name, first_name, last_name, phone, address } = userData;
+    const { email, password, name, first_name, last_name, phone, address, role, language_preference, is_active } = userData;
 
     // Using transaction to ensure atomicity of the signup process
     return await DbHelper.withTransaction(async (client: PoolClient) => {
@@ -59,10 +59,21 @@ export class AuthService {
       // Hash the password using auth package
       const hashedPassword = await this.passwordManager.hashPassword(password);
 
-      // Insert the new user into the database
+      // Insert the new user into the database - must match EntitySqlHelpers.User.getInsertQuery() parameter order
       const result = await DbHelper.query(
         EntitySqlHelpers.User.getInsertQuery(),
-        [email, hashedPassword, name, first_name, last_name, phone || null, address || null],
+        [
+          email,
+          hashedPassword,
+          name,
+          first_name,
+          last_name,
+          phone || null,
+          address || null,
+          role || 'user',  // Default to 'user' role if not provided
+          language_preference || 'en',  // Default to 'en' if not provided
+          is_active !== undefined ? is_active : true  // Default to true if not provided
+        ],
         client,
       );
 

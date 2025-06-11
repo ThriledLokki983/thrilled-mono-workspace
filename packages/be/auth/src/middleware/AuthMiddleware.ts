@@ -340,9 +340,14 @@ export class AuthMiddleware {
       return req.query.token;
     }
 
-    // Check cookie
-    if (req.cookies && req.cookies.accessToken) {
-      return req.cookies.accessToken;
+    // Check cookies - support both accessToken and Authorization cookie names
+    if (req.cookies) {
+      if (req.cookies.accessToken) {
+        return req.cookies.accessToken;
+      }
+      if (req.cookies.Authorization) {
+        return req.cookies.Authorization;
+      }
     }
 
     return null;

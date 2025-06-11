@@ -50,6 +50,13 @@ export const createAppConfig = (): AppConfig => {
       legacyHeaders: false,
     },
 
+    validation: {
+      enabled: true,
+      enableXSSProtection: true,
+      enableSQLInjectionProtection: true,
+      globalSanitization: undefined, // Disable global sanitization to use app-specific middleware
+    },
+
     health: {
       enabled: true,
       endpoint: '/health',

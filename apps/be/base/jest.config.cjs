@@ -18,8 +18,13 @@ module.exports = {
     '^@services/(.*)$': '<rootDir>/src/services/$1',
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
     '^@thrilled/be-auth$': '<rootDir>/../../../packages/be/auth/src/index.ts',
+    '^@thrilled/databases$': '<rootDir>/../../../packages/be/databases/src/index.ts',
+    '^@thrilled/be-validation$': '<rootDir>/../../../packages/be/validation/src/index.ts',
+    '^@thrilled/be-types$': '<rootDir>/../../../packages/be/be-types/src/index.ts',
+    '^@mono/be-core$': '<rootDir>/../../../packages/be/core/src/index.ts',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!@thrilled/be-auth)',
+    'node_modules/(?!@thrilled)',
   ],
+  resolver: '<rootDir>/test-resolver.js',
 };

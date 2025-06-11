@@ -96,7 +96,14 @@ export class ValidationPlugin {
 
           next();
         } catch (error) {
-          console.error('Global sanitization error:', error);
+          console.error('Global sanitization error details:', {
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            requestBody: req.body,
+            requestQuery: req.query,
+            requestParams: req.params,
+            sanitizationConfig: this.config.globalSanitization
+          });
           next(error);
         }
       });

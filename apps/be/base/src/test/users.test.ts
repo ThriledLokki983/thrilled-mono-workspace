@@ -3,6 +3,7 @@ import { App } from '../app';
 import { DbHelper } from '@thrilled/databases';
 import { CreateUserDto, UpdateUserDto, UserRole } from '../dtos/users.dto';
 import { UserRoute } from '../routes/users.route';
+import { AuthRoute } from '../routes/auth.route';
 import { setupAuthForTesting, teardownAuth } from './helpers/test-setup';
 import { AuthPlugin } from '../plugins/auth.plugin';
 
@@ -21,11 +22,24 @@ const testUser: CreateUserDto = {
 };
 
 let sharedAuthPlugin: AuthPlugin;
+let testApp: App;
 
 // Clean up test data
 beforeAll(async () => {
   // Setup auth plugin for all tests
   sharedAuthPlugin = await setupAuthForTesting();
+
+  // Create a shared test app to initialize database with both user and auth routes
+  const usersRoute = new UserRoute();
+  const authRoute = new AuthRoute();
+  testApp = new App([usersRoute, authRoute], sharedAuthPlugin);
+
+  // Initialize plugins without starting the server
+  await testApp.initializeForTesting();
+
+  // Wait for database initialization
+  await new Promise(resolve => setTimeout(resolve, 2000));
+
   // Delete test users if they exist from previous test runs
   try {
     await DbHelper.query(
@@ -56,21 +70,15 @@ afterAll(async () => {
 describe('Testing Users', () => {
   describe('[GET] /users', () => {
     it('response statusCode 200 / findAll', async () => {
-      const usersRoute = new UserRoute();
-      const app = new App([usersRoute], sharedAuthPlugin);
-
-      return await request(app.getServer()).get(`/api/v1${usersRoute.path}`).expect(200);
+      return await request(testApp.getServer()).get(`/api/v1/users`).expect(200);
     });
   });
 
   describe('[GET] /users/:id', () => {
     it('response statusCode 200 / findOne', async () => {
       // First create a user to ensure we have a valid ID
-      const usersRoute = new UserRoute();
-      const app = new App([usersRoute], sharedAuthPlugin);
-
-      const createResponse = await request(app.getServer())
-        .post(`/api/v1${usersRoute.path}`)
+      const createResponse = await request(testApp.getServer())
+        .post(`/api/v1/users`)
         .send({
           ...testUser,
           email: 'get.test@example.com',
@@ -79,7 +87,7 @@ describe('Testing Users', () => {
       const userId = createResponse.body.data.id;
 
       // Now get the user by ID
-      return await request(app.getServer()).get(`/api/v1${usersRoute.path}/${userId}`).expect(200);
+      return await request(testApp.getServer()).get(`/api/v1/users/${userId}`).expect(200);
     });
   });
 
@@ -89,10 +97,8 @@ describe('Testing Users', () => {
         ...testUser,
         email: 'create.test@example.com',
       };
-      const usersRoute = new UserRoute();
-      const app = new App([usersRoute], sharedAuthPlugin);
 
-      const response = await request(app.getServer()).post(`/api/v1${usersRoute.path}`).send(userData).expect(201);
+      const response = await request(testApp.getServer()).post(`/api/v1/users`).send(userData).expect(201);
 
       expect(response.body.data).toHaveProperty('id');
       expect(response.body.data).toHaveProperty('email', userData.email);
@@ -107,28 +113,23 @@ describe('Testing Users', () => {
         ...testUser,
         email: 'duplicate.test@example.com',
       };
-      const usersRoute = new UserRoute();
-      const app = new App([usersRoute], sharedAuthPlugin);
 
-      await request(app.getServer()).post(`/api/v1${usersRoute.path}`).send(userData).expect(201);
+      await request(testApp.getServer()).post(`/api/v1/users`).send(userData).expect(201);
 
       // Try to create a user with the same email
-      await request(app.getServer()).post(`/api/v1${usersRoute.path}`).send(userData).expect(409);
+      await request(testApp.getServer()).post(`/api/v1/users`).send(userData).expect(409);
     });
   });
 
   describe('[PUT] /users/:id', () => {
     it('response statusCode 200 / updated', async () => {
       // First create a user
-      const usersRoute = new UserRoute();
-      const app = new App([usersRoute], sharedAuthPlugin);
-
       const userData: CreateUserDto = {
         ...testUser,
         email: 'update.test@example.com',
       };
 
-      const createResponse = await request(app.getServer()).post(`/api/v1${usersRoute.path}`).send(userData);
+      const createResponse = await request(testApp.getServer()).post(`/api/v1/users`).send(userData);
 
       const userId = createResponse.body.data.id;
 
@@ -139,7 +140,7 @@ describe('Testing Users', () => {
         last_name: 'Name',
       };
 
-      const response = await request(app.getServer()).put(`/api/v1${usersRoute.path}/${userId}`).send(updateData).expect(200);
+      const response = await request(testApp.getServer()).put(`/api/v1/users/${userId}`).send(updateData).expect(200);
 
       expect(response.body.data).toHaveProperty('name', updateData.name);
       expect(response.body.data).toHaveProperty('first_name', updateData.first_name);
@@ -150,25 +151,22 @@ describe('Testing Users', () => {
   describe('[DELETE] /users/:id', () => {
     it('response statusCode 200 / deleted', async () => {
       // First create a user
-      const usersRoute = new UserRoute();
-      const app = new App([usersRoute], sharedAuthPlugin);
-
       const userData: CreateUserDto = {
         ...testUser,
         email: 'delete.test@example.com',
       };
 
-      const createResponse = await request(app.getServer()).post(`/api/v1${usersRoute.path}`).send(userData);
+      const createResponse = await request(testApp.getServer()).post(`/api/v1/users`).send(userData);
 
       const userId = createResponse.body.data.id;
 
       // Now delete the user
-      const response = await request(app.getServer()).delete(`/api/v1${usersRoute.path}/${userId}`).expect(200);
+      const response = await request(testApp.getServer()).delete(`/api/v1/users/${userId}`).expect(200);
 
       expect(response.body.data).toHaveProperty('id', userId);
 
       // Try to get the deleted user
-      await request(app.getServer()).get(`/api/v1${usersRoute.path}/${userId}`).expect(404);
+      await request(testApp.getServer()).get(`/api/v1/users/${userId}`).expect(404);
     });
   });
 });

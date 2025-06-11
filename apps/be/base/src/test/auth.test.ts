@@ -28,11 +28,22 @@ const loginCredentials: UserLoginDto = {
 };
 
 let sharedAuthPlugin: AuthPlugin;
+let testApp: App;
 
 // Clean up test data
 beforeAll(async () => {
   // Setup auth plugin for all tests
   sharedAuthPlugin = await setupAuthForTesting();
+
+  // Create a shared test app to initialize database
+  const authRoute = new AuthRoute();
+  testApp = new App([authRoute], sharedAuthPlugin);
+
+  // Initialize plugins without starting the server
+  await testApp.initializeForTesting();
+
+  // Wait for database initialization
+  await new Promise(resolve => setTimeout(resolve, 2000));
 
   // Delete test users if they exist from previous test runs
   try {
@@ -71,10 +82,7 @@ describe('Testing Auth', () => {
         email: `signup_${Date.now()}@example.com`,
       };
 
-      const authRoute = new AuthRoute();
-      const app = new App([authRoute], sharedAuthPlugin);
-
-      const response = await request(app.getServer()).post('/api/v1/auth/signup').send(signupUser).expect(201);
+      const response = await request(testApp.getServer()).post('/api/v1/auth/signup').send(signupUser).expect(201);
 
       expect(response.body.data).toHaveProperty('id');
       expect(response.body.data).toHaveProperty('email', signupUser.email);
@@ -84,34 +92,28 @@ describe('Testing Auth', () => {
     });
 
     it('response should have 409 with duplicate email', async () => {
-      // First create a user
+      // Create a unique email for this test
       const signupUser = {
         ...testUser,
         email: `duplicate_${Date.now()}@example.com`,
       };
 
-      const authRoute = new AuthRoute();
-      const app = new App([authRoute], sharedAuthPlugin);
-
-      await request(app.getServer()).post('/api/v1/auth/signup').send(signupUser).expect(201);
+      await request(testApp.getServer()).post('/api/v1/auth/signup').send(signupUser).expect(201);
 
       // Try to create a user with the same email
-      await request(app.getServer()).post('/api/v1/auth/signup').send(signupUser).expect(409);
+      await request(testApp.getServer()).post('/api/v1/auth/signup').send(signupUser).expect(409);
     });
   });
 
   describe('[POST] /login', () => {
     it('response should have the Set-Cookie header with the Authorization token', async () => {
-      const authRoute = new AuthRoute();
-      const app = new App([authRoute], sharedAuthPlugin);
-
       // First create a user
       const loginUser = {
         ...testUser,
         email: `login_${Date.now()}@example.com`,
       };
 
-      await request(app.getServer()).post('/api/v1/auth/signup').send(loginUser);
+      await request(testApp.getServer()).post('/api/v1/auth/signup').send(loginUser);
 
       // Now login with that user
       const loginCreds = {
@@ -119,23 +121,20 @@ describe('Testing Auth', () => {
         password: loginUser.password,
       };
 
-      return await request(app.getServer())
+      return await request(testApp.getServer())
         .post('/api/v1/auth/login')
         .send(loginCreds)
         .expect('Set-Cookie', /^Authorization=.+/);
     });
 
     it('response should have 401 with incorrect password', async () => {
-      const authRoute = new AuthRoute();
-      const app = new App([authRoute], sharedAuthPlugin);
-
       // First create a user
       const loginUser = {
         ...testUser,
         email: `wrong_password_${Date.now()}@example.com`,
       };
 
-      await request(app.getServer()).post('/api/v1/auth/signup').send(loginUser);
+      await request(testApp.getServer()).post('/api/v1/auth/signup').send(loginUser);
 
       // Try to login with wrong password
       const loginCreds = {
@@ -143,22 +142,19 @@ describe('Testing Auth', () => {
         password: 'WrongPassword1!',
       };
 
-      return await request(app.getServer()).post('/api/v1/auth/login').send(loginCreds).expect(401);
+      return await request(testApp.getServer()).post('/api/v1/auth/login').send(loginCreds).expect(401);
     });
   });
 
   describe('[POST] /logout', () => {
     it('logout should set Authorization cookie to empty with Max-age=0', async () => {
-      const authRoute = new AuthRoute();
-      const app = new App([authRoute], sharedAuthPlugin);
-
       // First create a user
       const logoutUser = {
         ...testUser,
         email: `logout_${Date.now()}@example.com`,
       };
 
-      await request(app.getServer()).post('/api/v1/auth/signup').send(logoutUser);
+      await request(testApp.getServer()).post('/api/v1/auth/signup').send(logoutUser);
 
       // Login to get the authentication cookie
       const loginCreds = {
@@ -166,7 +162,9 @@ describe('Testing Auth', () => {
         password: logoutUser.password,
       };
 
-      const loginResponse = await request(app.getServer()).post('/api/v1/auth/login').send(loginCreds); // Extract the auth cookie
+      const loginResponse = await request(testApp.getServer()).post('/api/v1/auth/login').send(loginCreds);
+
+      // Extract the auth cookie
       const cookies = loginResponse.headers['set-cookie'];
 
       // Handle both string and array cases
@@ -178,7 +176,7 @@ describe('Testing Auth', () => {
       }
 
       // Use the full cookie string as supertest expects it
-      const response = await request(app.getServer()).post('/api/v1/auth/logout').set('Cookie', authCookie).expect(200);
+      const response = await request(testApp.getServer()).post('/api/v1/auth/logout').set('Cookie', authCookie).expect(200);
 
       // Check if the response has the Set-Cookie header
       expect(response.headers['set-cookie']).toBeDefined();

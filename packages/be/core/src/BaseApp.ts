@@ -6,6 +6,7 @@ import cors from 'cors';
 import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
 import hpp from 'hpp';
 import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 import { Logger } from './logging/Logger.js';
 import { Plugin } from './plugins/Plugin.js';
 import { PluginManager } from './plugins/PluginManager.js';
@@ -95,7 +96,7 @@ export class BaseApp {
     // Add validation plugin by default if not explicitly disabled
     const validationConfig = this.config.validation || {};
     const isValidationEnabled = validationConfig.enabled !== false; // Default to true
-    
+
     if (isValidationEnabled) {
       const validationPlugin = new CoreValidationPlugin(this.logger, validationConfig);
       this.use(validationPlugin, validationConfig);
@@ -165,6 +166,9 @@ export class BaseApp {
     // Body parsing
     this.app.use(express.json({ limit: '10mb' }));
     this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+    // Cookie parsing
+    this.app.use(cookieParser());
   }
 
   /**

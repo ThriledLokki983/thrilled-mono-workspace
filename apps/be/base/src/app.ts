@@ -158,4 +158,12 @@ export class App extends BaseApp {
   getMonitoringStatus() {
     return this.monitoringPlugin?.getStatus();
   }
+
+  /**
+   * Initialize plugins for testing without starting the server
+   */
+  async initializeForTesting(): Promise<void> {
+    // Use the plugin manager directly to initialize plugins
+    await this.getPluginManager().initializeAll(this.getApp());
+  }
 }

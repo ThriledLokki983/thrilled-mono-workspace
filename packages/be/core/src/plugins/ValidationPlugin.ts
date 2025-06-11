@@ -43,6 +43,40 @@ export interface CoreValidationConfig {
   };
 }
 
+export interface CoreValidationPublicConfig {
+  /** Enable XSS protection middleware */
+  enableXSSProtection?: boolean;
+
+  /** Enable SQL injection protection middleware */
+  enableSQLInjectionProtection?: boolean;
+
+  /** Global validation configuration */
+  globalValidation?: {
+    enabled: boolean;
+    soft?: boolean;
+    options?: Record<string, unknown>;
+  };
+
+  /** Global sanitization configuration */
+  globalSanitization?: {
+    body?: Record<string, unknown>;
+    query?: Record<string, unknown>;
+    params?: Record<string, unknown>;
+  };
+
+  /** Custom validators (keys only for public config) */
+  customValidators?: string[];
+
+  /** Custom error handler (indicator only for public config) */
+  errorHandler?: string;
+
+  /** Content Security Policy configuration */
+  csp?: {
+    enabled: boolean;
+    directives?: Record<string, string[]>;
+  };
+}
+
 /**
  * Core Validation Plugin - integrates @thrilled/be-validation into be-core
  *
@@ -359,13 +393,13 @@ export class CoreValidationPlugin extends BasePlugin {
   /**
    * Get current configuration (without sensitive data)
    */
-  getPublicConfig(): Partial<CoreValidationConfig> {
+  getPublicConfig(): Partial<CoreValidationPublicConfig> {
     const { customValidators, errorHandler, ...publicConfig } = this.config;
     return {
       ...publicConfig,
       customValidators: customValidators ? Object.keys(customValidators) : undefined,
       errorHandler: errorHandler ? 'custom' : undefined,
-    } as Partial<CoreValidationConfig>;
+    };
   }
 
   /**

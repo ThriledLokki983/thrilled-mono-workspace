@@ -130,7 +130,8 @@ export class AuthPlugin extends BasePlugin {
     app.use('/api/v1/auth/refresh', this.authMiddleware.authenticate());
 
     // Protected routes middleware - use this for any routes that require authentication
-    app.use('/api/v1/protected/*', this.authMiddleware.authenticate());
+    // Fixed: Use a more compatible pattern for Express routing
+    app.use('/api/v1/protected', this.authMiddleware.authenticate());
 
     // RBAC middleware - use this for routes that require specific permissions
     // Example: app.use('/api/v1/admin/*', this.authMiddleware.authorize(['admin']));

@@ -46,3 +46,4 @@ async function startApp() {
 
 // Start the application
 startApp();
+

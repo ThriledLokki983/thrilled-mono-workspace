@@ -15,7 +15,7 @@ function getAuthMiddleware(): AuthMiddleware {
 
 export class UserRoute implements Routes {
   public path = '/users';
-  public router = Router();
+  public router: Router = Router();
   public user = new UserController();
 
   constructor() {

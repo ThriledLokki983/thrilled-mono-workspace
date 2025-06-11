@@ -1,8 +1,8 @@
 {
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "esnext",
-    "moduleResolution": "bundler",
+    "module": "Node16",
+    "moduleResolution": "node16",
     "lib": ["es2018"],
     "target": "es2018",
     "baseUrl": ".",
@@ -10,7 +10,10 @@
     "outDir": "dist",
     "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
     "forceConsistentCasingInFileNames": true,
-    "types": ["node"]
+    "types": ["node"],
+    "emitDeclarationOnly": false,
+    "declaration": true,
+    "customConditions": []
   },
   "include": ["src/**/*.ts"],
   "references": [

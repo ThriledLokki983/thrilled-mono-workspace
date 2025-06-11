@@ -29,6 +29,8 @@
     "@thrilled/be-auth": "*",
     "@thrilled/be-validation": "*",
     "@thrilled/monitoring": "*",
+    "joi": "^17.13.3",
+    "zod": "^3.25.61",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
@@ -53,9 +55,7 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "typedi": "^0.10.0",
-    "uuid": "^11.1.0",
-    "joi": "^17.13.3",
-    "zod": "^3.23.8"
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@swc/cli": "^0.1.57",

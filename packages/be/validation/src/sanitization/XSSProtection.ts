@@ -27,12 +27,18 @@ export class XSSProtection {
 
         // Sanitize query parameters
         if (req.query && typeof req.query === 'object') {
-          req.query = this.sanitizeObject(req.query, xssOptions);
+          const sanitizedQuery = this.sanitizeObject(req.query, xssOptions);
+          // Replace the query object properties instead of the whole object
+          Object.keys(req.query).forEach(key => delete req.query[key]);
+          Object.assign(req.query, sanitizedQuery);
         }
 
         // Sanitize URL parameters
         if (req.params && typeof req.params === 'object') {
-          req.params = this.sanitizeObject(req.params, xssOptions);
+          const sanitizedParams = this.sanitizeObject(req.params, xssOptions);
+          // Replace the params object properties instead of the whole object
+          Object.keys(req.params).forEach(key => delete req.params[key]);
+          Object.assign(req.params, sanitizedParams);
         }
 
         next();

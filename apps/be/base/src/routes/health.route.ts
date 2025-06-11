@@ -19,7 +19,7 @@ function getAuthMiddleware(): AuthMiddleware {
  */
 export class HealthRoute implements Routes {
   public path = '/health';
-  public router = Router();
+  public router: Router = Router();
   public health = new HealthController();
 
   constructor() {
