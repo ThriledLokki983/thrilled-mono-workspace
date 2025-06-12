@@ -15,8 +15,8 @@ services:
   server:
     container_name: server
     build:
-      context: ./
-      dockerfile: Dockerfile.dev
+      context: ../../../
+      dockerfile: apps/be/base/Dockerfile.dev
     ports:
       - '${PORT:-5555}:${PORT:-5555}'
     env_file:
@@ -24,17 +24,30 @@ services:
     environment:
       - NODE_ENV=development
     volumes:
-      - ./:/app
-      - /app/node_modules
-      - ./src:/app/src:delegated
+      # Mount workspace files but exclude node_modules
+      - ../../../apps:/app/apps:delegated
+      - ../../../packages:/app/packages:delegated
+      - ../../../package.json:/app/package.json:ro
+      - ../../../yarn.lock:/app/yarn.lock:ro
+      - ../../../nx.json:/app/nx.json:ro
+      - ../../../tsconfig.base.json:/app/tsconfig.base.json:ro
+      # Use named volumes for node_modules to preserve Linux native modules
+      - node_modules:/app/node_modules
+      - app_node_modules:/app/apps/be/base/node_modules
     restart: 'unless-stopped'
     networks:
       - backend
     depends_on:
       - pg
       - redis
-    # Use this command to ensure nodemon properly watches for changes
-    command: npm run dev
+    # Use this command to ensure proper native modules and dev server
+    command: |
+      sh -c "
+        cd /app/apps/be/base &&
+        rm -rf node_modules/bcrypt/lib/binding node_modules/sharp/vendor 2>/dev/null || true &&
+        yarn install --check-files &&
+        yarn dev
+      "
 
   pg:
     container_name: pg
@@ -71,4 +84,8 @@ volumes:
   pg_data:
     driver: local
   redis_data:
+    driver: local
+  node_modules:
+    driver: local
+  app_node_modules:
     driver: local

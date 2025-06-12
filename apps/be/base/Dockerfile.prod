@@ -1,8 +1,20 @@
-# NodeJS Version 16
-FROM node:16.18-buster-slim AS builder
+# NodeJS Version 20.x (Updated to support Sharp library)
+FROM node:20-buster-slim AS builder
 
 # Set working directory
 WORKDIR /app
+
+# Install system dependencies required for Sharp and mozjpeg
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    autoconf \
+    automake \
+    libtool \
+    nasm \
+    pkg-config \
+    libpng-dev \
+    python3 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy package files first for better caching
 COPY package*.json ./
@@ -17,9 +29,14 @@ COPY . .
 RUN npm run build
 
 # Create production image
-FROM node:16.18-buster-slim
+FROM node:20-buster-slim
 
 WORKDIR /app
+
+# Install system dependencies required for runtime (minimal set)
+RUN apt-get update && apt-get install -y \
+    libpng16-16 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
 COPY package*.json ./
