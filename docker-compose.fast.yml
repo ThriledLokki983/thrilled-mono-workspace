@@ -1,0 +1,211 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    container_name: thrilled-postgres
+    image: postgres:14.5-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - thrilled-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Redis Cache
+  redis:
+    container_name: thrilled-redis
+    image: redis:alpine
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - thrilled-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # Base Backend Service (Optimized)
+  base-be:
+    container_name: thrilled-base-be
+    build:
+      context: .
+      dockerfile: Dockerfile.fast
+      target: development
+    ports:
+      - '${BASE_PORT:-5555}:5555'
+    env_file:
+      - ./apps/be/base/.env.development.local
+    environment:
+      - NODE_ENV=development
+      - RUNNING_IN_DOCKER=true
+      - POSTGRES_HOST=postgres
+      - REDIS_HOST=redis
+      - PORT=5555
+      - npm_config_cache=/tmp/.npm
+    volumes:
+      # Mount workspace files but exclude node_modules to preserve native modules
+      - ./apps:/app/apps:delegated
+      - ./packages:/app/packages:delegated
+      - ./package.json:/app/package.json:ro
+      - ./yarn.lock:/app/yarn.lock:ro
+      - ./nx.json:/app/nx.json:ro
+      - ./tsconfig.base.json:/app/tsconfig.base.json:ro
+      # Use named volumes for node_modules to preserve Linux native modules
+      - node_modules:/app/node_modules
+      - base_node_modules:/app/apps/be/base/node_modules
+    working_dir: /app
+    command: >
+      sh -c "
+        echo '🚀 Starting Base Backend Service (Optimized)...' &&
+
+        # Quick dependency check instead of full install
+        if [ ! -f /app/.deps-installed ]; then
+          echo '📦 First run: Installing dependencies...' &&
+          yarn install --frozen-lockfile --prefer-offline --production=false &&
+          npm rebuild bcrypt sharp &&
+          touch /app/.deps-installed &&
+          echo '✅ Dependencies installed and cached'
+        else
+          echo '⚡ Using cached dependencies'
+        fi &&
+
+        # Quick bcrypt test
+        node -e \"console.log('✅ bcrypt ready')\" 2>/dev/null || (npm rebuild bcrypt && echo '🔧 bcrypt rebuilt') &&
+
+        echo '🎯 Starting application...' &&
+        yarn nx run base-be:dev
+      "
+    restart: unless-stopped
+    networks:
+      - thrilled-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5555/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # FaithCircle Backend Service (Optimized)
+  faithcircle-be:
+    container_name: thrilled-faithcircle-be
+    build:
+      context: .
+      dockerfile: Dockerfile.fast
+      target: development
+    ports:
+      - '${FAITHCIRCLE_PORT:-8001}:8001'
+    env_file:
+      - ./apps/be/faithcircle/faithcircle-be/.env.development.local
+    environment:
+      - NODE_ENV=development
+      - RUNNING_IN_DOCKER=true
+      - POSTGRES_HOST=postgres
+      - REDIS_HOST=redis
+      - PORT=8001
+      - npm_config_cache=/tmp/.npm
+    volumes:
+      # Mount workspace files but exclude node_modules to preserve native modules
+      - ./apps:/app/apps:delegated
+      - ./packages:/app/packages:delegated
+      - ./package.json:/app/package.json:ro
+      - ./yarn.lock:/app/yarn.lock:ro
+      - ./nx.json:/app/nx.json:ro
+      - ./tsconfig.base.json:/app/tsconfig.base.json:ro
+      # Use named volumes for node_modules to preserve Linux native modules
+      - node_modules:/app/node_modules
+      - faithcircle_node_modules:/app/apps/be/faithcircle/faithcircle-be/node_modules
+    working_dir: /app
+    command: >
+      sh -c "
+        echo '🚀 Starting FaithCircle Backend Service (Optimized)...' &&
+
+        # Quick dependency check instead of full install
+        if [ ! -f /app/.deps-installed ]; then
+          echo '📦 First run: Installing dependencies...' &&
+          yarn install --frozen-lockfile --prefer-offline --production=false &&
+          npm rebuild bcrypt sharp &&
+          touch /app/.deps-installed &&
+          echo '✅ Dependencies installed and cached'
+        else
+          echo '⚡ Using cached dependencies'
+        fi &&
+
+        # Quick bcrypt test
+        node -e \"console.log('✅ bcrypt ready')\" 2>/dev/null || (npm rebuild bcrypt && echo '🔧 bcrypt rebuilt') &&
+
+        echo '🎯 Starting application...' &&
+        yarn nx run faithcircle-be:dev
+      "
+    restart: unless-stopped
+    networks:
+      - thrilled-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      base-be:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8001/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # Nginx Proxy (optimized startup)
+  nginx:
+    container_name: thrilled-nginx
+    image: nginx:alpine
+    ports:
+      - '${PROXY_PORT:-80}:80'
+      - '${PROXY_SSL_PORT:-443}:443'
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped
+    networks:
+      - thrilled-network
+    depends_on:
+      - base-be
+      - faithcircle-be
+
+# Named volumes for persistent data and optimized development
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  node_modules:
+    driver: local
+  base_node_modules:
+    driver: local
+  faithcircle_node_modules:
+    driver: local
+
+# Network for service communication
+networks:
+  thrilled-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

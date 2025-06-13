@@ -146,3 +146,89 @@ install: setup build ## Setup and build everything for first time use
 
 graph: ## Visualize Nx dependency graph
 	docker compose exec base-be yarn nx graph
+
+# Fast startup commands (optimized for development)
+fast: ## Fast startup using optimized Docker configuration
+	docker compose -f docker-compose.fast.yml up -d
+
+fast-build: ## Build optimized Docker images for fast startup
+	docker compose -f docker-compose.fast.yml build
+
+fast-rebuild: ## Rebuild optimized images without cache
+	docker compose -f docker-compose.fast.yml build --no-cache
+
+fast-down: ## Stop fast startup services
+	docker compose -f docker-compose.fast.yml down
+
+fast-logs: ## View logs from fast startup services
+	docker compose -f docker-compose.fast.yml logs
+
+fast-status: ## Check status of fast startup services
+	docker compose -f docker-compose.fast.yml ps
+
+fast-clean: ## Clean fast startup cache and restart
+	docker compose -f docker-compose.fast.yml down -v && docker compose -f docker-compose.fast.yml up -d
+
+# Ultra-fast startup commands (minimal overhead)
+ultra-fast: ## Ultra-fast startup with minimal overhead
+	docker compose -f docker-compose.ultra-fast.yml up -d
+
+ultra-fast-build: ## Build images for ultra-fast startup
+	docker compose -f docker-compose.ultra-fast.yml build
+
+ultra-fast-down: ## Stop ultra-fast startup services
+	docker compose -f docker-compose.ultra-fast.yml down
+
+ultra-fast-logs: ## View logs from ultra-fast startup services
+	docker compose -f docker-compose.ultra-fast.yml logs
+
+ultra-fast-status: ## Check status of ultra-fast startup services
+	docker compose -f docker-compose.ultra-fast.yml ps
+
+# =============================================================================
+# LOCAL DEVELOPMENT (No Docker) - FAST STARTUP
+# =============================================================================
+
+local-setup: ## Setup local development environment
+	@echo "🔧 Setting up local development environment..."
+	@./scripts/local-dev-setup.sh
+
+local-services: ## Start local PostgreSQL and Redis with Docker (only what we need)
+	@echo "🐘 Starting PostgreSQL..."
+	docker compose up -d postgres
+	@echo "🟥 Starting Redis..."
+	docker compose up -d redis
+	@echo "✅ Local services (Postgres + Redis) started!"
+
+local-base: ## Start base backend locally (requires local-services)
+	@./scripts/start-base-local.sh
+
+local-faithcircle: ## Start faithcircle backend locally (requires local-services)
+	@./scripts/start-faithcircle-local.sh
+
+local-dev: ## Start both backends locally in parallel
+	@echo "🚀 Starting all backends locally..."
+	@make local-services
+	@echo "⏳ Waiting for services to be ready..."
+	@sleep 3
+	@echo "🔥 Starting backends in parallel..."
+	@echo "📝 Base Backend will be on http://localhost:5555"
+	@echo "📝 FaithCircle Backend will be on http://localhost:8001"
+	@echo "💡 Press Ctrl+C to stop all servers"
+	@echo ""
+	@(cd apps/be/base && dotenv -e .env.local -- yarn nx run base-be:dev) & \
+	(cd apps/be/faithcircle/faithcircle-be && dotenv -e .env.local -- yarn nx run faithcircle-be:dev) & \
+	wait
+
+local-stop: ## Stop local services
+	@echo "🛑 Stopping local services..."
+	docker compose stop postgres redis
+	@echo "✅ Local services stopped!"
+
+local-clean: ## Clean local setup and stop services
+	@echo "🧹 Cleaning local development..."
+	@make local-stop
+	docker compose down postgres redis
+	@echo "✅ Local development cleaned!"
+
+# =============================================================================

@@ -16,30 +16,30 @@ export type { Environment } from '@thrilled/be-types';
 export interface ValidationConfig extends PluginConfig {
   /** Whether validation is enabled - defaults to true */
   enabled?: boolean;
-  
+
   /** Enable XSS protection middleware */
   enableXSSProtection?: boolean;
-  
+
   /** Enable SQL injection protection middleware */
   enableSQLInjectionProtection?: boolean;
-  
+
   /** Global validation configuration */
   globalValidation?: {
     enabled: boolean;
     soft?: boolean;
     options?: Record<string, unknown>;
   };
-  
+
   /** Global sanitization configuration */
   globalSanitization?: {
     body?: Record<string, unknown>;
     query?: Record<string, unknown>;
     params?: Record<string, unknown>;
   };
-  
+
   /** Custom validators */
   customValidators?: Record<string, (value: unknown) => Promise<{ isValid: boolean; errors: unknown[] }>>;
-  
+
   /** Content Security Policy configuration */
   csp?: {
     enabled: boolean;

@@ -1,0 +1,84 @@
+# Multi-stage Dockerfile optimized for fast development startup
+# NodeJS Version 20.x (Updated to support Sharp library)
+FROM --platform=linux/amd64 node:20-bullseye AS base
+
+# Install system dependencies required for Sharp and native modules
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    autoconf \
+    automake \
+    libtool \
+    nasm \
+    pkg-config \
+    libpng-dev \
+    python3 \
+    libvips-dev \
+    gcc \
+    g++ \
+    make \
+    wget \
+    software-properties-common \
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json yarn.lock nx.json tsconfig.base.json ./
+
+# Copy all package.json files to enable proper dependency resolution
+COPY apps/be/base/package.json ./apps/be/base/
+COPY apps/be/faithcircle/faithcircle-be/package.json ./apps/be/faithcircle/faithcircle-be/
+COPY packages/be/auth/package.json ./packages/be/auth/
+COPY packages/be/be-types/package.json ./packages/be/be-types/
+COPY packages/be/cli/package.json ./packages/be/cli/
+COPY packages/be/core/package.json ./packages/be/core/
+COPY packages/be/databases/package.json ./packages/be/databases/
+COPY packages/be/monitoring/package.json ./packages/be/monitoring/
+COPY packages/be/testing/package.json ./packages/be/testing/
+COPY packages/be/uploads/package.json ./packages/be/uploads/
+COPY packages/be/validation/package.json ./packages/be/validation/
+COPY packages/fe/components/package.json ./packages/fe/components/
+COPY packages/fe/styles/package.json ./packages/fe/styles/
+COPY packages/shared/custom-eslint/package.json ./packages/shared/custom-eslint/
+COPY packages/shared/types/package.json ./packages/shared/types/
+
+# Install dependencies with optimizations
+RUN yarn install --frozen-lockfile --prefer-offline --production=false
+
+# Pre-build native modules
+RUN npm rebuild bcrypt && npm rebuild sharp
+
+# Test native modules work
+RUN node -e "console.log('✅ bcrypt test:', require('bcrypt').hashSync('test', 10))"
+
+# Development stage - fast startup
+FROM base AS development
+
+# Copy source code
+COPY . .
+
+# Clean and reinstall only if needed (this will be skipped if deps are cached)
+RUN rm -rf node_modules/bcrypt node_modules/sharp 2>/dev/null || true && \
+    yarn install --check-files --production=false && \
+    npm rebuild bcrypt && \
+    npm rebuild sharp
+
+RUN node -e "console.log('✅ Final bcrypt test:', require('bcrypt').hashSync('test', 10))"
+
+# Production stage
+FROM base AS production
+
+# Copy source code
+COPY . .
+
+# Build the applications
+RUN yarn nx run-many --target=build --projects=base-be,faithcircle-be --parallel
+
+# Remove dev dependencies
+RUN yarn install --production --prefer-offline
+
+EXPOSE 5555 8001
+
+CMD ["node", "dist/server.js"]

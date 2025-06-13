@@ -26,8 +26,8 @@ export const createAppConfig = (): AppConfig => {
     port: Number(PORT) || 8001,
     environment,
 
-    // Trust proxy when running behind nginx
-    trustProxy: true,
+    // Trust proxy only when running behind nginx in Docker
+    trustProxy: process.env.RUNNING_IN_DOCKER === 'true' ? 1 : false,
 
     logging: {
       level: NODE_ENV === 'production' ? 'info' : 'debug',
