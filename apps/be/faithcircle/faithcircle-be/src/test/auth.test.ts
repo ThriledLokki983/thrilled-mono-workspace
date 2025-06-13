@@ -1,0 +1,186 @@
+import request from 'supertest';
+import { App } from '../app';
+import { DbHelper } from '@thrilled/databases';
+import { CreateUserDto, UserLoginDto, UserRole } from '../dtos/users.dto';
+import { AuthRoute } from '../routes/auth.route';
+import { setupAuthForTesting, teardownAuth } from './helpers/test-setup';
+import { AuthPlugin } from '../plugins/auth.plugin';
+
+// Test user data that matches the schema requirements
+const testUser: CreateUserDto = {
+  email: 'auth.test@example.com',
+  password: 'Password1!',
+  name: 'Auth Test',
+  first_name: 'Auth',
+  last_name: 'Test',
+  phone: '+31612345678',
+  address: '123 Auth Street',
+  role: UserRole.USER,
+  language_preference: 'en',
+  is_active: true,
+};
+
+// Login credentials
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const loginCredentials: UserLoginDto = {
+  email: testUser.email,
+  password: testUser.password,
+};
+
+let sharedAuthPlugin: AuthPlugin;
+let testApp: App;
+
+// Clean up test data
+beforeAll(async () => {
+  // Setup auth plugin for all tests
+  sharedAuthPlugin = await setupAuthForTesting();
+
+  // Create a shared test app to initialize database
+  const authRoute = new AuthRoute();
+  testApp = new App([authRoute], sharedAuthPlugin);
+
+  // Initialize plugins without starting the server
+  await testApp.initializeForTesting();
+
+  // Wait for database initialization
+  await new Promise(resolve => setTimeout(resolve, 2000));
+
+  // Delete test users if they exist from previous test runs
+  try {
+    await DbHelper.query(
+      `DELETE FROM users WHERE email LIKE 'auth.%@example.com' OR email LIKE 'signup_%@example.com' OR email LIKE 'duplicate_%@example.com' OR email LIKE 'login_%@example.com' OR email LIKE 'wrong_password_%@example.com' OR email LIKE 'logout_%@example.com'`,
+    );
+  } catch (error) {
+    console.error('Error cleaning test data:', error);
+  }
+});
+
+afterAll(async () => {
+  await new Promise<void>(resolve => setTimeout(() => resolve(), 500));
+
+  // Clean up auth plugin
+  if (sharedAuthPlugin) {
+    await teardownAuth(sharedAuthPlugin);
+  }
+
+  // Clean up test data
+  try {
+    await DbHelper.query(
+      `DELETE FROM users WHERE email LIKE 'auth.%@example.com' OR email LIKE 'signup_%@example.com' OR email LIKE 'duplicate_%@example.com' OR email LIKE 'login_%@example.com' OR email LIKE 'wrong_password_%@example.com' OR email LIKE 'logout_%@example.com'`,
+    );
+  } catch (error) {
+    console.error('Error cleaning test data:', error);
+  }
+});
+
+describe('Testing Auth', () => {
+  describe('[POST] /signup', () => {
+    it('response should have the Create userData', async () => {
+      // Create a unique email for this test
+      const signupUser = {
+        ...testUser,
+        email: `signup_${Date.now()}@example.com`,
+      };
+
+      const response = await request(testApp.getServer()).post('/api/v1/auth/signup').send(signupUser).expect(201);
+
+      expect(response.body.data).toHaveProperty('id');
+      expect(response.body.data).toHaveProperty('email', signupUser.email);
+      expect(response.body.data).toHaveProperty('name', signupUser.name);
+      expect(response.body.data).toHaveProperty('first_name', signupUser.first_name);
+      expect(response.body.data).toHaveProperty('last_name', signupUser.last_name);
+    });
+
+    it('response should have 409 with duplicate email', async () => {
+      // Create a unique email for this test
+      const signupUser = {
+        ...testUser,
+        email: `duplicate_${Date.now()}@example.com`,
+      };
+
+      await request(testApp.getServer()).post('/api/v1/auth/signup').send(signupUser).expect(201);
+
+      // Try to create a user with the same email
+      await request(testApp.getServer()).post('/api/v1/auth/signup').send(signupUser).expect(409);
+    });
+  });
+
+  describe('[POST] /login', () => {
+    it('response should have the Set-Cookie header with the Authorization token', async () => {
+      // First create a user
+      const loginUser = {
+        ...testUser,
+        email: `login_${Date.now()}@example.com`,
+      };
+
+      await request(testApp.getServer()).post('/api/v1/auth/signup').send(loginUser);
+
+      // Now login with that user
+      const loginCreds = {
+        email: loginUser.email,
+        password: loginUser.password,
+      };
+
+      return await request(testApp.getServer())
+        .post('/api/v1/auth/login')
+        .send(loginCreds)
+        .expect('Set-Cookie', /^Authorization=.+/);
+    });
+
+    it('response should have 401 with incorrect password', async () => {
+      // First create a user
+      const loginUser = {
+        ...testUser,
+        email: `wrong_password_${Date.now()}@example.com`,
+      };
+
+      await request(testApp.getServer()).post('/api/v1/auth/signup').send(loginUser);
+
+      // Try to login with wrong password
+      const loginCreds = {
+        email: loginUser.email,
+        password: 'WrongPassword1!',
+      };
+
+      return await request(testApp.getServer()).post('/api/v1/auth/login').send(loginCreds).expect(401);
+    });
+  });
+
+  describe('[POST] /logout', () => {
+    it('logout should set Authorization cookie to empty with Max-age=0', async () => {
+      // First create a user
+      const logoutUser = {
+        ...testUser,
+        email: `logout_${Date.now()}@example.com`,
+      };
+
+      await request(testApp.getServer()).post('/api/v1/auth/signup').send(logoutUser);
+
+      // Login to get the authentication cookie
+      const loginCreds = {
+        email: logoutUser.email,
+        password: logoutUser.password,
+      };
+
+      const loginResponse = await request(testApp.getServer()).post('/api/v1/auth/login').send(loginCreds);
+
+      // Extract the auth cookie
+      const cookies = loginResponse.headers['set-cookie'];
+
+      // Handle both string and array cases
+      const cookieArray = Array.isArray(cookies) ? cookies : [cookies];
+      const authCookie = cookieArray.find(cookie => cookie && cookie.startsWith('Authorization='));
+
+      if (!authCookie) {
+        throw new Error('No Authorization cookie found in login response');
+      }
+
+      // Use the full cookie string as supertest expects it
+      const response = await request(testApp.getServer()).post('/api/v1/auth/logout').set('Cookie', authCookie).expect(200);
+
+      // Check if the response has the Set-Cookie header
+      expect(response.headers['set-cookie']).toBeDefined();
+      expect(response.headers['set-cookie'][0]).toMatch(/^Authorization=;/);
+    });
+  });
+});

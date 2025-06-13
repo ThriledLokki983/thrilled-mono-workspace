@@ -1,36 +1,48 @@
-import app from './app.js';
+import { App } from './app';
+import { AuthRoute } from './routes/auth.route';
+import { UserRoute } from './routes/users.route';
+import { HealthRoute } from './routes/health.route';
+import { MonitoringRoute } from './routes/monitoring.routes';
+import { AuthPlugin } from './plugins/auth.plugin';
+import { ValidateEnv } from './utils/validateEnv';
+import { logger as customAppLogger } from './utils/logger';
 
-const port = process.env.PORT || 8888;
+ValidateEnv();
 
-const server = app.listen(port, () => {
-  console.log(
-    `🚀 FaithCircle Backend API listening at http://localhost:${port}`
-  );
-  console.log(
-    `📊 Health check available at http://localhost:${port}/api/health`
-  );
-  console.log(`🌐 Main API endpoint: http://localhost:${port}/api`);
-});
+async function startApp() {
+  try {
+    // Create a shared AuthPlugin instance
+    const authPlugin = new AuthPlugin(customAppLogger);
 
-server.on('error', (error: Error) => {
-  console.error('❌ Server error:', error);
-});
+    // We need to manually set up the AuthPlugin to register services with TypeDI
+    // Unfortunately, the setup() method is protected, so we need to work around this
+    // by creating a workaround that can access the protected method
+    const setupAuthPlugin = async (plugin: AuthPlugin) => {
+      // Use any type to access the protected setup method
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (plugin as any).setup();
+    };
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('🛑 SIGTERM received, shutting down gracefully');
-  server.close(() => {
-    console.log('✅ Process terminated');
-    process.exit(0);
-  });
-});
+    await setupAuthPlugin(authPlugin);
 
-process.on('SIGINT', () => {
-  console.log('🛑 SIGINT received, shutting down gracefully');
-  server.close(() => {
-    console.log('✅ Process terminated');
-    process.exit(0);
-  });
-});
+    // Now create routes after AuthPlugin services are registered
+    const routes = [
+      new AuthRoute(),
+      new UserRoute(),
+      new HealthRoute(),
+      new MonitoringRoute(),
+    ];
 
-export default server;
+    // Create the full app with all plugins
+    const app = new App(routes, authPlugin);
+
+    // Start the app
+    await app.start();
+  } catch (error) {
+    customAppLogger.error(`Server failed to start: ${error.message}`);
+    process.exit(1);
+  }
+}
+
+// Start the application
+startApp();

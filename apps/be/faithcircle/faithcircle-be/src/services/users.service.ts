@@ -1,0 +1,198 @@
+import { PoolClient } from 'pg';
+import { hash } from 'bcrypt';
+import { Service } from 'typedi';
+import { HttpException } from '@thrilled/be-types';
+import { DbHelper, EntitySqlHelpers } from '@thrilled/databases';
+import { HttpStatusCodes } from '@mono/be-core';
+import { CreateUserDto, UpdateUserDto, UserResponseDto } from '../dtos/users.dto';
+import { CacheHelper } from '../utils/cacheHelper';
+
+@Service()
+export class UserService {
+  // Cache key prefixes for better organization and pattern-based invalidation
+  private readonly CACHE_PREFIX = 'users';
+  private readonly CACHE_ALL_USERS = `${this.CACHE_PREFIX}:all`;
+  private readonly CACHE_USER_BY_ID = `${this.CACHE_PREFIX}:id:`;
+
+  // Cache TTLs (in seconds)
+  private readonly CACHE_TTL = {
+    USER_LIST: 5 * 60, // 5 minutes for user lists
+    USER_DETAIL: 10 * 60, // 10 minutes for individual users
+  };
+
+  /**
+   * Find all users with caching
+   */
+  public async findAllUsers(): Promise<UserResponseDto[]> {
+    return CacheHelper.getOrSet<UserResponseDto[]>(
+      this.CACHE_ALL_USERS,
+      async () => {
+        const { rows } = await DbHelper.query(EntitySqlHelpers.User.getAllQuery());
+        return rows as UserResponseDto[];
+      },
+      { ttl: this.CACHE_TTL.USER_LIST },
+    );
+  }
+
+  /**
+   * Find user by ID with caching
+   */
+  public async findUserById(userId: string): Promise<UserResponseDto> {
+    return CacheHelper.getOrSet<UserResponseDto>(
+      `${this.CACHE_USER_BY_ID}${userId}`,
+      async () => {
+        const {
+          rows: [user],
+        } = await DbHelper.query(EntitySqlHelpers.User.getByIdQuery(), [userId]);
+
+        if (!user) {
+          throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
+        }
+
+        return user as UserResponseDto;
+      },
+      { ttl: this.CACHE_TTL.USER_DETAIL },
+    );
+  }
+
+  /**
+   * Create user and invalidate related caches
+   */
+  public async createUser(userData: CreateUserDto): Promise<UserResponseDto> {
+    const { email, password, name, first_name, last_name, phone, address, role, language_preference, is_active } = userData;
+
+    // Using transaction to ensure atomicity
+    const newUser = await DbHelper.withTransaction(async (client: PoolClient) => {
+      // Check if email already exists
+      const {
+        rows: [result],
+      } = await DbHelper.query(`SELECT EXISTS(SELECT 1 FROM users WHERE email = $1 AND deleted_at IS NULL)`, [email], client);
+
+      const { exists } = result as { exists: boolean };
+      if (exists) {
+        throw new HttpException(HttpStatusCodes.CONFLICT, `This email ${email} already exists`);
+      }
+
+      // Hash password
+      const hashedPassword = await hash(password, 10);
+
+      // Insert user
+      const {
+        rows: [newUser],
+      } = await DbHelper.query(
+        EntitySqlHelpers.User.getInsertQuery(),
+        [email, hashedPassword, name, first_name, last_name, phone, address, role, language_preference, is_active],
+        client,
+      );
+
+      return newUser as UserResponseDto;
+    });
+
+    // Invalidate all users cache since we added a new user
+    await this.invalidateUserCaches();
+
+    return newUser;
+  }
+
+  /**
+   * Update user and invalidate related caches
+   */
+  public async updateUser(userId: string, userData: UpdateUserDto): Promise<UserResponseDto> {
+    // Using transaction to ensure atomicity of the update operation
+    const updatedUser = await DbHelper.withTransaction(async (client: PoolClient) => {
+      // Step 1: Fetch current user with password
+      const {
+        rows: [currentUser],
+      } = await DbHelper.query(EntitySqlHelpers.User.getByIdQuery(true), [userId], client);
+
+      if (!currentUser) {
+        throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
+      }
+
+      // Type assertion for user with password field
+      const typedCurrentUser = currentUser as UserResponseDto & { password: string };
+
+      // Step 2: Merge incoming data with existing data
+      const {
+        email = typedCurrentUser.email,
+        name = typedCurrentUser.name,
+        first_name = typedCurrentUser.first_name,
+        last_name = typedCurrentUser.last_name,
+        phone = typedCurrentUser.phone,
+        address = typedCurrentUser.address,
+        role = typedCurrentUser.role,
+        language_preference = typedCurrentUser.language_preference,
+        is_active = typedCurrentUser.is_active,
+        password,
+      } = userData;
+
+      // If the email is being changed, check if the new email already exists
+      if (email !== typedCurrentUser.email) {
+        const {
+          rows: [result],
+        } = await DbHelper.query(`SELECT EXISTS(SELECT 1 FROM users WHERE email = $1 AND id != $2 AND deleted_at IS NULL)`, [email, userId], client);
+
+        const { exists } = result as { exists: boolean };
+        if (exists) {
+          throw new HttpException(HttpStatusCodes.CONFLICT, `This email ${email} already exists`);
+        }
+      }
+
+      const hashedPassword = password ? await hash(password, 10) : typedCurrentUser.password;
+
+      // Step 3: Update the user
+      const {
+        rows: [updatedUser],
+      } = await DbHelper.query(
+        EntitySqlHelpers.User.getUpdateQuery(),
+        [userId, email, name, first_name, last_name, phone, address, role, language_preference, hashedPassword, is_active],
+        client,
+      );
+
+      return updatedUser as UserResponseDto;
+    });
+
+    // Invalidate affected caches
+    await Promise.all([CacheHelper.invalidate(`${this.CACHE_USER_BY_ID}${userId}`), CacheHelper.invalidate(this.CACHE_ALL_USERS)]);
+
+    return updatedUser;
+  }
+
+  /**
+   * Delete user and invalidate related caches
+   */
+  public async deleteUser(userId: string): Promise<UserResponseDto> {
+    // Using transaction for consistency
+    const deletedUser = await DbHelper.withTransaction(async (client: PoolClient) => {
+      // Using soft delete by setting deleted_at timestamp
+      const {
+        rows: [deletedUser],
+      } = await DbHelper.query(EntitySqlHelpers.User.getSoftDeleteQuery(), [userId], client);
+
+      if (!deletedUser) {
+        throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
+      }
+
+      return deletedUser as UserResponseDto;
+    });
+
+    // Invalidate affected caches
+    await this.invalidateUserCaches(userId);
+
+    return deletedUser;
+  }
+
+  /**
+   * Helper method to invalidate user-related caches
+   * @param userId Optional user ID to invalidate specific user cache
+   */
+  private async invalidateUserCaches(userId?: string): Promise<void> {
+    const promises: Promise<boolean>[] = [CacheHelper.invalidate(this.CACHE_ALL_USERS)];
+
+    if (userId) {
+      promises.push(CacheHelper.invalidate(`${this.CACHE_USER_BY_ID}${userId}`));
+    }
+
+    await Promise.all(promises);
+  }
+}

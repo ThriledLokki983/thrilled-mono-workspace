@@ -1,0 +1,202 @@
+services:
+  # PostgreSQL Database (shared by both backend services)
+  postgres:
+    container_name: thrilled-postgres
+    image: postgres:14.5-alpine
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE:-thrilled_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./apps/be/base/src/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    networks:
+      - thrilled-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Cache (shared by both backend services)
+  redis:
+    container_name: thrilled-redis
+    image: redis:alpine
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redis_data:/data
+      - ./apps/be/base/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    restart: unless-stopped
+    networks:
+      - thrilled-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Base Backend Service
+  base-be:
+    container_name: thrilled-base-be
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - '${BASE_PORT:-5555}:5555'
+    env_file:
+      - ./apps/be/base/.env.development.local
+    environment:
+      - NODE_ENV=development
+      - RUNNING_IN_DOCKER=true
+      - POSTGRES_HOST=postgres
+      - REDIS_HOST=redis
+      - PORT=5555
+      - npm_config_cache=/tmp/.npm
+    volumes:
+      # Mount workspace files but exclude node_modules to preserve native modules
+      - ./apps:/app/apps:delegated
+      - ./packages:/app/packages:delegated
+      - ./package.json:/app/package.json:ro
+      - ./yarn.lock:/app/yarn.lock:ro
+      - ./nx.json:/app/nx.json:ro
+      - ./tsconfig.base.json:/app/tsconfig.base.json:ro
+      # Use named volumes for node_modules to preserve Linux native modules
+      - node_modules:/app/node_modules
+      - base_node_modules:/app/apps/be/base/node_modules
+    working_dir: /app
+    command: >
+      sh -c "
+        echo 'Starting Base Backend Service...' &&
+        cd /app &&
+        echo 'Cleaning native modules...' &&
+        rm -rf node_modules/bcrypt node_modules/sharp 2>/dev/null || true &&
+        echo 'Installing dependencies...' &&
+        yarn install --check-files --production=false &&
+        echo 'Rebuilding native modules for Linux...' &&
+        npm rebuild bcrypt &&
+        npm rebuild sharp &&
+        echo 'Testing bcrypt installation...' &&
+        node -e \"console.log('✅ bcrypt test:', require('bcrypt').hashSync('test', 10))\" &&
+        echo 'Starting application...' &&
+        yarn nx run base-be:dev
+      "
+    restart: unless-stopped
+    networks:
+      - thrilled-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5555/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  # FaithCircle Backend Service
+  faithcircle-be:
+    container_name: thrilled-faithcircle-be
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - '${FAITHCIRCLE_PORT:-8001}:8001'
+    env_file:
+      - ./apps/be/faithcircle/faithcircle-be/.env.development.local
+    environment:
+      - NODE_ENV=development
+      - RUNNING_IN_DOCKER=true
+      - POSTGRES_HOST=postgres
+      - REDIS_HOST=redis
+      - PORT=8001
+      - npm_config_cache=/tmp/.npm
+    volumes:
+      # Mount workspace files but exclude node_modules to preserve native modules
+      - ./apps:/app/apps:delegated
+      - ./packages:/app/packages:delegated
+      - ./package.json:/app/package.json:ro
+      - ./yarn.lock:/app/yarn.lock:ro
+      - ./nx.json:/app/nx.json:ro
+      - ./tsconfig.base.json:/app/tsconfig.base.json:ro
+      # Use named volumes for node_modules to preserve Linux native modules
+      - node_modules:/app/node_modules
+      - faithcircle_node_modules:/app/apps/be/faithcircle/faithcircle-be/node_modules
+    working_dir: /app
+    command: >
+      sh -c "
+        echo 'Starting FaithCircle Backend Service...' &&
+        cd /app &&
+        echo 'Cleaning native modules...' &&
+        rm -rf node_modules/bcrypt node_modules/sharp 2>/dev/null || true &&
+        echo 'Installing dependencies...' &&
+        yarn install --check-files --production=false &&
+        echo 'Rebuilding native modules for Linux...' &&
+        npm rebuild bcrypt &&
+        npm rebuild sharp &&
+        echo 'Testing bcrypt installation...' &&
+        node -e \"console.log('✅ bcrypt test:', require('bcrypt').hashSync('test', 10))\" &&
+        echo 'Starting application...' &&
+        yarn nx run faithcircle-be:dev
+      "
+    restart: unless-stopped
+    networks:
+      - thrilled-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      base-be:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8001/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  # Nginx Proxy (optional - for reverse proxy and load balancing)
+  nginx:
+    container_name: thrilled-nginx
+    image: nginx:alpine
+    ports:
+      - '${PROXY_PORT:-80}:80'
+      - '${PROXY_SSL_PORT:-443}:443'
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped
+    networks:
+      - thrilled-network
+    depends_on:
+      - base-be
+      - faithcircle-be
+
+# Named volumes for persistent data and optimized development
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  node_modules:
+    driver: local
+  base_node_modules:
+    driver: local
+  faithcircle_node_modules:
+    driver: local
+
+# Network for service communication
+networks:
+  thrilled-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

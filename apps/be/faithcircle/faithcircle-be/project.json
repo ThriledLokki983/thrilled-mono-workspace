@@ -1,51 +1,145 @@
 {
-  "name": "@thrilled/faithcircle-be",
+  "name": "faithcircle-be",
   "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/be/faithcircle/faithcircle-be/src",
   "projectType": "application",
-  "tags": ["npm:private", "type:app", "scope:be"],
+  "sourceRoot": "apps/be/faithcircle/faithcircle-be/src",
   "targets": {
     "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
+      "executor": "nx:run-commands",
       "options": {
-        "outputPath": "dist/apps/be/faithcircle/faithcircle-be",
-        "main": "apps/be/faithcircle/faithcircle-be/src/main.ts",
-        "tsConfig": "apps/be/faithcircle/faithcircle-be/tsconfig.app.json",
-        "assets": ["apps/be/faithcircle/faithcircle-be/src/assets"]
-      }
+        "command": "swc src -d dist --source-maps --copy-files",
+        "cwd": "apps/be/faithcircle/faithcircle-be"
+      },
+      "outputs": ["{projectRoot}/dist"],
+      "dependsOn": ["^build"]
+    },
+    "build:tsc": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc && tsc-alias",
+        "cwd": "apps/be/faithcircle/faithcircle-be"
+      },
+      "outputs": ["{projectRoot}/dist"]
     },
     "serve": {
-      "executor": "@nx/js:node",
-      "defaultConfiguration": "development",
-      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
       "options": {
-        "buildTarget": "faithcircle-be:build",
-        "runBuildTargetDependencies": false
+        "command": "cross-env NODE_ENV=development nodemon",
+        "cwd": "apps/be/faithcircle/faithcircle-be"
       },
-      "configurations": {
-        "development": {
-          "buildTarget": "faithcircle-be:build:development"
-        },
-        "production": {
-          "buildTarget": "faithcircle-be:build:production"
-        }
-      }
+      "dependsOn": []
     },
-    "lint": {
-      "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
+    "dev": {
+      "executor": "nx:run-commands",
       "options": {
-        "lintFilePatterns": ["apps/be/faithcircle/faithcircle-be/**/*.ts"]
-      }
+        "command": "cross-env NODE_ENV=development nodemon",
+        "cwd": "apps/be/faithcircle/faithcircle-be"
+      },
+      "dependsOn": []
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run build && cross-env NODE_ENV=production node dist/server.js",
+        "cwd": "apps/be/faithcircle/faithcircle-be"
+      },
+      "dependsOn": ["build"]
     },
     "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "executor": "nx:run-commands",
       "options": {
-        "jestConfig": "apps/be/faithcircle/faithcircle-be/jest.config.ts",
-        "passWithNoTests": true
+        "command": "jest --forceExit --detectOpenHandles",
+        "cwd": "apps/be/faithcircle/faithcircle-be"
+      },
+      "dependsOn": ["^build"]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint --ignore-path .gitignore --ext .ts src/",
+        "cwd": "apps/be/faithcircle/faithcircle-be"
+      }
+    },
+    "lint:fix": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run lint -- --fix",
+        "cwd": "apps/be/faithcircle/faithcircle-be"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "apps/be/faithcircle/faithcircle-be"
+      },
+      "dependsOn": ["^typecheck"]
+    },
+    "check-env": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotenv -e .env -- bash -c 'env | grep POSTGRES'",
+        "cwd": "apps/be/faithcircle/faithcircle-be"
+      }
+    },
+    "migrate:create": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node-pg-migrate create",
+        "cwd": "apps/be/faithcircle/faithcircle-be"
+      }
+    },
+    "premigrate:up": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotenv -e .env -- node src/scripts/checkEnv.js",
+        "cwd": "apps/be/faithcircle/faithcircle-be"
+      }
+    },
+    "migrate:up": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotenv -e .env -- node-pg-migrate up",
+        "cwd": "apps/be/faithcircle/faithcircle-be"
+      }
+    },
+    "migrate:down": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotenv -e .env -- node-pg-migrate down",
+        "cwd": "apps/be/faithcircle/faithcircle-be"
+      }
+    },
+    "migrate:status": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotenv -e .env -- node-pg-migrate status",
+        "cwd": "apps/be/faithcircle/faithcircle-be"
+      }
+    },
+    "seed:regions": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotenv -e .env -- node src/scripts/seed-regions.js",
+        "cwd": "apps/be/faithcircle/faithcircle-be"
+      }
+    },
+    "deploy:prod": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run build && pm2 start ecosystem.config.js --only prod",
+        "cwd": "apps/be/faithcircle/faithcircle-be"
+      },
+      "dependsOn": ["build"]
+    },
+    "deploy:dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pm2 start ecosystem.config.js --only dev",
+        "cwd": "apps/be/faithcircle/faithcircle-be"
       }
     }
-  }
+  },
+  "tags": ["type:app", "scope:be"],
+  "implicitDependencies": ["validation", "monitoring"]
 }

@@ -22,6 +22,21 @@
   ],
   "references": [
     {
+      "path": "../../../../packages/be/monitoring/tsconfig.lib.json"
+    },
+    {
+      "path": "../../../../packages/be/validation/tsconfig.lib.json"
+    },
+    {
+      "path": "../../../../packages/be/auth/tsconfig.lib.json"
+    },
+    {
+      "path": "../../../../packages/be/be-types/tsconfig.lib.json"
+    },
+    {
+      "path": "../../../../packages/be/databases/tsconfig.lib.json"
+    },
+    {
       "path": "../../../../packages/be/core/tsconfig.lib.json"
     }
   ]
