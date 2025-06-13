@@ -99,6 +99,7 @@ export interface AppConfig {
   host?: string;
   env?: string;
   environment?: BeTypesEnvironment;
+  trustProxy?: boolean | string | number | string[] | ((ip: string, hopIndex: number) => boolean);
   logging?: AppLoggingConfig;
   cors?: CorsConfig;
   rateLimit?: RateLimitConfig;

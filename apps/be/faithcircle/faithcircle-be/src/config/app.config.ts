@@ -22,9 +22,12 @@ export const createAppConfig = (): AppConfig => {
   const environment: Environment = NODE_ENV === 'production' || NODE_ENV === 'test' ? (NODE_ENV as Environment) : 'development';
 
   return {
-    name: 'FaithCircle API',
+    name: 'FaithCircle API Local',
     port: Number(PORT) || 8001,
     environment,
+
+    // Trust proxy when running behind nginx
+    trustProxy: true,
 
     logging: {
       level: NODE_ENV === 'production' ? 'info' : 'debug',

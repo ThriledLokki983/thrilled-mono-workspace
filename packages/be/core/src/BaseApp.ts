@@ -131,6 +131,11 @@ export class BaseApp {
    * Initialize core middleware that should always be present
    */
   private initializeCore(): void {
+    // Trust proxy configuration (must be set before other middleware)
+    if (this.config.trustProxy !== undefined) {
+      this.app.set('trust proxy', this.config.trustProxy);
+    }
+
     // Security middleware
     this.app.use(helmet() as unknown as RequestHandler);
     this.app.use(hpp() as unknown as RequestHandler);

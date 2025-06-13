@@ -26,6 +26,9 @@ export const createAppConfig = (): AppConfig => {
     port: Number(PORT) || 5555,
     environment,
 
+    // Trust proxy when running behind nginx
+    trustProxy: true,
+
     logging: {
       level: NODE_ENV === 'production' ? 'info' : 'debug',
       dir: LOG_DIR || 'logs',
