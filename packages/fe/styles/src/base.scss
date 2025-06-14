@@ -1,0 +1,76 @@
+// Import utility modules
+@use 'utility' as utils;
+@use 'utility/font-setup';
+@use 'utility/font-mixins' as fonts;
+@use 'utility/mixins' as mixins;
+@use 'effects';
+@use 'themes';
+
+/* stylelint-disable no-duplicate-selectors */
+// Import normalize
+@import-normalize;
+
+
+/**
+ * Core
+ */
+:root {
+  margin: 0;
+  box-sizing: border-box;
+  font-size: 16px;
+  font-family: fonts.$font-primary;
+  @include fonts.font-regular;
+  @include fonts.font-smoothing;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100%;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: fonts.$font-primary;
+  @include utils.typography(body);
+  @include fonts.font-smoothing;
+  @include mixins.styled-scrollbar; 
+}
+
+/**
+ * Helpers
+ */
+[hidden] {
+  display: none !important;
+}
+
+[tabindex="-1"] {
+  outline: none;
+}
+
+button[disabled] {
+  cursor: not-allowed !important;
+}
+
+/* Status Colors */
+[data-color="success"] {
+  color: var(--color-success);
+}
+[data-color="warning"] {
+  color: var(--color-warning);
+}
+[data-color="error"] {
+  color: var(--color-error);
+}
+[data-color="info"] {
+  color: var(--color-info);
+}

@@ -1,0 +1,24 @@
+@use 'sass:math';
+@use 'sass:map';
+@use './variables' as *;
+
+/**
+ * For converting pixels to ems.
+ * Based on a 16px font-size on the :root.
+ */
+@function px-to-em($pixels) {
+    @return math.div($pixels, 16) + 0em;
+}
+
+/**
+ * Z-index helper.
+ * For dynamically determining the stacking order of elements.
+ */
+@function z($element) {
+    @if map.has-key($z-index, $element) {
+        @return map.get($z-index, $element);
+    }
+    @else {
+        @error "Z-index '#{$element}' not found";
+    }
+}

@@ -15,13 +15,13 @@
       "default": "./dist/index.js"
     },
     "./scss": {
-      "default": "./src/base-styles.scss"
+      "default": "./src/index.scss"
     },
     "./scss/*": {
       "default": "./src/*"
     },
     "./dist/scss": {
-      "default": "./dist/base-styles.scss"
+      "default": "./dist/index.scss"
     },
     "./dist/scss/*": {
       "default": "./dist/*"

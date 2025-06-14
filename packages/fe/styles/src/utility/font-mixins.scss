@@ -1,0 +1,203 @@
+@use 'sass:map';
+
+@use '../design-tokens' as tokens;
+
+// Font variables
+$font-primary: var(--font-heading);
+$body-font: var(--font-body);
+$heading-font: var(--font-heading);
+$mono-font: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+
+/**
+ * Types
+ */
+@mixin body-font {
+    font-family: $body-font;
+    font-weight: 400;
+}
+
+@mixin heading-font($title: false) {
+    font-family: $heading-font;
+    font-weight: 700;
+}
+
+@mixin mono-font {
+    font-family: $mono-font;
+    font-weight: 400;
+}
+
+/**
+ * Weights
+ */
+@mixin font-light {
+    font-weight: 300;
+}
+
+@mixin font-regular {
+    font-weight: 400;
+}
+
+@mixin font-medium {
+    font-weight: 500;
+}
+
+@mixin font-semibold {
+    font-weight: 600;
+}
+
+@mixin font-bold {
+    font-weight: 700;
+}
+
+@mixin font-black {
+    font-weight: 900;
+}
+
+/**
+ * Antialiasing
+ */
+@mixin font-smoothing {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/**
+ * Sizing
+ */
+@mixin font-size($size, $line-height: normal) {
+    font-size: $size;
+    @if $line-height != normal {
+        line-height: $line-height;
+    }
+}
+
+/**
+ * Line Height
+ */
+@mixin line-height($height) {
+    line-height: $height;
+}
+
+/**
+ * Alignment
+ */
+@mixin text-left {
+    text-align: left;
+}
+
+@mixin text-center {
+    text-align: center;
+}
+
+@mixin text-right {
+    text-align: right;
+}
+
+/**
+ * Transforms
+ */
+@mixin text-uppercase {
+    text-transform: uppercase;
+}
+
+@mixin text-lowercase {
+    text-transform: lowercase;
+}
+
+@mixin text-capitalize {
+    text-transform: capitalize;
+}
+
+/**
+ * Font Style
+ */
+@mixin font-italic {
+    font-style: italic;
+}
+
+/**
+ * Text Decoration
+ */
+@mixin text-underline {
+    text-decoration: underline;
+}
+
+@mixin text-no-underline {
+    text-decoration: none;
+}
+
+/**
+ * Letter Spacing
+ */
+@mixin letter-spacing($spacing) {
+    letter-spacing: $spacing;
+}
+
+/**
+ * Sizes
+ */
+@mixin small-text {
+    font-size: 11px;
+    @include bp-min($medium) {
+        font-size: 12px;
+    }
+}
+
+@mixin medium-text {
+    font-size: 13px;
+    @include bp-min($medium) {
+        font-size: 14px;
+    }
+}
+
+@mixin regular-text {
+    font-size: 15px;
+    @include bp-min($medium) {
+        font-size: 16px;
+    }
+}
+
+@mixin large-text {
+    font-size: 17px;
+    @include bp-min($medium) {
+        font-size: 18px;
+    }
+}
+
+/**
+ * Headings
+ */
+@mixin heading-base {
+    @include heading-font; @include font-smoothing;
+    margin: 0 0 0.65rem;
+    line-height: 1.25;
+}
+
+@mixin h1 {
+    @include heading-base;
+    font-size: 2.5rem; line-height: 1.15;
+}
+
+@mixin h2 {
+    @include heading-base;
+    font-size: 1.85rem;
+}
+
+@mixin h3 {
+    @include heading-base;
+    font-size: 1.35rem;
+}
+
+@mixin h4 {
+    @include heading-base;
+    font-size: 1.15rem;
+}
+
+@mixin h5 {
+    @include h4;
+}
+
+@mixin h6 {
+    @include h4;
+}

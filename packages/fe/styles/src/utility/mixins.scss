@@ -1,0 +1,280 @@
+@forward 'font-mixins';
+
+/**
+ * Avatar
+ */
+@mixin avatar($size: 32px) {
+    @include ui-font;
+    flex: 0 0 auto; display: inline-block;
+    width: $size; height: $size; line-height: $size; padding: 0;
+    background: $primary-color; color: $white;
+    border-radius: 50%; text-align: center; text-transform: uppercase;
+    user-select: none;
+    & > img {
+        width: 100%; height: 100%;
+        vertical-align: baseline; border-radius: 50%;
+    }
+}
+
+@mixin ui-font($bold: false, $line-height: true) {
+    font-family: var(--body-font), var(--font-ui);
+    font-size: var(--font-size-base);
+    font-weight: 500; line-height: 1.25; letter-spacing: -0.025em;
+    @if ($bold) {
+        font-weight: 700;
+    }
+}
+
+/**
+ * Default contained padding.
+ */
+@mixin container-padding {
+    padding: $gutter;
+    @include bp-min($small) {
+        padding: ($gutter * 2.5) ($gutter * 2) ($gutter * 2);
+    }
+}
+
+/**
+ * Default contained container.
+ */
+// @mixin container($size: $content-max-width, $padding: true, $full-height: false) {
+//     margin: 0 auto;
+//     max-width: calc(#{$size} + #{($gutter * 2)});
+//     @include bp-min($small) {
+//         max-width: calc(#{$size} + #{($gutter * 4)});
+//     }
+//     @if ($padding) {
+//         @include container-padding;
+//     }
+//     @if ($full-height) {
+//         margin-top: -($gutter);
+//         display: flex; flex-direction: column;
+//         justify-content: center; align-items: flex-start;
+//         min-height: calc(100vh - ($gutter-site * 2));
+//     }
+// }
+
+/**
+ * Pointer device + SPA-safe hover.
+ */
+@mixin hover {
+    &:hover {
+        @media (hover: hover) {
+            @content;
+        }
+    }
+}
+
+/**
+ * Full height + iOS Safari touch callout 'bugfix'.
+ */
+@mixin full-height($offset: false, $fill-available: false) {
+    min-height: 100vh;
+    @if ($fill-available) {
+        @supports (-webkit-touch-callout: none) {
+            min-height: -webkit-fill-available;
+        }
+    }
+    @else if ($offset ) {
+        min-height: calc(100vh + #{$offset});
+        @supports (-webkit-touch-callout: none) {
+            min-height: -webkit-fill-available;
+        }
+    }
+}
+
+/**
+ * Horizontal rule
+ */
+@mixin hr {
+    margin: 1.5em 0;
+    border: 0; border-top: 1px solid $line-color;
+}
+
+/**
+ * Get rid of default button styling.
+ */
+@mixin bare-button {
+    appearance: none;
+    background: transparent; border: 0;
+    font-family: inherit; line-height: 1.1;
+    text-decoration: none; text-align: center;
+    cursor: pointer;
+}
+
+/*
+ * Get rid of list-style and padding.
+ */
+@mixin bare-list {
+    margin: 0; padding: 0; list-style-type: none;
+    & > li {
+        margin: 0;
+    }
+}
+
+/**
+ * Container query breakpoints mixins.
+ * @TODO: make this work, since it's not working yet with Sass...
+ */
+// @mixin cq-min($name, $point: 0) {
+//     @container #{$name} size(min-width: px-to-em($point)) {
+//         @content;
+//     }
+// }
+
+// @mixin cq-max($name, $point: 0) {
+//     @container #{$name} size(max-width: px-to-em($point) - 0.0625em) {
+//         @content;
+//     }
+// }
+
+/**
+ * Media query breakpoints mixins.
+ */
+@mixin bp-min($point: 0) {
+    @media (min-width: px-to-em($point)) {
+        @content;
+    }
+}
+
+@mixin bp-max($point: 0) {
+    @media (max-width: (px-to-em($point) - 0.0625em)) {
+        @content;
+    }
+}
+
+@mixin bp-min-max($min-point: 0, $max-point: 0) {
+    @media (min-width: px-to-em($min-point)) and (max-width: (px-to-em($max-point) - 0.0625em)) {
+        @content;
+    }
+}
+
+/**
+ * Target high dpi screens.
+ */
+/* stylelint-disable indentation, scss/operator-no-unspaced */
+@mixin high-dpi {
+    @media only screen and (-webkit-min-device-pixel-ratio: 1.3),
+           only screen and (-o-min-device-pixel-ratio: 13/10),
+           only screen and (min-resolution: 120dpi),
+           only screen and (min-resolution: 1.3dppx) {
+        @content;
+    }
+}
+/* stylelint-enable indentation, scss/operator-no-unspaced */
+
+/**
+ * Styled scrollbar
+ */
+@mixin styled-scrollbar($color: var(--color-brand-secondary)) {
+    // Standardized (currently only Firefox, plus on macOS only when system
+    // preferences are set to always show scrollbars).
+    scrollbar-color: $color transparent;
+    scrollbar-width: thin;
+    // WebKit only (Chrome, Safari, Edge).
+    &::-webkit-scrollbar-track {
+        margin: 3px 0;
+        background-color: transparent;
+    }
+    &::-webkit-scrollbar {
+        width: 10px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: $color;
+        border-right: 5px solid transparent;
+        border-top: 0; border-bottom: 0; border-left: 0;
+        background-clip: padding-box;
+    }
+}
+
+/**
+ * Easier way to provide object-fit polyfill hook
+ */
+@mixin object-fit($fit: cover, $position: center) {
+    object-fit: $fit; object-position: $position;
+    font-family: 'object-fit: #{$fit}; object-position: #{$position}';
+    @if $fit == cover {
+        max-width: none;
+    }
+}
+
+/**
+ * Smooth scrolling
+ */
+// @mixin smooth-scrolling {
+//     scroll-behavior: smooth;
+//     -webkit-overflow-scrolling: touch;
+//     -ms-overflow-style: -ms-autohiding-scrollbar;
+// }
+
+/**
+ * Placeholder styling
+ */
+@mixin placeholder {
+    &::placeholder {
+        @content;
+    }
+    &::-webkit-input-placeholder {
+        @content;
+    }
+    &:-moz-placeholder {
+        @content;
+    }
+    &::-moz-placeholder {
+        @content;
+    }
+    &:-ms-input-placeholder {
+        @content;
+    }
+}
+
+/**
+ * Font smoothing
+ */
+// @mixin font-smoothing($enabled: true) {
+//     @if $enabled {
+//         -webkit-font-smoothing: antialiased;
+//         -moz-osx-font-smoothing: grayscale;
+//     } @else {
+//         -webkit-font-smoothing: initial;
+//         -moz-osx-font-smoothing: initial;
+//     }
+// }
+
+/**
+ * Media query dark mode
+ *
+ * Usage:
+ * body {
+ *    @include dark-mode { background: $blackish; }
+ * }
+ */
+@mixin dark-mode {
+    @media (prefers-color-scheme: dark) {
+        @content;
+    }
+}
+
+/**
+ * Clearfix
+ * Actually an @extend, but we don't want to depend on inclusion order
+ *
+ * Usage:
+ * section { @include clearfix(); }
+ */
+@mixin clearfix {
+    &::after {
+        display: table; clear: both; content: '';
+    }
+}
+
+/**
+ * Hide element visually.
+ */
+@mixin visually-hidden {
+    position: absolute !important; overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px);
+    width: 1px; height: 1px; word-wrap: normal;
+    user-select: none;
+}

@@ -1,0 +1,21 @@
+p {
+    margin: 0 0 1.25em;
+}
+p button {
+    @include bare-button;
+    padding: 0; color: inherit;
+    text-decoration: underline;
+}
+p button:hover {
+    text-decoration: none;
+}
+
+small {
+    @include medium-text;
+    display: inline-block;
+}
+
+strong {
+    @include font-smoothing;
+    font-weight: 700;
+}

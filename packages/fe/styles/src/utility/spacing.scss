@@ -1,0 +1,59 @@
+@use 'sass:map';
+
+// Spacing Utilities
+@function spacing($size) {
+  @return map.get($spacing, $size);
+}
+
+@function get-spacing($size) {
+  @return map.get($spacing, $size);
+}
+
+@mixin spacing($property, $size) {
+  #{$property}: get-spacing($size);
+}
+
+@mixin padding($size) {
+  padding: get-spacing($size);
+}
+
+@mixin padding-x($size) {
+  padding-left: get-spacing($size);
+  padding-right: get-spacing($size);
+}
+
+@mixin padding-y($size) {
+  padding-top: get-spacing($size);
+  padding-bottom: get-spacing($size);
+}
+
+@mixin margin($size) {
+  margin: get-spacing($size);
+}
+
+@mixin margin-x($size) {
+  margin-left: get-spacing($size);
+  margin-right: get-spacing($size);
+}
+
+@mixin margin-y($size) {
+  margin-top: get-spacing($size);
+  margin-bottom: get-spacing($size);
+}
+
+// Directional spacing
+@mixin margin-top($size) {
+  margin-top: get-spacing($size);
+}
+
+@mixin margin-bottom($size) {
+  margin-bottom: get-spacing($size);
+}
+
+@mixin margin-left($size) {
+  margin-left: get-spacing($size);
+}
+
+@mixin margin-right($size) {
+  margin-right: get-spacing($size);
+}

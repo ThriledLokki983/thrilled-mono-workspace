@@ -2,33 +2,31 @@ import { useCallback, useState, useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 
 import { ChevronDown, LogOut, Settings, User } from 'lucide-react';
-import { getNavigationItems } from '../../utils/routes.utils';
-import { SidebarProps } from '../../types/common-interfaces';
+import ROUTES_ALL from '../../config/routes';
+import { extractNavigationItems } from '../../utils/route-utils';
+import type { CustomRouteObject } from '../../utils/route-utils';
 
 import styles from './Sidebar.module.scss';
 
+// Extract navigation items from routes configuration
+const getNavigationItems = () => {
+  const layoutRoute = ROUTES_ALL[0];
+  const childRoutes = (layoutRoute.children || []) as CustomRouteObject[];
+  return extractNavigationItems(childRoutes);
+};
 
-const defaultUserMenuItems = [
+const userMenuItems = [
   { id: 'profile', label: 'Profile', icon: <User size={16} strokeWidth={1.5} /> },
   { id: 'settings', label: 'Settings', icon: <Settings size={16} strokeWidth={1.5} /> },
   { id: 'logout', label: 'Logout', icon: <LogOut size={16} strokeWidth={1.5} /> },
 ];
 
-
-/**
- * Sidebar component that renders the main navigation and user profile menu
- * @param {SidebarProps} param0 - The properties for the Sidebar component
- * @property {CustomRouteObject[]} [routes] - The routes configuration for navigation items
- * @property {UserMenuItem[]} [userMenuItems] - The user menu items to display in the user profile menu
- * @param param0
- * @returns
- */
-export const Sidebar = ({ routes = [], userMenuItems = defaultUserMenuItems }: SidebarProps) => {
+export const Sidebar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Get navigation items from routes configuration
-  const navigationItems = getNavigationItems(routes || []);
+  const menuItems = getNavigationItems();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -51,8 +49,8 @@ export const Sidebar = ({ routes = [], userMenuItems = defaultUserMenuItems }: S
     setIsMenuOpen((prev) => !prev);
   }, []);
 
-  const handleUserMenuClick = useCallback((_id: string) => {
-    // Handle user menu click action here
+  const handleUserMenuClick = useCallback((id: string) => {
+    console.log('User menu clicked:', id);
     setIsMenuOpen(false);
   }, []);
 
@@ -64,7 +62,7 @@ export const Sidebar = ({ routes = [], userMenuItems = defaultUserMenuItems }: S
 
       <nav id="navigation" className={styles.navigation} aria-label="Main navigation">
         <ul className={styles.menu} role="list">
-          {navigationItems.map((item) => (
+          {menuItems.map((item) => (
             <li key={item.id} className={styles.menuItem} role="listitem">
               <NavLink
                 to={item.path}

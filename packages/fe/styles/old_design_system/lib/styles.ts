@@ -92,13 +92,13 @@ export function createCSSVar(name: string, fallback?: string): string {
  */
 export function responsive(base: string, variants: Record<string, string>): string {
   const classes = [base];
-
+  
   Object.entries(variants).forEach(([breakpoint, variant]) => {
     if (breakpoint in breakpoints) {
       classes.push(`${breakpoint}:${variant}`);
     }
   });
-
+  
   return classes.join(' ');
 }
 

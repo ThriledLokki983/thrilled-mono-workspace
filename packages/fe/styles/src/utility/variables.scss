@@ -1,0 +1,17 @@
+// Z-index map for managing stacking order across the application
+$z-index: (
+    'below': -1,
+    'base': 0,
+    'above': 1,
+    'dropdown': 1000,
+    'sticky': 1020,
+    'fixed': 1030,
+    'fetch-loader': 1035,
+    'loading-overlay': 1040,
+    'modal-backdrop': 1050,
+    'modal': 1060,
+    'popover': 1070,
+    'toast': 1080,
+    'tooltip': 1090,
+    'skiplinks': 9999  // Keep original high z-index to ensure it's always on top
+);

@@ -1,0 +1,103 @@
+// Advanced Theme Variables
+:root {
+  // Refined Motion
+  --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  
+  // Sophisticated Shadows
+  --shadow-subtle: 
+    0 1px 2px 0 rgba(0, 0, 0, 0.03),
+    0 1px 6px -1px rgba(0, 0, 0, 0.02);
+  --shadow-elevation-low:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-elevation-medium:
+    0 10px 15px -3px rgba(0, 0, 0, 0.05),
+    0 4px 6px -2px rgba(0, 0, 0, 0.03);
+  --shadow-elevation-high:
+    0 20px 25px -5px rgba(0, 0, 0, 0.05),
+    0 10px 10px -5px rgba(0, 0, 0, 0.02);
+    
+  // Refined Blur Effects
+  --blur-sm: blur(4px);
+  --blur-md: blur(8px);
+  --blur-lg: blur(16px);
+  
+  // Glass Effect
+  --glass-background: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  
+  // Light Theme Colors
+  &[data-theme="light"] {
+    --glass-background: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    
+    // Refined gradients
+    --gradient-subtle: linear-gradient(
+      to right bottom,
+      rgba(255, 255, 255, 0.8),
+      rgba(255, 255, 255, 0.5)
+    );
+    --gradient-brand: linear-gradient(
+      135deg,
+      var(--color-brand-primary),
+      var(--color-brand-accent)
+    );
+  }
+  
+  // Dark Theme Colors
+  &[data-theme="dark"] {
+    --glass-background: rgba(0, 0, 0, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    
+    // Dark mode gradients
+    --gradient-subtle: linear-gradient(
+      to right bottom,
+      rgba(0, 0, 0, 0.8),
+      rgba(0, 0, 0, 0.5)
+    );
+    --gradient-brand: linear-gradient(
+      135deg,
+      var(--color-brand-primary),
+      var(--color-brand-accent)
+    );
+    
+    // Adjusted shadows for dark mode
+    --shadow-subtle:
+      0 1px 2px 0 rgba(0, 0, 0, 0.2),
+      0 1px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-elevation-low:
+      0 4px 6px -1px rgba(0, 0, 0, 0.2),
+      0 2px 4px -1px rgba(0, 0, 0, 0.1);
+    --shadow-elevation-medium:
+      0 10px 15px -3px rgba(0, 0, 0, 0.2),
+      0 4px 6px -2px rgba(0, 0, 0, 0.1);
+    --shadow-elevation-high:
+      0 20px 25px -5px rgba(0, 0, 0, 0.2),
+      0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Sophisticated Glass Effect Mixin
+@mixin glass-effect {
+  background: var(--glass-background);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+// Sophisticated Card Effect Mixin
+@mixin card-effect {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-secondary);
+  box-shadow: var(--shadow-elevation-low);
+  transition: transform 0.3s var(--transition-ease),
+              box-shadow 0.3s var(--transition-ease);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-elevation-medium);
+  }
+}

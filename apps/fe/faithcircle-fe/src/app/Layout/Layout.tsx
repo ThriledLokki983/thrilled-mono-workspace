@@ -1,7 +1,8 @@
-import { Header, Sidebar } from '@mono/components';
-import { Outlet } from 'react-router-dom';
-import ROUTES from '../../config/routes';
-import { extractNavigationFromRoutes } from '../../utils/route-adapter';
+import { Fragment } from 'react';
+import { Header, SkipLinks, Toast } from '@mono/components';
+import { MainContent } from './MainContet';
+import { Sidebar } from './SIdebar';
+import styles from './Layout.module.scss';
 
 // Temporary local type definition until package export is recognized
 type CustomRouteObject = {
@@ -22,34 +23,31 @@ interface LayoutProps {
   routes?: CustomRouteObject[];
 }
 
-export const Layout = ({ children, routes }: LayoutProps) => {
-  // Convert React Router routes to navigation format if no routes provided
-  const navigationRoutes = routes || extractNavigationFromRoutes(ROUTES);
 
-  // Debug logging to help understand the structure
-  console.log('Layout: navigationRoutes', navigationRoutes);
-  console.log('Layout: navigationRoutes[0]?.children', navigationRoutes[0]?.children);
-
-  // TEMPORARY WORKAROUND: Create our own layout structure
-  // to bypass the problematic getNavigationItems function
-
-  // For now, let's just pass an empty array to prevent the error
-  // and create our navigation manually
-  const emptyRoutes: CustomRouteObject[] = [];
+/**
+ *  Main layout component for the application.
+ *  It includes the header, main content area, and toast notifications.
+ *  The layout is designed to be flexible and can include a sidebar if needed.
+ *  The `children` prop allows for dynamic content to be rendered within the layout.
+ * @param param0
+ * @returns
+ */
+export const Layout = ({ children }: LayoutProps) => {
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
-      {/* Use Sidebar component directly with empty routes to prevent error */}
-      <Sidebar routes={emptyRoutes} />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <Header />
-        <main style={{ flex: 1, padding: '1rem' }}>
-          <Outlet />
-          {children}
-        </main>
+    <Fragment>
+      <div className={styles.layout}>
+        <SkipLinks />
+        <Sidebar />
+        <div className={styles.content}>
+          <Header />
+          <MainContent content={children} />
+        </div>
+        <Toast/>
       </div>
-    </div>
+    </Fragment>
   );
+
 };
 
 export default Layout;

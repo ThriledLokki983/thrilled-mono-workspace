@@ -1,54 +1,103 @@
-// =============================================================================
-// THEME UTILITIES
-// Theme-related utility functions and mixins
-// =============================================================================
+@use '../design-tokens' as *;
+@use 'sass:map';
 
-@use 'sass:color';
+// Design System Utility Mixins
 
-// Theme switching mixins
-@mixin light-theme {
-  :root[data-theme='light'],
-  :root:not([data-theme]) {
+// Theme Utilities
+@mixin themed() {
+  @content;
+  
+  [data-theme="dark"] & {
+    @content($theme: "dark");
+  }
+}
+
+// Typography Utilities
+@mixin typography($variant) {
+  $style: map.get($typography, $variant);
+  
+  @if $style {
+    font-size: map.get($style, font-size);
+    line-height: map.get($style, line-height);
+    font-weight: map.get($style, font-weight);
+    
+    @if map.has-key($style, letter-spacing) {
+      letter-spacing: map.get($style, letter-spacing);
+    }
+  }
+}
+
+// Component Utilities
+@mixin button-variant($variant) {
+  $style: map.get($button-variants, $variant);
+  background-color: map.get($style, background);
+  color: map.get($style, color);
+  
+  @if map.has-key($style, border) {
+    border: 1px solid map.get($style, border);
+  }
+  
+  &:hover {
+    background-color: map.get($style, hover);
+  }
+  
+  &:active {
+    background-color: map.get($style, active);
+  }
+}
+
+@mixin input-variant($variant: "default") {
+  $style: map.get($input-variants, $variant);
+  background-color: map.get($style, background);
+  border: 1px solid map.get($style, border);
+  color: map.get($style, text);
+  
+  &::placeholder {
+    color: map.get($style, placeholder);
+  }
+}
+
+@mixin card-variant($variant: "default") {
+  $style: map.get($card-variants, $variant);
+  background-color: map.get($style, background);
+  
+  @if map.has-key($style, border) {
+    border: 1px solid map.get($style, border);
+  }
+  
+  @if map.has-key($style, shadow) {
+    box-shadow: map.get($style, shadow);
+  }
+}
+
+// Responsive Utilities
+@mixin breakpoint($size) {
+  @media (min-width: map.get($breakpoints, $size)) {
     @content;
   }
 }
 
-@mixin dark-theme {
-  :root[data-theme='dark'] {
-    @content;
-  }
+// Color Utilities
+@mixin surface($level: 1) {
+  background-color: var(--color-surface-#{$level});
+  color: var(--color-text-primary);
 }
 
-@mixin theme-transition {
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+@mixin text-color($variant: "primary") {
+  color: var(--color-text-#{$variant});
 }
 
-// Color scheme aware mixins
-@mixin color-scheme-light {
-  @media (prefers-color-scheme: light) {
-    @content;
-  }
-}
-
-@mixin color-scheme-dark {
-  @media (prefers-color-scheme: dark) {
-    @content;
-  }
-}
-
-// Theme-aware color functions
-@function theme-color($color-name, $fallback: null) {
-  @return var(--color-#{$color-name}, $fallback);
-}
-
-// Generate theme color variations
-@mixin generate-theme-colors($colors) {
-  @each $name, $value in $colors {
-    --color-#{$name}: #{$value};
-    --color-#{$name}-rgb: #{color.channel($value, "red")}, #{color.channel($value, "green")}, #{color.channel($value, "blue")};
+// Container Utilities
+@mixin container($max-width: lg) {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: map.get($spacing, md);
+  padding-right: map.get($spacing, md);
+  
+  @if type-of($max-width) == string {
+    max-width: map.get($breakpoints, $max-width);
+  } @else {
+    max-width: $max-width;
   }
 }

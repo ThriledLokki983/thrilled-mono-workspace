@@ -45,6 +45,9 @@ export function extractNavigationItems(routes: CustomRouteObject[] = []): Naviga
  * @returns
  */
 export const getNavigationItems = (routes : CustomRouteObject[] = []) => {
+  // Force cache invalidation - added timestamp comment
+  // Last updated: 2025-06-14T10:45:00Z
+
   // Defensive check for empty or invalid routes array
   if (!routes || !Array.isArray(routes) || routes.length === 0) {
     return [];

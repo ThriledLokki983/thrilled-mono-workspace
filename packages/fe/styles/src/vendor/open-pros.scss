@@ -1,0 +1,39 @@
+@import "https://unpkg.com/open-props";
+@import "https://unpkg.com/open-props/normalize.min.css";
+
+
+html {
+    // Light Theme
+    --brand-light: var(--orange-6);
+
+    --text-1-light: var(--gray-8);
+    --text-2-light: var(--gray-7);
+
+    --surface-1-light: var(--gray-0);
+    --surface-2-light: var(--gray-1);
+    --surface-3-light: var(--gray-2);
+    --surface-4-light: var(--gray-3);
+
+
+    // Dark Theme
+    --brand-dark: var(--orange-3);
+
+    --text-1-dark: var(--gray-3);
+    --text-2-dark: var(--gray-5);
+
+    --surface-1-dark: var(--gray-12);
+    --surface-2-dark: var(--gray-11);
+    --surface-3-dark: var(--gray-10);
+    --surface-4-dark: var(--gray-9);
+
+    // Dim Theme
+    --brand-dim: var(--orange-4);
+
+    --text-1-dim: var(--gray-3);
+    --text-2-dim: var(--gray-4);
+
+    --surface-1-dim: var(--gray-8);
+    --surface-2-dim: var(--gray-7);
+    --surface-3-dim: var(--gray-6);
+    --surface-4-dim: var(--gray-5);
+}

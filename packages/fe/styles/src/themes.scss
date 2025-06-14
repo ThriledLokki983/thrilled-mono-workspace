@@ -1,94 +1,143 @@
-// =============================================================================
-// THEMES
-// Theme definitions and color schemes
-// =============================================================================
+@use 'sass:map';
+@use 'sass:color';
 
-@use 'foundations/colors';
-@use 'utility/theme-utils' as theme;
+// Design tokens - Base colors
+$colors: (
+  brand: (
+    primary: #2D5BA9,    // Rich Navy Blue - elegant and trustworthy
+    secondary: #6C5DD3,  // Royal Purple - sophisticated and modern
+    accent: #3A75DB     // Bright Blue - engaging hover state
+  ),
+  
+  neutral: (
+    50: #F8F9FA,   // Softer white
+    100: #F1F2F4,  // Subtle grey
+    200: #E9EBED,  // Light grey with blue undertone
+    300: #DFE2E6,  // Medium light grey
+    400: #C5CBD3,  // Medium grey
+    500: #98A1AD,  // Balanced grey
+    600: #6B7684,  // Medium dark grey
+    700: #4A515C,  // Dark grey
+    800: #343A43,  // Deeper grey
+    900: #21252B   // Soft black
+  ),
 
-// Light theme colors
-:root,
-:root[data-theme='light'] {
-  @include theme.generate-theme-colors((
-    'primary': #007bff,
-    'primary-light': #66b3ff,
-    'primary-dark': #0056b3,
-    'secondary': #6c757d,
-    'accent': #28a745,
-    'background': #ffffff,
-    'surface': #f8f9fa,
-    'surface-2': #e9ecef,
-    'surface-3': #dee2e6,
-    'text': #212529,
-    'text-secondary': #6c757d,
-    'text-muted': #adb5bd,
-    'border': #dee2e6,
-    'border-hover': rgba(0, 0, 0, 0.15),
-    'error': #dc3545,
-    'error-light': #f8d7da,
-    'warning': #ffc107,
-    'warning-light': #fff3cd,
-    'success': #28a745,
-    'success-light': #d4edda,
-    'info': #17a2b8,
-    'info-light': #d1ecf1,
-  ));
+  semantic: (
+    success: #175D2D,
+    success-light: #D4EBE9,
+    success-dark: #0D3D1E,
+    warning: #EB8C00,
+    warning-light: #FFECBD,
+    warning-dark: #B36D00,
+    error: #C52A1A,
+    error-light: #F3D4D1,
+    error-dark: #822720,
+    info: #0066CC,
+    info-light: #E5F0FF,
+    info-dark: #004C99
+  )
+);
+
+// Theme Variables
+:root {
+  // Base colors
+  --color-white: #{map.get(map.get($colors, neutral), 50)};
+  --color-black: #{map.get(map.get($colors, neutral), 900)};
+
+  // Light Theme (default)
+  --color-bg-primary: var(--color-white);
+  --color-bg-secondary: #{map.get(map.get($colors, neutral), 100)};
+  --color-bg-tertiary: white;
+  
+  --color-text-primary: var(--color-black);
+  --color-text-secondary: #{map.get(map.get($colors, neutral), 600)};
+  --color-text-tertiary: #{map.get(map.get($colors, neutral), 400)};
+  
+  --color-border-primary: #{map.get(map.get($colors, neutral), 200)};
+  --color-border-secondary: #{map.get(map.get($colors, neutral), 100)};
+  
+  --color-brand-primary: #{map.get(map.get($colors, brand), primary)};
+  --color-brand-secondary: #{map.get(map.get($colors, brand), secondary)};
+  --color-brand-accent: #{map.get(map.get($colors, brand), accent)};
+  
+  // Semantic colors
+  --color-success: #{map.get(map.get($colors, semantic), success)};
+  --color-success-light: #{map.get(map.get($colors, semantic), success-light)};
+  --color-success-dark: #{map.get(map.get($colors, semantic), success-dark)};
+  
+  --color-warning: #{map.get(map.get($colors, semantic), warning)};
+  --color-warning-light: #{map.get(map.get($colors, semantic), warning-light)};
+  --color-warning-dark: #{map.get(map.get($colors, semantic), warning-dark)};
+  
+  --color-error: #{map.get(map.get($colors, semantic), error)};
+  --color-error-light: #{map.get(map.get($colors, semantic), error-light)};
+  --color-error-dark: #{map.get(map.get($colors, semantic), error-dark)};
+  
+  --color-info: #{map.get(map.get($colors, semantic), info)};
+  --color-info-light: #{map.get(map.get($colors, semantic), info-light)};
+  --color-info-dark: #{map.get(map.get($colors, semantic), info-dark)};
+  
+  // Surface colors
+  --color-surface-1: var(--color-bg-primary);
+  --color-surface-2: var(--color-bg-secondary);
+  --color-surface-3: var(--color-bg-tertiary);
+  
+  // Component colors
+  --color-button-primary-bg: var(--color-brand-primary);
+  --color-button-primary-text: white;
+  --color-button-secondary-bg: var(--color-brand-secondary);
+  --color-button-secondary-text: white;
+  
+  // Form colors
+  --color-input-border: var(--color-border-primary);
+  --color-input-focus: var(--color-brand-primary);
+  --color-input-disabled: var(--color-bg-secondary);
+  --color-placeholder: rgba(0, 0, 0, 0.4);
+  --color-selection: rgba(var(--color-brand-primary), 0.25);
+  
+  // Shadows
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
 }
 
-// Dark theme colors
-:root[data-theme='dark'] {
-  @include theme.generate-theme-colors((
-    'primary': #4dabf7,
-    'primary-light': #74c0fc,
-    'primary-dark': #339af0,
-    'secondary': #adb5bd,
-    'accent': #51cf66,
-    'background': #1a1a1a,
-    'surface': #2d2d2d,
-    'surface-2': #404040,
-    'surface-3': #525252,
-    'text': #ffffff,
-    'text-secondary': #ced4da,
-    'text-muted': #868e96,
-    'border': #495057,
-    'border-hover': rgba(255, 255, 255, 0.15),
-    'error': #fa5252,
-    'error-light': #4a1e1e,
-    'warning': #ffd43b,
-    'warning-light': #4a3d1e,
-    'success': #51cf66,
-    'success-light': #1e4a25,
-    'info': #3bc9db,
-    'info-light': #1e3a42,
-  ));
+// Dark Theme
+[data-theme="dark"] {
+  --color-bg-primary: #{map.get(map.get($colors, neutral), 900)};
+  --color-bg-secondary: #{map.get(map.get($colors, neutral), 800)};
+  --color-bg-tertiary: #{map.get(map.get($colors, neutral), 700)};
+  
+  --color-text-primary: #{map.get(map.get($colors, neutral), 50)};
+  --color-text-secondary: #{map.get(map.get($colors, neutral), 200)};
+  --color-text-tertiary: #{map.get(map.get($colors, neutral), 400)};
+  
+  --color-border-primary: #{map.get(map.get($colors, neutral), 600)};
+  --color-border-secondary: #{map.get(map.get($colors, neutral), 700)};
+   --color-brand-primary: #{color.scale(map.get(map.get($colors, brand), primary), $lightness: 10%)};
+  --color-brand-secondary: #{color.scale(map.get(map.get($colors, brand), secondary), $lightness: 10%)};
+  --color-brand-accent: #{color.scale(map.get(map.get($colors, brand), accent), $lightness: 10%)};
+
+  --color-input-border: var(--color-border-primary);
+  --color-input-focus: var(--color-brand-primary);
+  --color-input-disabled: var(--color-bg-secondary);
+  --color-placeholder: rgba(255, 255, 255, 0.4);
+  --color-selection: rgba(var(--color-brand-primary), 0.35);
+  
+  // Shadow adjustments for dark mode
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
 }
 
-// Auto theme based on system preference
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    @include theme.generate-theme-colors((
-      'primary': #4dabf7,
-      'primary-light': #74c0fc,
-      'primary-dark': #339af0,
-      'secondary': #adb5bd,
-      'accent': #51cf66,
-      'background': #1a1a1a,
-      'surface': #2d2d2d,
-      'surface-2': #404040,
-      'surface-3': #525252,
-      'text': #ffffff,
-      'text-secondary': #ced4da,
-      'text-muted': #868e96,
-      'border': #495057,
-      'border-hover': rgba(255, 255, 255, 0.15),
-      'error': #fa5252,
-      'error-light': #4a1e1e,
-      'warning': #ffd43b,
-      'warning-light': #4a3d1e,
-      'success': #51cf66,
-      'success-light': #1e4a25,
-      'info': #3bc9db,
-      'info-light': #1e3a42,
-    ));
+// Theme Mixins
+@mixin light-theme {
+  [data-theme="light"] & {
+    @content;
+  }
+}
+
+@mixin dark-theme {
+  [data-theme="dark"] & {
+    @content;
   }
 }

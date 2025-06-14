@@ -1,0 +1,30 @@
+figure {
+    margin: 0;
+}
+
+img,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+    display: inline-block; vertical-align: middle;
+}
+
+img,
+object,
+iframe,
+video {
+    max-width: 100%; height: auto;
+}
+
+svg {
+    max-width: 100%;
+    &[hidden] {
+        display: none;
+    }
+}
+svg:not([data-fill="false"]) {
+    fill: currentColor;
+}
