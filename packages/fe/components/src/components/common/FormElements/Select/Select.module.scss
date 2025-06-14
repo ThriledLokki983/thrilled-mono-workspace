@@ -1,0 +1,322 @@
+// @use '@styles/utils' as *;
+
+.wrapper {
+  --select-height: 48px;
+  --focus-ring-color: var(--color-primary-light);
+  --error-ring-color: var(--color-error-light);
+  --hover-ring-color: var(--color-border-hover-light, rgba(0, 0, 0, 0.08));
+  --disabled-ring-color: var(--color-surface-3, #f5f5f5);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  width: 100%;
+  position: relative;
+
+
+  &[data-has-error="true"] {
+    --focus-ring-color: var(--error-ring-color);
+
+    .select {
+      border-color: var(--color-error);
+    }
+
+    .icon {
+      color: var(--color-error);
+    }
+
+    /* Only apply box-shadow when focused and has error */
+    &[data-is-focused="true"],
+    &[data-state="open"] {
+      .select {
+        box-shadow: 0 0 0 3px var(--error-ring-color);
+      }
+    }
+  }
+
+  &[data-is-focused="true"],
+  &[data-state="open"] {
+    .select {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--focus-ring-color);
+    }
+
+    .icon {
+      color: var(--color-primary);
+    }
+
+    .chevron {
+      color: var(--color-primary);
+      transform: translateY(-50%) rotate(180deg);
+    }
+  }
+
+  &[data-is-disabled="true"] {
+    opacity: 0.7;
+    cursor: not-allowed;
+
+    .select {
+      background-color: var(--color-surface-2);
+      cursor: not-allowed;
+      box-shadow: 0 0 0 2px var(--disabled-ring-color);
+    }
+  }
+
+  &[data-size="small"] {
+    --select-height: 32px;
+    font-size: 0.875rem;
+
+    .icon {
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    .chevron {
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
+  &[data-size="large"] {
+    --select-height: 48px;
+    font-size: 1.125rem;
+
+    .icon {
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    .chevron {
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+}
+
+.label {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.required {
+  color: var(--color-error);
+  margin-left: var(--space-3xs);
+}
+
+.selectContainer {
+  position: relative;
+  width: 100%;
+
+
+}
+
+.select {
+  width: 100%;
+  height: var(--select-height);
+  padding: 0 var(--space-xl) 0 var(--space-lg);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-1);
+  color: var(--color-text-primary);
+  font-size: inherit;
+  appearance: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+      padding-block: calc(var(--space-md) - 5px) var(--space-sm);
+  padding-inline: calc(var(--space-2xl) - 8px) var(--space-xl);
+  border-radius: var(--radius-md);
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-border-hover);
+    box-shadow: 0 0 0 3px var(--hover-ring-color);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--focus-ring-color);
+  }
+
+  &:disabled {
+    background-color: var(--color-surface-2);
+    color: var(--color-text-tertiary);
+    cursor: not-allowed;
+    box-shadow: 0 0 0 2px var(--disabled-ring-color);
+  }
+}
+
+.icon {
+  position: absolute;
+  left: var(--space-xs);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-secondary);
+  transition: color 0.2s ease;
+  pointer-events: none;
+
+    inline-size: var(--space-lg);
+  block-size: var(--space-lg);
+  margin-left: 5px;
+
+  > svg {
+    width: 100%;
+    height: 100%;
+    color: inherit;
+  }
+}
+
+.chevron {
+  position: absolute;
+  right: var(--space-xs);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-secondary);
+  transition: all 0.2s ease;
+  pointer-events: none;
+
+  inline-size: var(--space-lg);
+  block-size: var(--space-lg);
+  margin-left: 5px;
+
+  > svg {
+    width: 100%;
+    height: 100%;
+    color: inherit;
+  }
+
+  &.open {
+    transform: translateY(-50%) rotate(180deg);
+    color: var(--color-primary);
+  }
+}
+
+.focusRing {
+  position: absolute;
+  inset: -3px;
+  border-radius: calc(var(--radius-sm) + 3px);
+  background-color: var(--focus-ring-color);
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.popover {
+  max-height: 300px;
+  overflow: auto;
+  width: var(--trigger-width);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-primary);
+  background-color: var(--color-surface-1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+  outline: none;
+  z-index: 10;
+  margin-top: calc(var(--space-xs) * -1);
+  padding: var(--space-xs) 0;
+  animation: popoverEntry 0.2s ease-out;
+  transform-origin: top center;
+}
+
+@keyframes popoverEntry {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.listBox {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  outline: none;
+}
+
+.listBoxItem {
+  padding: var(--space-xs) var(--space-md);
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  font-size: 0.9375rem;
+
+  &:hover {
+    background-color: var(--color-surface-2);
+  }
+
+  &[data-focused] {
+    background-color: var(--color-surface-2);
+  }
+
+  &[data-selected] {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+
+  &[data-focused][data-selected] {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
+  }
+}
+
+.bottom {
+  min-height: 20px;
+}
+
+.error {
+  color: var(--color-error);
+  font-size: 0.875rem;
+}
+
+.helperText {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+/* React Aria specific styles */
+[data-focus-visible] .select {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--focus-ring-color);
+}
+
+/* Hover state */
+.wrapper:hover:not([data-disabled]) .select:not(:focus) {
+  border-color: var(--color-border-hover);
+  box-shadow: 0 0 0 3px var(--hover-ring-color);
+}
+
+/* Invalid state - only show box-shadow when focused */
+[data-invalid] .select {
+  border-color: var(--color-error);
+}
+
+/* Focus and invalid combined */
+[data-focus-visible][data-invalid] .select {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px var(--error-ring-color);
+}
+
+/* Disabled state */
+[data-disabled] .select {
+  opacity: 0.7;
+  background-color: var(--color-surface-2);
+  cursor: not-allowed;
+  box-shadow: 0 0 0 2px var(--disabled-ring-color);
+}
+

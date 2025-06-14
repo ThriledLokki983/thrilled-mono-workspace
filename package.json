@@ -5,11 +5,13 @@
   "scripts": {},
   "private": true,
   "dependencies": {
+    "@grrr/utils": "^2.5.1",
     "@mono/custom-eslint": "file:packages/shared/custom-eslint",
     "@tanstack/react-query": "^5.59.0",
     "@tanstack/react-query-devtools": "^5.59.0",
     "axios": "^1.6.0",
     "express": "^4.21.2",
+    "framer-motion": "^12.18.1",
     "joi": "^17.13.3",
     "lucide-react": "^0.511.0",
     "open-props": "^1.7.6",
@@ -19,7 +21,8 @@
     "react-router": "^7.1.1",
     "react-router-dom": "^7.1.1",
     "swagger-ui-express": "^5.0.1",
-    "zod": "^3.25.61"
+    "zod": "^3.25.61",
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.14.5",

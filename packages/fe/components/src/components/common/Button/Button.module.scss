@@ -1,0 +1,234 @@
+@use 'design-tokens' as tokens;
+@use 'utility/typography' as typography;
+@use 'utils' as *;
+@use '../FormElements/form-variables' as form;
+
+// Button-specific variants of form variables
+$btn-focus-ring-color: var(--color-primary-light, rgba(45, 91, 169, 0.2));
+$btn-error-ring-color: var(--color-error-light, rgba(220, 53, 69, 0.2));
+$btn-hover-ring-color: var(--color-border-hover-light, rgba(0, 0, 0, 0.08));
+$btn-disabled-ring-color: var(--color-surface-3, #f5f5f5);
+
+.button {
+  @include typography.typography(body);
+  @include bare-button; @include ui-font; @include font-smoothing;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: none;
+  transition: form.$form-transition;
+  gap: 0.5rem;
+  position: relative;
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  // Sizes
+  &[data-size='small'] {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  &[data-size='medium'] {
+    padding: 0.625rem 1.25rem;
+    font-size: 1rem;
+  }
+
+  &[data-size='large'] {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.125rem;
+  }
+
+  // Base focus styles - use consistent box-shadow instead of outline
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px $btn-focus-ring-color;
+  }
+
+  // Variants
+  &[data-variant='primary'] {
+    background: var(--color-brand-primary);
+    color: white;
+    box-shadow:
+      0 2px 4px -2px rgba(45, 91, 169, 0.1),
+      0 4px 6px -1px rgba(45, 91, 169, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+    &:hover:not(:disabled) {
+      background: var(--color-brand-accent);
+      box-shadow:
+        0 0 0 3px $btn-hover-ring-color,
+        0 4px 6px -2px rgba(58, 117, 219, 0.15),
+        0 6px 12px -1px rgba(58, 117, 219, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled) {
+      background: var(--color-brand-primary);
+      box-shadow:
+        0 1px 2px -1px rgba(45, 91, 169, 0.1),
+        0 2px 4px -1px rgba(45, 91, 169, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transform: translateY(0);
+    }
+
+    &:focus-visible:not(:disabled) {
+      box-shadow: 0 0 0 3px $btn-focus-ring-color;
+    }
+
+    &:disabled {
+      background: var(--color-brand-primary);
+      box-shadow: 0 0 0 2px $btn-disabled-ring-color;
+    }
+  }
+
+  &[data-variant='secondary'] {
+    background: var(--color-brand-secondary);
+    color: white;
+    box-shadow:
+      0 2px 4px -2px rgba(108, 93, 211, 0.1),
+      0 4px 6px -1px rgba(108, 93, 211, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+    &:hover:not(:disabled) {
+      background: rgba(108, 93, 211, 0.95);
+      box-shadow:
+        0 0 0 3px $btn-hover-ring-color,
+        0 4px 6px -2px rgba(108, 93, 211, 0.2),
+        0 6px 12px -1px rgba(108, 93, 211, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled) {
+      background: var(--color-brand-secondary);
+      box-shadow:
+        0 1px 2px -1px rgba(108, 93, 211, 0.1),
+        0 2px 4px -1px rgba(108, 93, 211, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      transform: translateY(0);
+    }
+
+    &:focus-visible:not(:disabled) {
+      box-shadow: 0 0 0 3px $btn-focus-ring-color;
+    }
+
+    &:disabled {
+      background: var(--color-brand-secondary);
+      box-shadow: 0 0 0 2px $btn-disabled-ring-color;
+    }
+  }
+
+  &[data-variant='subtle'] {
+    background: transparent;
+    color: var(--color-text-primary);
+
+    &:hover:not(:disabled) {
+      background: var(--color-bg-subtle);
+      box-shadow: 0 0 0 3px $btn-hover-ring-color;
+    }
+
+    &:active:not(:disabled) {
+      background: var(--color-bg-inset);
+    }
+
+    &:focus-visible:not(:disabled) {
+      box-shadow: 0 0 0 3px $btn-focus-ring-color;
+    }
+
+    &:disabled {
+      box-shadow: 0 0 0 2px $btn-disabled-ring-color;
+    }
+  }
+
+  &[data-variant='text'] {
+    background: transparent;
+    color: var(--color-text-primary);
+    padding-left: 0;
+    padding-right: 0;
+
+    &:hover:not(:disabled) {
+      color: var(--color-brand-primary);
+      text-decoration: underline;
+      box-shadow: 0 0 0 3px $btn-hover-ring-color;
+    }
+
+    &:focus-visible:not(:disabled) {
+      box-shadow: 0 0 0 3px $btn-focus-ring-color;
+    }
+
+    &:active:not(:disabled) {
+      color: var(--color-brand-accent);
+    }
+
+    &:disabled {
+      box-shadow: 0 0 0 2px $btn-disabled-ring-color;
+    }
+  }
+
+  &[data-variant='link'] {
+    background: transparent;
+    color: var(--color-brand-primary);
+    padding-left: 0;
+    padding-right: 0;
+    text-decoration: underline;
+
+    &:hover:not(:disabled) {
+      color: var(--color-brand-accent);
+      box-shadow: 0 0 0 3px $btn-hover-ring-color;
+    }
+
+    &:focus-visible:not(:disabled) {
+      box-shadow: 0 0 0 3px $btn-focus-ring-color;
+    }
+
+    &:active:not(:disabled) {
+      color: var(--color-brand-accent);
+    }
+
+    &:disabled {
+      box-shadow: 0 0 0 2px $btn-disabled-ring-color;
+    }
+  }
+
+  &[data-variant='outline'] {
+    background: transparent;
+    color: var(--color-brand-primary);
+    border: 2px solid currentColor;
+
+    &:hover:not(:disabled) {
+      background: rgba(var(--color-brand-primary-rgb), 0.05);
+      color: var(--color-brand-accent);
+      transform: translateY(-1px);
+      box-shadow: 0 0 0 3px $btn-hover-ring-color;
+    }
+
+    &:focus-visible:not(:disabled) {
+      box-shadow: 0 0 0 3px $btn-focus-ring-color;
+    }
+
+    &:active:not(:disabled) {
+      background: rgba(var(--color-brand-primary-rgb), 0.1);
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      border-color: currentColor;
+      box-shadow: 0 0 0 2px $btn-disabled-ring-color;
+    }
+  }
+
+  // Error state - for form buttons that might need to show error state
+  &[data-error='true'] {
+    &:focus-visible {
+      box-shadow: 0 0 0 3px $btn-error-ring-color;
+    }
+  }
+}

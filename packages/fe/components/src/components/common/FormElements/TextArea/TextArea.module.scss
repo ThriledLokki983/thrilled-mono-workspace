@@ -1,0 +1,164 @@
+// @use '@styles/utils' as *;
+
+.wrapper {
+  --focus-ring-color: var(--color-primary-light);
+  --error-ring-color: var(--color-error-light);
+  --hover-ring-color: var(--color-border-hover-light, rgba(0, 0, 0, 0.08));
+  --disabled-ring-color: var(--color-surface-3, #f5f5f5);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  width: 100%;
+  position: relative;
+
+  &[data-has-error="true"] {
+    --focus-ring-color: var(--error-ring-color);
+
+    .textarea {
+      border-color: var(--color-error);
+    }
+
+    /* Only apply box-shadow when focused and has error */
+    &[data-is-focused="true"] {
+      .textarea {
+        box-shadow: 0 0 0 3px var(--error-ring-color);
+      }
+    }
+  }
+
+  &[data-is-disabled="true"] {
+    opacity: 0.7;
+    cursor: not-allowed;
+
+    .textarea {
+      background-color: var(--color-surface-2);
+      cursor: not-allowed;
+      box-shadow: 0 0 0 2px var(--disabled-ring-color);
+    }
+  }
+
+  &[data-is-focused="true"] {
+    .textarea {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--focus-ring-color);
+    }
+  }
+
+  &[data-size="small"] {
+    font-size: 0.875rem;
+  }
+
+  &[data-size="large"] {
+    font-size: 1.125rem;
+  }
+}
+
+.label {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.required {
+  color: var(--color-error);
+  margin-left: var(--space-3xs);
+}
+
+.textareaContainer {
+  position: relative;
+  width: 100%;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: var(--space-sm);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-1);
+  color: var(--color-text-primary);
+  font-size: inherit;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 0.2s ease;
+  line-height: 1.5;
+
+  &::placeholder {
+    color: var(--color-text-tertiary);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-border-hover);
+    box-shadow: 0 0 0 3px var(--hover-ring-color);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--focus-ring-color);
+  }
+
+  &:disabled {
+    background-color: var(--color-surface-2);
+    color: var(--color-text-tertiary);
+    cursor: not-allowed;
+    box-shadow: 0 0 0 2px var(--disabled-ring-color);
+  }
+}
+
+.bottom {
+  min-height: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.error {
+  color: var(--color-error);
+  font-size: 0.875rem;
+}
+
+.helperText {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.charCount {
+  color: var(--color-text-tertiary);
+  font-size: 0.875rem;
+  margin-left: auto;
+}
+
+/* React Aria specific styles */
+[data-focus-visible] .textarea {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--focus-ring-color);
+}
+
+/* Hover state */
+.wrapper:hover:not([data-disabled]) .textarea:not(:focus) {
+  border-color: var(--color-border-hover);
+  box-shadow: 0 0 0 3px var(--hover-ring-color);
+}
+
+/* Invalid state */
+[data-invalid] .textarea {
+  border-color: var(--color-error);
+}
+
+/* Focus and invalid combined */
+[data-focus-visible][data-invalid] .textarea {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px var(--error-ring-color);
+}
+
+/* Disabled state */
+[data-disabled] .textarea {
+  opacity: 0.7;
+  background-color: var(--color-surface-2);
+  cursor: not-allowed;
+  box-shadow: 0 0 0 2px var(--disabled-ring-color);
+}

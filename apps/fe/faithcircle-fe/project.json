@@ -4,6 +4,7 @@
   "projectType": "application",
   "sourceRoot": "apps/fe/faithcircle-fe/src",
   "tags": ["npm:private", "type:app", "scope:fe"],
+  "implicitDependencies": ["@mono/components"],
   "targets": {
     "serve": {
       "executor": "@nx/vite:dev-server",

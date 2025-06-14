@@ -1,1 +1,1 @@
-export * from './lib/styles.js';
+export * from './lib/styles';

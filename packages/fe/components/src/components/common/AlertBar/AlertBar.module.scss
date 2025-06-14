@@ -1,0 +1,216 @@
+@use 'design-tokens' as tokens;
+@use 'utility' as utils;
+
+.alertBar {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+  font-family: var(--font-family-base);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease-out;
+
+  // Base alert styling
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+
+  &[data-hidden="true"] {
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+  }
+
+  &[data-variant="info"] {
+    background: color-mix(in srgb, var(--color-info) 8%, var(--color-bg-secondary));
+    border-color: color-mix(in srgb, var(--color-info) 20%, transparent);
+    color: var(--color-info-contrast);
+
+    .icon {
+      color: var(--color-info);
+    }
+  }
+
+  &[data-variant="success"] {
+    background: color-mix(in srgb, var(--color-success) 8%, var(--color-bg-secondary));
+    border-color: color-mix(in srgb, var(--color-success) 20%, transparent);
+    color: var(--color-success-contrast);
+
+    .icon {
+      color: var(--color-success);
+    }
+  }
+
+  &[data-variant="warning"] {
+    background: color-mix(in srgb, var(--color-warning) 8%, var(--color-bg-secondary));
+    border-color: color-mix(in srgb, var(--color-warning) 20%, transparent);
+    color: var(--color-warning-contrast);
+
+    .icon {
+      color: var(--color-warning);
+    }
+  }
+
+  &[data-variant="error"] {
+    background: color-mix(in srgb, var(--color-error) 8%, var(--color-bg-secondary));
+    border-color: color-mix(in srgb, var(--color-error) 20%, transparent);
+    color: var(--color-error-contrast);
+
+    .icon {
+      color: var(--color-error);
+    }
+  }
+
+  &[data-variant="notice"] {
+    background: color-mix(in srgb, var(--color-primary) 8%, var(--color-bg-secondary));
+    border-color: color-mix(in srgb, var(--color-primary) 20%, transparent);
+    color: var(--color-primary-contrast);
+
+    .icon {
+      color: var(--color-primary);
+    }
+  }
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px; // Slight alignment with text baseline
+  transition: color 0.2s ease-out;
+}
+
+.content {
+  flex: 1;
+  min-width: 0; // Prevent content overflow
+}
+
+.title {
+  @include utils.typography(h6);
+  margin: 0 0 var(--space-xs) 0;
+  font-weight: 600;
+  color: inherit;
+}
+
+.message {
+  @include utils.typography(body);
+  margin: 0;
+  color: inherit;
+  line-height: 1.5;
+
+  // Handle nested elements
+  p {
+    margin: 0 0 var(--space-xs) 0;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover {
+      text-decoration-thickness: 2px;
+    }
+  }
+}
+
+.dismissButton {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: var(--space-xs);
+  margin: -var(--space-xs) -var(--space-xs) -var(--space-xs) 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  opacity: 0.7;
+  transition: all 0.2s ease-out;
+
+  &:hover {
+    opacity: 1;
+    background: color-mix(in srgb, currentColor 10%, transparent);
+  }
+
+  &:focus {
+    outline: none; // Remove default outline
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    opacity: 1;
+    background: color-mix(in srgb, currentColor 15%, transparent);
+  }
+
+  // Ensure button is keyboard accessible
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+  }
+}
+
+// Variant-specific dismiss button colors
+.alertBar {
+  &[data-variant="info"] .dismissButton {
+    color: var(--color-info);
+  }
+
+  &[data-variant="success"] .dismissButton {
+    color: var(--color-success);
+  }
+
+  &[data-variant="warning"] .dismissButton {
+    color: var(--color-warning);
+  }
+
+  &[data-variant="error"] .dismissButton {
+    color: var(--color-error);
+  }
+
+  &[data-variant="notice"] .dismissButton {
+    color: var(--color-primary);
+  }
+}
+
+// Animation variants
+.alertBar {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .alertBar {
+    padding: var(--space-sm);
+    gap: var(--space-xs);
+  }
+
+  .title {
+    @include utils.typography(small);
+    font-weight: 600;
+  }
+
+  .message {
+    @include utils.typography(small);
+  }
+}

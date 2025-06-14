@@ -1,0 +1,303 @@
+// @use '@styles/utils' as *;
+
+.wrapper {
+  // Enhanced checkbox variables with refined proportions
+  --checkbox-size: 22px;
+  --checkbox-border-width: 1.5px;
+  --checkbox-border-radius: 8px;
+  --checkbox-transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); // Bouncy spring
+  --checkbox-focus-ring: 0 0 0 3px;
+
+  // Clean and minimal color variables using theme tokens
+  --checkbox-bg: var(--color-bg-primary);
+  --checkbox-border: var(--color-border-secondary);
+  --checkbox-border-hover: var(--color-brand-primary);
+  --checkbox-checked-bg: var(--color-brand-primary);
+  --checkbox-checked-border: var(--color-brand-primary);
+  --checkbox-focus-color: color-mix(in srgb, var(--color-brand-primary) 20%, transparent);
+  --checkbox-icon-color: var(--color-bg-primary);
+  --checkbox-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --checkbox-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --checkbox-shadow-checked: 0 2px 8px color-mix(in srgb, var(--color-brand-primary) 25%, transparent);
+
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  isolation: isolate;
+}
+
+.container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.15s ease;
+
+  // Subtle container hover effect
+  &:hover {
+    transform: translateY(-0.5px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  cursor: pointer;
+
+  &:focus-visible + .checkbox {
+    box-shadow:
+      var(--checkbox-focus-ring) var(--checkbox-focus-color),
+      var(--checkbox-shadow);
+    transform: translateY(-1px);
+  }
+}
+
+.checkbox {
+  position: relative;
+  width: var(--checkbox-size);
+  height: var(--checkbox-size);
+  border: var(--checkbox-border-width) solid var(--checkbox-border);
+  border-radius: var(--checkbox-border-radius);
+  background: var(--checkbox-bg);
+  transition: var(--checkbox-transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: var(--checkbox-shadow);
+
+  // Subtle inner highlight for elegance
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border-radius: calc(var(--checkbox-border-radius) - 1px);
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.4) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  // Clean focus ring without complex gradients
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border: 2px solid var(--checkbox-focus-color);
+    border-radius: calc(var(--checkbox-border-radius) + 3px);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  // Subtle shimmer effect on hover
+  &:hover::before {
+    opacity: 1;
+  }
+}
+
+.icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--checkbox-icon-color);
+  z-index: 2;
+
+  // Enhanced icon scaling effect
+  svg {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  }
+}
+
+.indeterminate {
+  width: 12px;
+  height: 3px;
+  background: var(--checkbox-icon-color);
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.label {
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  // Text enhancement for better readability
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.bottom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  margin-top: var(--space-2xs);
+}
+
+.error {
+  color: var(--color-error);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.helperText {
+  color: var(--color-text-tertiary);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+/* Enhanced Interactive States */
+.wrapper {
+  // Sophisticated hover state
+  &:not([data-disabled="true"]) .container:hover {
+    .checkbox {
+      border-color: var(--checkbox-border-hover);
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: var(--checkbox-shadow-hover);
+
+      &::after {
+        opacity: 0.8;
+      }
+
+      &::before {
+        opacity: 1;
+      }
+    }
+
+    .label {
+      color: var(--color-brand-primary);
+      transform: translateX(2px);
+    }
+  }
+
+  // Enhanced active state with spring animation
+  &:not([data-disabled="true"]) .container:active .checkbox {
+    transform: translateY(-1px) scale(0.98);
+    transition: all 0.1s cubic-bezier(0.4, 0, 1, 1);
+
+    &::after {
+      opacity: 1;
+    }
+  }
+
+  // Beautiful checked state - clean and elegant
+  &[data-checked="true"] {
+    .checkbox {
+      background: var(--checkbox-checked-bg);
+      border-color: var(--checkbox-checked-border);
+      box-shadow: var(--checkbox-shadow-checked);
+      transform: scale(1.05);
+
+      &::before {
+        opacity: 1;
+      }
+    }
+
+    &:hover .checkbox {
+      transform: translateY(-2px) scale(1.08);
+      box-shadow:
+        var(--checkbox-shadow-checked),
+        0 8px 25px color-mix(in srgb, var(--color-brand-primary) 25%, transparent);
+    }
+  }
+
+  // Elegant indeterminate state
+  &[data-indeterminate="true"] {
+    .checkbox {
+      background: var(--checkbox-checked-bg);
+      border-color: var(--checkbox-checked-border);
+      box-shadow: var(--checkbox-shadow-checked);
+      transform: scale(1.05);
+
+      &::before {
+        opacity: 1;
+      }
+    }
+
+    &:hover .checkbox {
+      transform: translateY(-2px) scale(1.08);
+    }
+  }
+
+  // Refined error state with red accents
+  &[data-has-error="true"] {
+    --checkbox-border: var(--color-error);
+    --checkbox-border-hover: var(--color-error);
+    --checkbox-focus-color: color-mix(in srgb, var(--color-error) 15%, transparent);
+    --checkbox-shadow: 0 1px 3px color-mix(in srgb, var(--color-error) 20%, transparent);
+
+    .checkbox {
+      border-color: var(--color-error);
+      box-shadow: var(--checkbox-shadow);
+    }
+
+    &:hover .checkbox {
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--color-error) 40%, transparent),
+        0 4px 12px color-mix(in srgb, var(--color-error) 20%, transparent);
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    .label {
+      color: var(--color-error);
+    }
+  }
+
+  // Polished disabled state
+  &[data-disabled="true"] {
+    .container {
+      cursor: not-allowed;
+
+      &:hover {
+        transform: none;
+      }
+    }
+
+    .checkbox {
+      background: var(--color-surface-2);
+      border-color: var(--color-border-tertiary);
+      opacity: 0.6;
+      transform: none !important;
+      box-shadow: none !important;
+
+      &::before,
+      &::after {
+        display: none;
+      }
+    }
+
+    .label {
+      color: var(--color-text-disabled);
+      opacity: 0.6;
+    }
+
+    &[data-checked="true"] .checkbox,
+    &[data-indeterminate="true"] .checkbox {
+      background: var(--color-border-secondary);
+      border-color: var(--color-border-secondary);
+    }
+  }
+}

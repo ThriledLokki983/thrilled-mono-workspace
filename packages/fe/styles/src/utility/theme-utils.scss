@@ -1,0 +1,54 @@
+// =============================================================================
+// THEME UTILITIES
+// Theme-related utility functions and mixins
+// =============================================================================
+
+@use 'sass:color';
+
+// Theme switching mixins
+@mixin light-theme {
+  :root[data-theme='light'],
+  :root:not([data-theme]) {
+    @content;
+  }
+}
+
+@mixin dark-theme {
+  :root[data-theme='dark'] {
+    @content;
+  }
+}
+
+@mixin theme-transition {
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+// Color scheme aware mixins
+@mixin color-scheme-light {
+  @media (prefers-color-scheme: light) {
+    @content;
+  }
+}
+
+@mixin color-scheme-dark {
+  @media (prefers-color-scheme: dark) {
+    @content;
+  }
+}
+
+// Theme-aware color functions
+@function theme-color($color-name, $fallback: null) {
+  @return var(--color-#{$color-name}, $fallback);
+}
+
+// Generate theme color variations
+@mixin generate-theme-colors($colors) {
+  @each $name, $value in $colors {
+    --color-#{$name}: #{$value};
+    --color-#{$name}-rgb: #{color.channel($value, "red")}, #{color.channel($value, "green")}, #{color.channel($value, "blue")};
+  }
+}

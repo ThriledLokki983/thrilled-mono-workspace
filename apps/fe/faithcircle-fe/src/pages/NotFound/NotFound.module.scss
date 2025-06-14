@@ -1,0 +1,78 @@
+// @use '@styles/design-tokens' as tokens;
+// @use '@styles/utility/typography' as typography;
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 12rem); // Account for header/layout spacing
+  padding: var(--spacing-2xl);
+  text-align: center;
+}
+
+.content {
+  max-width: 32rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.title {
+  // @include typography.typography(h1);
+  margin-bottom: var(--spacing-md);
+  font-size: 5rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--color-primary-500);
+  letter-spacing: -0.03em;
+  position: relative;
+
+  &::after {
+    content: '404';
+    position: absolute;
+    top: 0.125em;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--color-primary-100);
+    z-index: -1;
+    filter: blur(8px);
+    opacity: 0.5;
+  }
+}
+
+.message {
+  // @include typography.typography(body-lg);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xl);
+  font-size: 1.25rem;
+  max-width: 24rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.statusCode {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--color-text-tertiary);
+  background: var(--color-surface-overlay);
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  margin-top: var(--spacing-sm);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.homeButton {
+  margin-top: var(--spacing-xl);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

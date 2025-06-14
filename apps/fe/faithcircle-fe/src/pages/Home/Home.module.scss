@@ -1,0 +1,56 @@
+// @use '../../styles/utility' as *;
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-xl);
+}
+
+.title {
+  // @include typography(h1);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-md);
+  font-size: 3rem;
+  letter-spacing: -0.03em;
+}
+
+.subtitle {
+  // @include typography(body-lg);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-xl);
+  font-size: 1.25rem;
+  max-width: 720px;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-xl);
+  margin-top: var(--space-2xl);
+}
+
+.featureSection {
+  padding: var(--space-lg);
+  background: var(--color-surface-1);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-primary);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-border-secondary);
+  }
+}
+
+.featureTitle {
+  // @include typography(h3);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-md);
+}
+
+.featureDescription {
+  // @include typography(body);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}

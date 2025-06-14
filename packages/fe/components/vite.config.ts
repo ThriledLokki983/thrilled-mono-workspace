@@ -14,6 +14,25 @@ export default defineConfig(() => ({
       tsconfigPath: path.join(__dirname, 'tsconfig.lib.json'),
     }),
   ],
+  assetsInclude: ['**/*.svg'],
+  resolve: {
+    alias: {
+      '@styles': path.resolve(__dirname, '../styles/src'),
+      '@mono/styles': path.resolve(__dirname, '../styles/src'),
+      '@thrilled/shared': path.resolve(__dirname, '../../shared/types/dist/index.d.ts'),
+    },
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        loadPaths: [
+          path.resolve(__dirname, '../styles/src'),
+          path.resolve(__dirname, '../styles/src/foundations'),
+          path.resolve(__dirname, '../styles/src/utilities'),
+        ],
+      },
+    },
+  },
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [ nxViteTsPaths() ],

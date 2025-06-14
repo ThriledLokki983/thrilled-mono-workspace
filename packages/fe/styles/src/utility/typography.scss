@@ -1,0 +1,130 @@
+// =============================================================================
+// TYPOGRAPHY UTILITIES
+// Typography-related utility functions and mixins
+// =============================================================================
+
+// Typography size mixins
+@mixin typography($variant) {
+  @if $variant == 'display' {
+    font-size: 4rem;
+    line-height: 1.1;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    font-family: var(--font-heading);
+  }
+  @else if $variant == 'h1' {
+    font-size: 3rem;
+    line-height: 1.15;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    font-family: var(--font-heading);
+  }
+  @else if $variant == 'h2' {
+    font-size: 2.25rem;
+    line-height: 1.2;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    font-family: var(--font-heading);
+  }
+  @else if $variant == 'h3' {
+    font-size: 1.75rem;
+    line-height: 1.3;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    font-family: var(--font-heading);
+  }
+  @else if $variant == 'h4' {
+    font-size: 1.5rem;
+    line-height: 1.3;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    font-family: var(--font-heading);
+  }
+  @else if $variant == 'h5' {
+    font-size: 1.25rem;
+    line-height: 1.4;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    font-family: var(--font-heading);
+  }
+  @else if $variant == 'h6' {
+    font-size: 1.125rem;
+    line-height: 1.4;
+    font-weight: 500;
+    font-family: var(--font-heading);
+  }
+  @else if $variant == 'body-lg' {
+    font-size: 1.125rem;
+    line-height: 1.5;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    font-family: var(--font-body);
+  }
+  @else if $variant == 'body' {
+    font-size: 1rem;
+    line-height: 1.5;
+    font-weight: 400;
+    font-family: var(--font-body);
+  }
+  @else if $variant == 'small' {
+    font-size: 0.875rem;
+    line-height: 1.4;
+    font-weight: 400;
+    font-family: var(--font-body);
+  }
+  @else {
+    @warn "Unknown typography variant: #{$variant}";
+  }
+}
+
+// UI font mixin
+@mixin ui-font {
+  font-family: var(--font-family-ui, system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif);
+}
+
+// Font smoothing
+@mixin font-smoothing {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Font weight utilities
+@mixin font-weight($weight: normal) {
+  font-weight: var(--font-weight-#{$weight}, $weight);
+}
+
+// Font size utilities with line height
+@mixin font-size($size, $line-height: null) {
+  font-size: var(--font-size-#{$size}, $size);
+  @if $line-height {
+    line-height: var(--line-height-#{$size}, $line-height);
+  }
+}
+
+// Text utilities
+@mixin text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin text-clamp($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// Responsive text scaling
+@mixin responsive-text($mobile-size, $desktop-size) {
+  font-size: $mobile-size;
+
+  @media (min-width: 768px) {
+    font-size: $desktop-size;
+  }
+}
+
+// Letter spacing utilities
+@mixin letter-spacing($spacing) {
+  letter-spacing: var(--letter-spacing-#{$spacing}, $spacing);
+}

@@ -1,0 +1,48 @@
+// Form variables for consistent styling across all form components
+@use 'utils' as *;
+
+// Form element state colors
+$focus-ring-color: var(--color-primary-light);
+$error-ring-color: var(--color-error-light);
+$hover-ring-color: var(--color-border-hover-light, rgba(0, 0, 0, 0.08));
+$disabled-ring-color: var(--color-surface-3, #f5f5f5);
+
+// Shadow properties
+$focus-shadow: 0 0 0 3px var(--focus-ring-color);
+$error-shadow: 0 0 0 3px var(--error-ring-color);
+$hover-shadow: 0 0 0 3px var(--hover-ring-color);
+$disabled-shadow: 0 0 0 2px var(--disabled-ring-color);
+
+// Common form transitions
+$form-transition: all 0.2s ease-out;
+
+// Common form border radius
+$form-radius: var(--radius-md);
+
+// Common form state mixins
+@mixin form-focus-state {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: $focus-shadow;
+}
+
+@mixin form-hover-state {
+  border-color: var(--color-border-hover);
+  box-shadow: $hover-shadow;
+}
+
+@mixin form-error-state {
+  border-color: var(--color-error);
+}
+
+@mixin form-error-focus-state {
+  border-color: var(--color-error);
+  box-shadow: $error-shadow;
+}
+
+@mixin form-disabled-state {
+  opacity: 0.7;
+  background-color: var(--color-surface-2);
+  cursor: not-allowed;
+  box-shadow: $disabled-shadow;
+}

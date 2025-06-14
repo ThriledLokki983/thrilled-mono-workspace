@@ -19,7 +19,9 @@
     "customConditions": ["development"],
     "baseUrl": ".",
     "paths": {
-      "@thrilled/shared": ["packages/shared/types/dist/index.d.ts"]
+      "@thrilled/shared": ["packages/shared/types/dist/index.d.ts"],
+      "@assets/*": ["apps/fe/faithcircle-fe/src/assets/*"],
+      "@stores/*": ["packages/fe/components/src/stores/*"]
     }
   }
 }

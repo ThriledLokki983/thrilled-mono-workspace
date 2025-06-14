@@ -1,0 +1,94 @@
+// =============================================================================
+// THEMES
+// Theme definitions and color schemes
+// =============================================================================
+
+@use 'foundations/colors';
+@use 'utility/theme-utils' as theme;
+
+// Light theme colors
+:root,
+:root[data-theme='light'] {
+  @include theme.generate-theme-colors((
+    'primary': #007bff,
+    'primary-light': #66b3ff,
+    'primary-dark': #0056b3,
+    'secondary': #6c757d,
+    'accent': #28a745,
+    'background': #ffffff,
+    'surface': #f8f9fa,
+    'surface-2': #e9ecef,
+    'surface-3': #dee2e6,
+    'text': #212529,
+    'text-secondary': #6c757d,
+    'text-muted': #adb5bd,
+    'border': #dee2e6,
+    'border-hover': rgba(0, 0, 0, 0.15),
+    'error': #dc3545,
+    'error-light': #f8d7da,
+    'warning': #ffc107,
+    'warning-light': #fff3cd,
+    'success': #28a745,
+    'success-light': #d4edda,
+    'info': #17a2b8,
+    'info-light': #d1ecf1,
+  ));
+}
+
+// Dark theme colors
+:root[data-theme='dark'] {
+  @include theme.generate-theme-colors((
+    'primary': #4dabf7,
+    'primary-light': #74c0fc,
+    'primary-dark': #339af0,
+    'secondary': #adb5bd,
+    'accent': #51cf66,
+    'background': #1a1a1a,
+    'surface': #2d2d2d,
+    'surface-2': #404040,
+    'surface-3': #525252,
+    'text': #ffffff,
+    'text-secondary': #ced4da,
+    'text-muted': #868e96,
+    'border': #495057,
+    'border-hover': rgba(255, 255, 255, 0.15),
+    'error': #fa5252,
+    'error-light': #4a1e1e,
+    'warning': #ffd43b,
+    'warning-light': #4a3d1e,
+    'success': #51cf66,
+    'success-light': #1e4a25,
+    'info': #3bc9db,
+    'info-light': #1e3a42,
+  ));
+}
+
+// Auto theme based on system preference
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    @include theme.generate-theme-colors((
+      'primary': #4dabf7,
+      'primary-light': #74c0fc,
+      'primary-dark': #339af0,
+      'secondary': #adb5bd,
+      'accent': #51cf66,
+      'background': #1a1a1a,
+      'surface': #2d2d2d,
+      'surface-2': #404040,
+      'surface-3': #525252,
+      'text': #ffffff,
+      'text-secondary': #ced4da,
+      'text-muted': #868e96,
+      'border': #495057,
+      'border-hover': rgba(255, 255, 255, 0.15),
+      'error': #fa5252,
+      'error-light': #4a1e1e,
+      'warning': #ffd43b,
+      'warning-light': #4a3d1e,
+      'success': #51cf66,
+      'success-light': #1e4a25,
+      'info': #3bc9db,
+      'info-light': #1e3a42,
+    ));
+  }
+}

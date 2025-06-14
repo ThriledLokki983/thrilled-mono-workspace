@@ -231,4 +231,51 @@ local-clean: ## Clean local setup and stop services
 	docker compose down postgres redis
 	@echo "✅ Local development cleaned!"
 
+# Frontend Development Commands
+dev-fe: ## Start FaithCircle frontend on port 3003
+	@echo "🚀 Starting FaithCircle frontend on http://localhost:3003"
+	yarn nx dev faithcircle-fe --port 3003
+
+dev-fe-4200: ## Start FaithCircle frontend on default port 4200
+	@echo "🚀 Starting FaithCircle frontend on http://localhost:4200"
+	yarn nx dev faithcircle-fe
+
+build-fe: ## Build FaithCircle frontend
+	@echo "🏗️  Building FaithCircle frontend..."
+	yarn nx build faithcircle-fe
+
+test-fe: ## Run FaithCircle frontend tests
+	@echo "🧪 Running FaithCircle frontend tests..."
+	yarn nx test faithcircle-fe
+
+# Full Stack Development
+full-dev: ## Start all services (databases + backends + frontend)
+	@echo "🚀 Starting full development stack..."
+	@make local-services
+	@echo "⏳ Waiting for services to be ready..."
+	@sleep 3
+	@echo "🔥 Starting all services in parallel..."
+	@echo "📝 PostgreSQL: http://localhost:5432"
+	@echo "📝 Redis: http://localhost:6379"
+	@echo "📝 Base Backend: http://localhost:5555"
+	@echo "📝 FaithCircle Backend: http://localhost:8001"
+	@echo "📝 FaithCircle Frontend: http://localhost:3003"
+	@echo "💡 Press Ctrl+C to stop all servers"
+	@echo ""
+	@(cd apps/be/base && dotenv -e .env.local -- yarn nx run base-be:dev) & \
+	(cd apps/be/faithcircle/faithcircle-be && dotenv -e .env.local -- yarn nx run faithcircle-be:dev) & \
+	yarn nx dev faithcircle-fe --port 3003 & \
+	wait
+
+local-stop: ## Stop local services
+	@echo "🛑 Stopping local services..."
+	docker compose stop postgres redis
+	@echo "✅ Local services stopped!"
+
+local-clean: ## Clean local setup and stop services
+	@echo "🧹 Cleaning local development..."
+	@make local-stop
+	docker compose down postgres redis
+	@echo "✅ Local development cleaned!"
+
 # =============================================================================

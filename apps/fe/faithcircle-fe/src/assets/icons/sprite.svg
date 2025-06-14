@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <!-- Add your icons here as symbol elements -->
+  <!-- Example icon -->
+  <symbol id="icon-placeholder" viewBox="0 0 24 24">
+    <rect x="2" y="2" width="20" height="20" rx="2" ry="2" fill="currentColor" opacity="0.2"/>
+    <circle cx="12" cy="12" r="3" fill="currentColor"/>
+  </symbol>
+</svg>
